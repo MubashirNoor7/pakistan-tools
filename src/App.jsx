@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { AppBar, Toolbar, Typography, Container, Card, CardContent, Box, TextField, InputAdornment, ToggleButton, ToggleButtonGroup, Chip, Stack, Button, List, ListItem, ListItemText, ListItemButton, Divider, Accordion, AccordionSummary, AccordionDetails, Table, TableBody, TableRow, TableCell, CssBaseline } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { AppBar, Toolbar, Typography, Container, Card, CardContent, Box, TextField, InputAdornment, ToggleButton, ToggleButtonGroup, Chip, Stack, Button, List, ListItem, ListItemText, ListItemButton, Divider, Accordion, AccordionSummary, AccordionDetails, Table, TableBody, TableRow, TableCell, CssBaseline, Link } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
@@ -10,6 +10,7 @@ import { FuelTool, HeicTool, AvifTool, WebpTool } from './tools/utility.jsx';
 import { RentVsBuyTool, TaxSlabTool, GoldTool, PrizeBondTool, JpgToPdfTool, FuelAverageTool, CurrencyTool } from './tools/newtools.jsx';
 import { LoanEmiTool, MortgageTool, QrTool, BmiTool, AgeTool, PercentageTool, WordCounterTool, PasswordTool, CgpaTool, PngToJpgTool, PdfToJpgTool } from './tools/globaltools.jsx';
 import { SalaryCalcTool, SipTool, DateCalcTool, AreaCalcTool, HomeLoanTool, UnitConverterTool, FontTool, LoveTool, AttendanceTool, CarLoanTool } from './tools/countrytools.jsx';
+import { SEO_BY_ID, BASE_URL, HOME_TITLE, HOME_DESC, seoTitle, toolUrl, pageUrl } from './seo-data.js';
 
 function MarlaTool() {
   const [std, setStd] = useState('272.25'); const [custom, setCustom] = useState('225'); const [mode, setMode] = useState('marla'); const [val, setVal] = useState('5');
@@ -70,22 +71,101 @@ const TOOLS = [
   { id: 'attendance', title: 'Attendance Calculator (Students)', cat: 'Study — global', el: <AttendanceTool /> },
   { id: 'carloan', title: 'Car Loan Calculator (EMI + Total Interest)', cat: 'Finance — global', el: <CarLoanTool /> },
 ];
+// Attach SEO data (slug, description, FAQs) from the single source in seo-data.js.
+// No tool component, formula or rate is changed here.
+TOOLS.forEach((t) => { const s = SEO_BY_ID[t.id]; if (s) { t.slug = s.slug; t.desc = s.desc; t.faqs = s.faqs; } });
+
+// Tiny pathname router — no new dependency. Trailing slashes are ignored.
+function parseRoute(pathname) {
+  const p = (pathname.replace(/\/+$/, '') || '/');
+  if (p === '/') return { kind: 'home' };
+  if (p === '/about') return { kind: 'about' };
+  if (p === '/contact') return { kind: 'contact' };
+  if (p === '/privacy') return { kind: 'privacy' };
+  const m = p.match(/^\/tools\/([a-z0-9-]+)$/);
+  if (m) return { kind: 'tool', slug: m[1] };
+  return { kind: 'notfound' };
+}
+
+function setMetaTag(name, content) {
+  let el = document.querySelector(`meta[name="${name}"]`);
+  if (!el) { el = document.createElement('meta'); el.setAttribute('name', name); document.head.appendChild(el); }
+  el.setAttribute('content', content);
+}
+function setCanonical(href) {
+  let el = document.querySelector('link[rel="canonical"]');
+  if (!el) { el = document.createElement('link'); el.setAttribute('rel', 'canonical'); document.head.appendChild(el); }
+  el.setAttribute('href', href);
+}
+function setFaqJsonLd(faqs) {
+  const old = document.getElementById('kalkio-faq-jsonld');
+  if (old) old.remove();
+  if (!faqs || !faqs.length) return;
+  const script = document.createElement('script');
+  script.id = 'kalkio-faq-jsonld'; script.type = 'application/ld+json';
+  script.textContent = JSON.stringify({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) });
+  document.head.appendChild(script);
+}
 
 export default function App() {
-  const [tool, setTool] = useState(null);
-  const cur = TOOLS.find((t) => t.id === tool);
+  const [route, setRoute] = useState(() => parseRoute(window.location.pathname));
+  const navigate = (path) => { if (window.location.pathname !== path) { window.history.pushState(null, '', path); setRoute(parseRoute(path)); } window.scrollTo(0, 0); };
+  const go = (e, path) => { e.preventDefault(); navigate(path); };
+
+  useEffect(() => {
+    const onPop = () => setRoute(parseRoute(window.location.pathname));
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+
+  const cur = route.kind === 'tool' ? TOOLS.find((t) => t.slug === route.slug) : null;
+
+  // Per-route SEO: title, description, canonical and FAQ JSON-LD.
+  useEffect(() => {
+    if (route.kind === 'home') { document.title = HOME_TITLE; setMetaTag('description', HOME_DESC); setCanonical(BASE_URL + '/'); setFaqJsonLd(null); }
+    else if (route.kind === 'tool' && cur) { document.title = seoTitle(cur.title); setMetaTag('description', cur.desc); setCanonical(toolUrl(cur.slug)); setFaqJsonLd(cur.faqs); }
+    else if (route.kind === 'about') { document.title = 'About | Kalkio'; setMetaTag('description', 'About Kalkio: 40 free calculators and converters that run in your browser. No sign-up, no accounts.'); setCanonical(pageUrl('/about/')); setFaqJsonLd(null); }
+    else if (route.kind === 'contact') { document.title = 'Contact | Kalkio'; setMetaTag('description', 'Contact Kalkio by email. Tools run in your browser and no sign-up is needed.'); setCanonical(pageUrl('/contact/')); setFaqJsonLd(null); }
+    else if (route.kind === 'privacy') { document.title = 'Privacy Policy | Kalkio'; setMetaTag('description', 'Kalkio privacy: tools run in your browser, file converters do not upload your files to a server, and no account is needed.'); setCanonical(pageUrl('/privacy/')); setFaqJsonLd(null); }
+    else { document.title = 'Tool not found | Kalkio'; setMetaTag('description', 'That tool does not exist on Kalkio. Browse all 40 free tools on the home page.'); setCanonical(BASE_URL + '/'); setFaqJsonLd(null); }
+  }, [route, cur]);
+
+  const footer = (<Box component="footer" sx={{ mt: 4, pt: 2, borderTop: '1px solid #e0e0e0', textAlign: 'center' }}>
+    <Typography variant="body2" color="text.secondary" gutterBottom>
+      <Link href="/about/" onClick={(e) => go(e, '/about/')}>About</Link>{' · '}
+      <Link href="/contact/" onClick={(e) => go(e, '/contact/')}>Contact</Link>{' · '}
+      <Link href="/privacy/" onClick={(e) => go(e, '/privacy/')}>Privacy Policy</Link>
+    </Typography>
+    <Typography variant="caption" color="text.secondary">Kalkio — free tools, no sign-up.</Typography>
+  </Box>);
+
+  const notFound = (<>
+    <Typography variant="h4" fontWeight={800} gutterBottom>Tool not found</Typography>
+    <Typography variant="body1" color="text.secondary" gutterBottom>That tool does not exist on Kalkio.</Typography>
+    <Button variant="contained" component="a" href="/" onClick={(e) => go(e, '/')} sx={{ mt: 2 }}>Browse all tools</Button>
+  </>);
+
+  const staticPage = (title, children) => (<>
+    <Button startIcon={<ArrowBackIcon />} component="a" href="/" onClick={(e) => go(e, '/')} sx={{ mb: 2 }}>All tools</Button>
+    <Typography variant="h4" fontWeight={800} gutterBottom>{title}</Typography>
+    {children}
+  </>);
+
   return (<>
     <CssBaseline />
-    <AppBar position="static" color="primary" elevation={0}><Toolbar><Box sx={{ bgcolor: 'rgba(255,255,255,0.2)', borderRadius: 2, p: 0.5, mr: 1.5, display: 'flex' }}><CalculateIcon /></Box><Typography variant="h6" fontWeight={700}>Pakistan Tools</Typography></Toolbar></AppBar>
+    <AppBar position="static" color="primary" elevation={0}><Toolbar><Box sx={{ bgcolor: 'rgba(255,255,255,0.2)', borderRadius: 2, p: 0.5, mr: 1.5, display: 'flex' }}><CalculateIcon /></Box><Typography variant="h6" fontWeight={700} component="a" href="/" onClick={(e) => go(e, '/')} sx={{ color: 'inherit', textDecoration: 'none' }}>Kalkio</Typography></Toolbar></AppBar>
     <Box sx={{ bgcolor: '#f5f7fa', minHeight: '100vh', py: 4 }}>
       <Container maxWidth="sm">
-        {!cur ? (<>
+        {route.kind === 'home' && (<>
           <Typography variant="h4" fontWeight={800} gutterBottom>What do you want to calculate?</Typography>
           <Typography variant="body1" color="text.secondary" gutterBottom>{TOOLS.length} tools, one style. No sign-up.</Typography>
-          <Card elevation={1} sx={{ borderRadius: 3, mt: 2 }}><List>{TOOLS.map((t, i) => (<React.Fragment key={t.id}>{i > 0 && <Divider />}<ListItemButton onClick={() => setTool(t.id)}><ListItemText primary={t.title} secondary={t.cat} /></ListItemButton></React.Fragment>))}</List></Card>
+          <Card elevation={1} sx={{ borderRadius: 3, mt: 2 }}><List>{TOOLS.map((t, i) => (<React.Fragment key={t.id}>{i > 0 && <Divider />}<ListItemButton component="a" href={`/tools/${t.slug}/`} onClick={(e) => go(e, `/tools/${t.slug}/`)}><ListItemText primary={t.title} secondary={t.cat} /></ListItemButton></React.Fragment>))}</List></Card>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3, textAlign: 'center' }}>Tax, bill and fuel results are estimates — confirm official rates before a financial decision.</Typography>
-        </>) : (<>
-          <Button startIcon={<ArrowBackIcon />} onClick={() => setTool(null)} sx={{ mb: 2 }}>All tools</Button>
+        </>)}
+        {route.kind === 'tool' && !cur && notFound}
+        {route.kind === 'notfound' && notFound}
+        {route.kind === 'tool' && cur && (<>
+          <Button startIcon={<ArrowBackIcon />} component="a" href="/" onClick={(e) => go(e, '/')} sx={{ mb: 2 }}>All tools</Button>
           <Typography variant="h4" fontWeight={800} gutterBottom>{cur.title}</Typography>
           <Typography variant="body1" color="text.secondary" gutterBottom>{cur.cat} · No sign-up.</Typography>
           {cur.el}
@@ -96,6 +176,23 @@ export default function App() {
             <Accordion><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>Common questions</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary" paragraph><b>How many Marla in 1 Kanal?</b> 20 Marla, under both standards.</Typography><Typography variant="body2" color="text.secondary"><b>Which standard should I use?</b> The one written in your plot documents.</Typography></AccordionDetails></Accordion>
           </>)}
         </>)}
+        {route.kind === 'about' && staticPage('About Kalkio', (<>
+          <Typography variant="body1" paragraph>Kalkio is a collection of 40 free calculators and converters, covering property, tax and salary, prices, finance, files and everyday calculations.</Typography>
+          <Typography variant="body1" paragraph>Every tool runs in the visitor’s browser — there is no backend, no database, no login and no sign-up. File converters also run fully in the browser.</Typography>
+          <Typography variant="body1" paragraph>Tax, bill and fuel results are estimates — confirm official rates before a financial decision.</Typography>
+        </>))}
+        {route.kind === 'contact' && staticPage('Contact Kalkio', (<>
+          <Typography variant="body1" paragraph>Questions about Kalkio? Email us at <Link href="mailto:sammykhanmalng@gmail.com">sammykhanmalng@gmail.com</Link>.</Typography>
+          <Typography variant="body1" paragraph>Tools run in your browser and no sign-up is needed, so there is no account to recover.</Typography>
+        </>))}
+        {route.kind === 'privacy' && staticPage('Privacy Policy', (<>
+          <Typography variant="body1" paragraph>The tools on Kalkio run in your browser. They do not ask you to create an account, and they do not send your calculator inputs to a server.</Typography>
+          <Typography variant="body1" paragraph>File converters (HEIC, AVIF, WebP, PNG, JPG and PDF) also run fully in your browser — your files are never uploaded to a server.</Typography>
+          <Typography variant="body1" paragraph>Passwords and QR codes are generated locally on your device and never sent anywhere.</Typography>
+          <Typography variant="body1" paragraph>Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.</Typography>
+          <Typography variant="body1" paragraph>Questions about this policy: <Link href="mailto:sammykhanmalng@gmail.com">sammykhanmalng@gmail.com</Link>.</Typography>
+        </>))}
+        {footer}
       </Container>
     </Box>
   </>);
