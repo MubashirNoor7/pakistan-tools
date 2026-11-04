@@ -1,0 +1,55 @@
+# Kalkio
+
+Kalkio is a free website with 40 calculators and converters. Every tool runs in the visitor's browser — no sign-up, no account, no backend. File converters run fully in the browser and files are never uploaded to a server. Tax, bill and fuel results are estimates; official rates are final.
+
+Contact: sammykhanmalng@gmail.com
+
+## Tools
+
+- Marla to Sq Ft Converter Pakistan (2026): https://kalkio.vercel.app/tools/marla-to-sq-ft-converter-pakistan/
+- Kanal to Marla Converter Pakistan: https://kalkio.vercel.app/tools/kanal-to-marla-converter-pakistan/
+- Plot Size Calculator: Length × Width to Marla: https://kalkio.vercel.app/tools/plot-size-calculator-length-width-to-marla/
+- Pakistan Salary Tax Calculator 2026-27: https://kalkio.vercel.app/tools/pakistan-salary-tax-calculator-2026-27/
+- BPS Salary Calculator Pakistan 2026-27: https://kalkio.vercel.app/tools/bps-salary-calculator-pakistan-2026-27/
+- PTA Tax Calculator Pakistan by Phone Model: https://kalkio.vercel.app/tools/pta-tax-calculator-pakistan-by-phone-model/
+- Freelancer Tax Calculator Pakistan (154A): https://kalkio.vercel.app/tools/freelancer-tax-calculator-pakistan-154a/
+- Zakat Calculator Pakistan 2026: Cash, Gold: https://kalkio.vercel.app/tools/zakat-calculator-pakistan-cash-gold/
+- Fuel Trip Cost Calculator Pakistan (OGRA): https://kalkio.vercel.app/tools/fuel-trip-cost-calculator-pakistan-ogra/
+- HEIC to JPG Converter Online (Free, Private): https://kalkio.vercel.app/tools/heic-to-jpg-converter-online/
+- AVIF to PNG Converter Online Free: https://kalkio.vercel.app/tools/avif-to-png-converter-online/
+- WebP to JPG Converter Online Free: https://kalkio.vercel.app/tools/webp-to-jpg-converter-online/
+- Rent vs Buy Calculator Pakistan: https://kalkio.vercel.app/tools/rent-vs-buy-calculator-pakistan/
+- Pakistan Tax Slab 2026-27: Which Slab Are You In?: https://kalkio.vercel.app/tools/pakistan-tax-slab-2026-27-which-slab-are-you-in/
+- Gold Price Pakistan Today: 1 Tola Calculator: https://kalkio.vercel.app/tools/gold-price-pakistan-today-1-tola-calculator/
+- Prize Bond Pakistan: Prize After Tax Calculator: https://kalkio.vercel.app/tools/prize-bond-pakistan-prize-after-tax-calculator/
+- JPG to PDF Converter Online (Free, Private): https://kalkio.vercel.app/tools/jpg-to-pdf-converter-online/
+- Fuel Average Calculator Pakistan (km per litre): https://kalkio.vercel.app/tools/fuel-average-calculator-pakistan-km-per-litre/
+- Currency Converter: USD to PKR & More: https://kalkio.vercel.app/tools/currency-converter-usd-to-pkr/
+- Loan EMI Calculator: https://kalkio.vercel.app/tools/loan-emi-calculator/
+- Mortgage Calculator: How Much House Can I Afford?: https://kalkio.vercel.app/tools/mortgage-calculator-how-much-house-can-i-afford/
+- QR Code Generator (Free, Private): https://kalkio.vercel.app/tools/qr-code-generator/
+- BMI Calculator: https://kalkio.vercel.app/tools/bmi-calculator/
+- Age Calculator (Date of Birth): https://kalkio.vercel.app/tools/age-calculator-date-of-birth/
+- Percentage Calculator: https://kalkio.vercel.app/tools/percentage-calculator/
+- Word Counter & Character Counter: https://kalkio.vercel.app/tools/word-counter-character-counter/
+- Password Generator (Secure, Private): https://kalkio.vercel.app/tools/password-generator-secure-private/
+- CGPA Calculator (4.0 Scale): https://kalkio.vercel.app/tools/cgpa-calculator-4-0-scale/
+- PNG to JPG Converter Online (Free, Private): https://kalkio.vercel.app/tools/png-to-jpg-converter-online/
+- PDF to JPG Converter Online (Free, Private): https://kalkio.vercel.app/tools/pdf-to-jpg-converter-online/
+- Salary Calculator (Net Salary After Tax): https://kalkio.vercel.app/tools/salary-calculator-net-salary-after-tax/
+- SIP Calculator (Monthly Investment + Step-up): https://kalkio.vercel.app/tools/sip-calculator-monthly-investment-step-up/
+- Date Calculator: Days Between Dates & Weekday: https://kalkio.vercel.app/tools/date-calculator-days-between-dates-weekday/
+- Area Calculator (Room & Land Area): https://kalkio.vercel.app/tools/area-calculator-room-land-area/
+- Home Loan Calculator (EMI + Total Interest): https://kalkio.vercel.app/tools/home-loan-calculator-emi-total-interest/
+- Unit Converter: Length, Weight & Temperature: https://kalkio.vercel.app/tools/unit-converter-length-weight-temperature/
+- Font Converter: Stylish Text Generator: https://kalkio.vercel.app/tools/font-converter-stylish-text-generator/
+- Love Calculator (For Fun Only): https://kalkio.vercel.app/tools/love-calculator-for-fun-only/
+- Attendance Calculator (Students): https://kalkio.vercel.app/tools/attendance-calculator-students/
+- Car Loan Calculator (EMI + Total Interest): https://kalkio.vercel.app/tools/car-loan-calculator-emi-total-interest/
+
+## Pages
+
+- Home: https://kalkio.vercel.app/
+- About: https://kalkio.vercel.app/about/
+- Contact: https://kalkio.vercel.app/contact/
+- Privacy Policy: https://kalkio.vercel.app/privacy/
