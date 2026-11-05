@@ -13,7 +13,7 @@ import { LoanEmiTool, MortgageTool, QrTool, BmiTool, AgeTool, PercentageTool, Wo
 import { SalaryCalcTool, SipTool, DateCalcTool, AreaCalcTool, HomeLoanTool, UnitConverterTool, FontTool, LoveTool, AttendanceTool, CarLoanTool } from './tools/countrytools.jsx';
 import { HtmlToVideoTool } from './tools/htmltovideo.jsx';
 import { WhatsMyIpTool } from './tools/iptool.jsx';
-import { CONTENT_BY_ID } from './content.js';
+import { CONTENT_BY_ID, CONTENT_UPDATED } from './content.js';
 import { SEO_BY_ID, BASE_URL, HOME_TITLE, HOME_DESC, seoTitle, toolUrl, pageUrl } from './seo-data.js';
 
 function MarlaTool() {
@@ -40,14 +40,14 @@ const TOOLS = [
   { id: 'salarytax', title: 'Pakistan Salary Tax Calculator 2026-27', cat: 'Tax & salary', el: <SalaryTaxTool /> },
   { id: 'bps', title: 'BPS Salary Calculator Pakistan 2026-27', cat: 'Tax & salary', el: <BpsTool /> },
   { id: 'pta', title: 'PTA Tax Calculator Pakistan by Phone Model', cat: 'Tax & salary', el: <PtaTool /> },
-  { id: 'freelancer', title: 'Freelancer Tax Calculator Pakistan (154A)', cat: 'Tax & salary', el: <FreelancerTool /> },
+  { id: 'freelancer', title: 'Freelancer Tax Calculator Pakistan (154A, PSEB 0.25%)', cat: 'Tax & salary', el: <FreelancerTool /> },
   { id: 'zakat', title: 'Zakat Calculator Pakistan 2026: Cash, Gold', cat: 'Tax & salary', el: <ZakatTool /> },
   { id: 'fuel', title: 'Fuel Trip Cost Calculator Pakistan (OGRA)', cat: 'Utility', el: <FuelTool /> },
   { id: 'heic', title: 'HEIC to JPG Converter Online (Free, Private)', cat: 'Files - private', el: <HeicTool /> },
   { id: 'avif', title: 'AVIF to PNG Converter Online Free', cat: 'Files - private', el: <AvifTool /> },
   { id: 'webp', title: 'WebP to JPG Converter Online Free', cat: 'Files - private', el: <WebpTool /> },
   { id: 'rentvsbuy', title: 'Rent vs Buy Calculator Pakistan', cat: 'Property', el: <RentVsBuyTool /> },
-  { id: 'taxslab', title: 'Pakistan Tax Slab 2026-27: Which Slab Are You In?', cat: 'Tax & salary', el: <TaxSlabTool /> },
+  { id: 'taxslab', title: 'FBR Pakistan Tax Slab 2026-27: Which Slab Are You In?', cat: 'Tax & salary', el: <TaxSlabTool /> },
   { id: 'gold', title: 'Gold Price Pakistan Today: 1 Tola Calculator', cat: 'Prices', el: <GoldTool /> },
   { id: 'prizebond', title: 'Prize Bond Pakistan: Prize After Tax Calculator', cat: 'Prices', el: <PrizeBondTool /> },
   { id: 'jpgtopdf', title: 'JPG to PDF Converter Online (Free, Private)', cat: 'Files - private', el: <JpgToPdfTool /> },
@@ -74,7 +74,7 @@ const TOOLS = [
   { id: 'love', title: 'Love Calculator (For Fun Only)', cat: 'Fun - global', el: <LoveTool /> },
   { id: 'attendance', title: 'Attendance Calculator (Students)', cat: 'Study - global', el: <AttendanceTool /> },
   { id: 'carloan', title: 'Car Loan Calculator (EMI + Total Interest)', cat: 'Finance - global', el: <CarLoanTool /> },
-  { id: 'htmltovideo', title: 'HTML to Video Converter Online (Code to Video)', cat: 'Files & converters', el: <HtmlToVideoTool /> },
+  { id: 'htmltovideo', title: 'HTML to Video & MP4 Converter Online (Code to Video)', cat: 'Files & converters', el: <HtmlToVideoTool /> },
   { id: 'whatsmyip', title: "What's My IP Address? (IP, Location & ISP)", cat: 'Everyday tools', el: <WhatsMyIpTool /> },
 ];
 // Attach SEO data (slug, description, FAQs) from the single source in seo-data.js.
@@ -229,8 +229,10 @@ export default function App() {
         {route.kind === 'home' && (<>
           <Typography variant="h4" fontWeight={800} gutterBottom>What do you want to calculate?</Typography>
           <Typography variant="body1" color="text.secondary" gutterBottom>{TOOLS.length} tools, one style. No sign-up. Pick a category on the right, or a tool on the left.</Typography>
+          <Typography variant="body1" color="text.secondary" gutterBottom>Free Pakistan calculators (Marla, salary tax, PTA tax, BPS, Zakat, gold and fuel) plus file converters, QR codes, BMI and more. Everything runs in your browser.</Typography>
           <Typography variant="h6" fontWeight={700} gutterBottom>Most popular</Typography>
           <Card elevation={1} sx={{ borderRadius: 3 }}><List>{toolListItems(POPULAR, go, null)}</List></Card>
+          <Accordion sx={{ mt: 2 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>Common questions</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary" paragraph><b>Are the tools free?</b> Yes. All 42 tools are free and no sign-up is needed.</Typography><Typography variant="body2" color="text.secondary" paragraph><b>Does my data leave my device?</b> No. Every tool runs in your browser and does not ask you to create an account.</Typography><Typography variant="body2" color="text.secondary"><b>Are tax results official?</b> No. Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.</Typography></AccordionDetails></Accordion>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3, textAlign: 'center' }}>Tax, bill and fuel results are estimates - confirm official rates before a financial decision.</Typography>
         </>)}
         {route.kind === 'tool' && !cur && notFound}
@@ -239,11 +241,12 @@ export default function App() {
           <Button startIcon={<ArrowBackIcon />} component="a" href="/" onClick={(e) => go(e, '/')} sx={{ mb: 2 }}>All tools</Button>
           <Typography variant="h4" fontWeight={800} gutterBottom>{cur.title}</Typography>
           <Typography variant="body1" color="text.secondary" gutterBottom>{ID_TO_CAT[cur.id] || cur.cat} · No sign-up.</Typography>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>Guide last updated {CONTENT_UPDATED}.</Typography>
           {cur.el}
           {cur.id === 'marla' && (<>
-            <Box sx={{ bgcolor: '#fff8e1', borderRadius: 2, p: 2, mt: 2 }}><Typography variant="body2">225 sq ft is common in housing societies like DHA and Bahria Town. 272.25 sq ft is the revenue-record Marla. Confirm from your plot documents which one applies to you.</Typography></Box>
+            <Box sx={{ bgcolor: '#fff8e1', borderRadius: 2, p: 2, mt: 2 }}><Typography variant="body2">225 sq ft is common in housing societies like DHA and Bahria Town. 250 sq ft is the CDA Islamabad standard. 272.25 sq ft is the revenue-record Marla. Confirm from your plot documents which one applies to you.</Typography></Box>
             <Accordion sx={{ mt: 2 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>How it works</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary">Square feet = Marla × sq ft per Marla. Square yards = square feet ÷ 9. Square metres = square feet ÷ 10.7639. Kanal = Marla ÷ 20. Acre = Marla ÷ 160.</Typography></AccordionDetails></Accordion>
-            <Accordion><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>225 vs 272.25 - quick table</Typography></AccordionSummary><AccordionDetails><Table size="small"><TableBody>{[[1, 225, 272.25], [5, 1125, 1361.25], [10, 2250, 2722.5], [20, 4500, 5445]].map(([m, a, b]) => (<TableRow key={m}><TableCell>{m === 20 ? '20 = 1 Kanal' : `${m} Marla`}</TableCell><TableCell>{fmt(a)}</TableCell><TableCell>{fmt(b)}</TableCell></TableRow>))}</TableBody></Table></AccordionDetails></Accordion>
+            <Accordion><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>225 vs 250 vs 272.25 - quick table</Typography></AccordionSummary><AccordionDetails><Table size="small"><TableBody>{[[1, 225, 250, 272.25], [5, 1125, 1250, 1361.25], [10, 2250, 2500, 2722.5], [20, 4500, 5000, 5445]].map(([m, a, b, c]) => (<TableRow key={m}><TableCell>{m === 20 ? '20 = 1 Kanal' : `${m} Marla`}</TableCell><TableCell>{fmt(a)}</TableCell><TableCell>{fmt(b)}</TableCell><TableCell>{fmt(c)}</TableCell></TableRow>))}</TableBody></Table></AccordionDetails></Accordion>
             <Accordion><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>Common questions</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary" paragraph><b>How many Marla in 1 Kanal?</b> 20 Marla, under both standards.</Typography><Typography variant="body2" color="text.secondary"><b>Which standard should I use?</b> The one written in your plot documents.</Typography></AccordionDetails></Accordion>
           </>)}
         </>)}

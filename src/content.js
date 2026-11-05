@@ -4,6 +4,8 @@
 // from the same slabs/bands the tool uses (checked 5 Nov 2026).
 // Shape: { h: heading, p: [paragraphs], table?: { head: [...], rows: [[...]] } }
 import { CONTENT_MORE } from './content-more.js';
+// Date the guide content was last updated (shown under each tool title).
+export const CONTENT_UPDATED = '5 Nov 2026';
 export const CONTENT_BY_ID = {
   salarytax: [
     { h: 'How salary tax is worked out for 2026-27', p: [
@@ -33,6 +35,27 @@ export const CONTENT_BY_ID = {
         ['Rs 300,000', 'Rs 416,000', 'Rs 34,667', 'Rs 265,333'],
         ['Rs 500,000', 'Rs 1,104,000', 'Rs 92,000', 'Rs 408,000'],
       ] } },
+    { h: '2026-27 vs 2025-26: what changed', p: [
+      'Compared with last year (Finance Act 2025), the 2026-27 slabs cut the middle rates and abolished the surcharge. The first three slabs are unchanged.',
+    ], table: {
+      head: ['Annual salary', '2025-26 rate', '2026-27 rate'],
+      rows: [
+        ['Up to Rs 600,000', '0%', '0%'],
+        ['Rs 600,001 to 1,200,000', '1%', '1%'],
+        ['Rs 1,200,001 to 2,200,000', '11%', '11%'],
+        ['Rs 2,200,001 to 3,200,000', '23%', '20%'],
+        ['Rs 3,200,001 to 4,100,000', '30%', '25%'],
+        ['Rs 4,100,001 to 5,600,000', '35%', '29%'],
+        ['Rs 5,600,001 to 7,000,000', '35%', '32%'],
+        ['Above Rs 7,000,000', '35%', '35%'],
+      ] } },
+    { h: 'How much less tax in 2026-27', p: ['Annual tax at the same salary, last year vs this year. The 9% surcharge above Rs 10 million a year has also been abolished, so very high salaries save more.'], table: {
+      head: ['Monthly salary', 'Tax in 2025-26', 'Tax in 2026-27', 'You save'],
+      rows: [
+        ['Rs 200,000', 'Rs 162,000', 'Rs 156,000', 'Rs 6,000'],
+        ['Rs 300,000', 'Rs 466,000', 'Rs 416,000', 'Rs 50,000'],
+        ['Rs 500,000', 'Rs 1,281,000', 'Rs 1,104,000', 'Rs 177,000'],
+      ] } },
     { h: 'A worked example', p: [
       'Take a monthly salary of Rs 200,000. Annual salary is Rs 2,400,000, which falls in the 20% slab (Rs 2,200,001 to 3,200,000). Tax is the fixed Rs 116,000 plus 20% of the part above Rs 2,200,000, which is 20% of Rs 200,000 = Rs 40,000. Total annual tax is Rs 156,000, or Rs 13,000 per month. That is an effective rate of 6.5%.',
     ] },
@@ -59,6 +82,14 @@ export const CONTENT_BY_ID = {
       ] } },
     { h: 'Filer or non-filer', p: [
       'If you are not on the Active Taxpayer List, the income tax (withholding) amount is double the filer amount. The other parts stay the same. For a $500 phone that means Rs 10,000 instead of Rs 5,000 for income tax, so the total is Rs 5,000 higher.',
+    ] },
+    { h: 'Passport or CNIC: which is cheaper?', p: [
+      'Registering on a passport is cheaper, because the income tax line is skipped. A phone you carried into Pakistan yourself can be registered on your passport within 60 days of arriving, and no income tax is charged on that route. The other parts (Regulatory Duty, sales tax and handset levy) are the same on both routes.',
+      'Registering on a CNIC is for phones bought locally, gifted phones, or phones registered after the 60-day window. It adds the income tax line, and a late-registration fine can also apply.',
+      'For a $500 phone at Rs 280 per USD, a filer pays Rs 46,200 on CNIC but Rs 41,200 on passport, a saving of Rs 5,000. For a $100 phone the saving is Rs 100. On phones above $500 the saving is Rs 11,500 for a filer.',
+    ] },
+    { h: 'How to pay: PSID in 5 steps', p: [
+      'Check your IMEI on the DIRBS portal (dirbs.pta.gov.pk) or by dialling *8484# from a local SIM. Enter your IMEI and your CNIC or passport number, and the system gives you a Payment Slip ID (PSID) with the exact amount. Pay the PSID at a bank or through your banking app. Keep the receipt, and the phone is activated once the payment is confirmed. The amount on your PSID is the final amount, even if an estimate differs.',
     ] },
     { h: 'Examples at an exchange rate of Rs 280 per USD', p: ['The exchange rate is editable in the calculator. These totals use Rs 280 only as an example, include the handset levy, and are for a filer:'], table: {
       head: ['Customs value', 'Customs value in Rs', 'Total tax (filer)', 'Total tax (non-filer)'],
@@ -106,19 +137,35 @@ export const CONTENT_BY_ID = {
       'Enter your basic pay and the allowances that appear on your payslip. The calculator adds them to get your gross monthly pay, works out income tax on that amount using the FBR 2026-27 salaried slabs, and subtracts the monthly tax to show an estimated take-home.',
       'Allowances in BPS jobs differ by grade, city and department, so this tool does not use one fixed allowance table. Using your own payslip figures is more accurate than any generic table.',
     ] },
-    { h: 'BPS 2026 minimum basic pay', p: [
-      'From 1 July 2026 the Finance Division (Office Memorandum F.1(2)IMP/2026, dated 21 July 2026) merged the ARA-2022 and ARA-2025 allowances into basic pay. The minimum basic pay for these grades is:'], table: {
-      head: ['BPS grade', 'Minimum basic pay (2026)'],
+    { h: 'BPS 2026 pay scale: minimum, increment and maximum', p: [
+      'From 1 July 2026 the Finance Division (Office Memorandum F.1(2)IMP/2026, dated 21 July 2026) merged the ARA-2022 and ARA-2025 allowances into basic pay. The full official chart for all 22 grades is below. Your basic pay starts at the minimum and rises by the annual increment each year, up to the maximum. On top of basic pay, a 7% Ad-hoc Relief Allowance 2026 is paid on running basic pay.'], table: {
+      head: ['BPS grade', 'Minimum basic pay', 'Annual increment', 'Maximum basic pay'],
       rows: [
-        ['BPS 1', 'Rs 16,280'],
-        ['BPS 6', 'Rs 18,930'],
-        ['BPS 7', 'Rs 19,590'],
-        ['BPS 16', 'Rs 33,720'],
-        ['BPS 17', 'Rs 54,140'],
-        ['BPS 22', 'Rs 146,770'],
+        ['BPS 1', 'Rs 16,280', 'Rs 520', 'Rs 31,880'],
+        ['BPS 2', 'Rs 16,600', 'Rs 590', 'Rs 34,300'],
+        ['BPS 3', 'Rs 17,130', 'Rs 700', 'Rs 38,130'],
+        ['BPS 4', 'Rs 17,650', 'Rs 800', 'Rs 41,650'],
+        ['BPS 5', 'Rs 18,300', 'Rs 910', 'Rs 45,600'],
+        ['BPS 6', 'Rs 18,930', 'Rs 1,010', 'Rs 49,230'],
+        ['BPS 7', 'Rs 19,590', 'Rs 1,100', 'Rs 52,590'],
+        ['BPS 8', 'Rs 20,290', 'Rs 1,210', 'Rs 56,590'],
+        ['BPS 9', 'Rs 20,990', 'Rs 1,310', 'Rs 60,290'],
+        ['BPS 10', 'Rs 21,680', 'Rs 1,430', 'Rs 64,580'],
+        ['BPS 11', 'Rs 22,410', 'Rs 1,580', 'Rs 69,810'],
+        ['BPS 12', 'Rs 23,750', 'Rs 1,720', 'Rs 75,350'],
+        ['BPS 13', 'Rs 25,420', 'Rs 1,880', 'Rs 81,820'],
+        ['BPS 14', 'Rs 27,060', 'Rs 2,090', 'Rs 89,760'],
+        ['BPS 15', 'Rs 28,730', 'Rs 2,380', 'Rs 100,130'],
+        ['BPS 16', 'Rs 33,720', 'Rs 2,720', 'Rs 115,320'],
+        ['BPS 17', 'Rs 54,140', 'Rs 4,110', 'Rs 136,340'],
+        ['BPS 18', 'Rs 68,330', 'Rs 5,120', 'Rs 170,730'],
+        ['BPS 19', 'Rs 105,510', 'Rs 5,450', 'Rs 214,510'],
+        ['BPS 20', 'Rs 123,090', 'Rs 8,040', 'Rs 235,650'],
+        ['BPS 21', 'Rs 136,680', 'Rs 8,920', 'Rs 261,560'],
+        ['BPS 22', 'Rs 146,770', 'Rs 10,470', 'Rs 293,350'],
       ] } },
-    { h: 'Other grades', p: [
-      'Only grades confirmed from the official chart are listed above. For any other grade, use the basic pay printed on your own payslip rather than a guess.',
+    { h: 'What this table does not show', p: [
+      'These figures are basic pay only. House rent, conveyance and other allowances are paid on top and differ by grade, city and department, so enter them from your own payslip in the calculator above.',
     ] },
     { h: 'Limits of the estimate', p: [
       'The result does not include other deductions such as GP fund, benevolent fund or group insurance, which vary by department. It is an income tax and take-home estimate, not a payslip.',
@@ -133,6 +180,10 @@ export const CONTENT_BY_ID = {
     { h: 'Nisab: gold and silver', p: [
       'The nisab used here is 87.48 grams of gold or 612.36 grams of silver. The calculator takes the lower of the two values as the threshold, because silver nisab is usually the lower figure. Scholars and institutions differ on whether to use gold or silver for cash holdings, so ask your scholar if you are close to the threshold.',
       'Both nisab values depend on the rate you enter. Gold and silver rates change daily, so use today’s local rate for an accurate result.',
+    ] },
+    { h: 'Official government nisab for bank deduction', p: [
+      'Separately from the gold and silver nisab above, the government notifies one cash nisab each Zakat year for compulsory deduction from bank accounts. For Zakat Year 1446-47H (2026), the Ministry of Poverty Alleviation and Social Safety fixed it at Rs 503,529. On the first day of Ramadan, banks deduct Zakat from savings and profit-and-loss-sharing accounts holding Rs 503,529 or more. Accounts below that balance are not deducted.',
+      'This bank-deduction nisab is not the same as your personal Zakat calculation. Your personal obligation uses the gold or silver nisab at current rates, which is what this calculator works out.',
     ] },
     { h: 'What to include', p: [
       'Cash at home and in bank accounts, gold and silver you own, and stocks or other investments held for the year. Debts you must repay are subtracted. Enter your gold and silver weight in grams and the rate per gram.',
