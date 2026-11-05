@@ -4,6 +4,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { KanalTool, PlotSizeTool, fmt } from './tools/property.jsx';
 import { SalaryTaxTool, BpsTool, PtaTool, FreelancerTool, ZakatTool } from './tools/tax.jsx';
 import { FuelTool, HeicTool, AvifTool, WebpTool } from './tools/utility.jsx';
@@ -246,12 +247,14 @@ export default function App() {
             <Accordion><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>Common questions</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary" paragraph><b>How many Marla in 1 Kanal?</b> 20 Marla, under both standards.</Typography><Typography variant="body2" color="text.secondary"><b>Which standard should I use?</b> The one written in your plot documents.</Typography></AccordionDetails></Accordion>
           </>)}
         </>)}
+        {route.kind === 'tool' && cur && (<Box sx={{ mt: 2 }}><Button variant="outlined" color="success" startIcon={<WhatsAppIcon />} component="a" href={`https://wa.me/?text=${encodeURIComponent(cur.title + ' - ' + toolUrl(cur.slug))}`} target="_blank" rel="noopener noreferrer">Share on WhatsApp</Button></Box>)}
         {route.kind === 'tool' && cur && CONTENT_BY_ID[cur.id] && (<Box component="section" sx={{ mt: 4 }}>{CONTENT_BY_ID[cur.id].map((s) => (<Box key={s.h} sx={{ mb: 3 }}>
           <Typography variant="h5" component="h2" fontWeight={700} gutterBottom>{s.h}</Typography>
           {s.p.map((para, i) => (<Typography key={i} variant="body1" color="text.secondary" paragraph>{para}</Typography>))}
           {s.table && (<Box sx={{ overflowX: 'auto' }}><Table size="small"><TableBody><TableRow>{s.table.head.map((c) => (<TableCell key={c} sx={{ fontWeight: 700 }}>{c}</TableCell>))}</TableRow>{s.table.rows.map((r, ri) => (<TableRow key={ri}>{r.map((c, ci) => (<TableCell key={ci}>{c}</TableCell>))}</TableRow>))}</TableBody></Table></Box>)}
         </Box>))}</Box>)}
         {route.kind === 'tool' && cur && cur.id !== 'marla' && cur.faqs && cur.faqs.length > 0 && (<Accordion sx={{ mt: 2 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>Common questions</Typography></AccordionSummary><AccordionDetails>{cur.faqs.map(([fq, fa]) => (<Typography key={fq} variant="body2" color="text.secondary" paragraph><b>{fq}</b> {fa}</Typography>))}</AccordionDetails></Accordion>)}
+        {route.kind === 'tool' && cur && (() => { const sib = (CATEGORIES.find((c) => c.name === ID_TO_CAT[cur.id]) || { tools: [] }).tools.filter((t) => t.id !== cur.id).slice(0, 5); return sib.length > 0 ? (<Box sx={{ mt: 4 }}><Typography variant="h6" component="h2" fontWeight={700} gutterBottom>More free tools</Typography><Card elevation={1} sx={{ borderRadius: 3 }}><List>{toolListItems(sib, go, null)}</List></Card></Box>) : null; })()}
         {route.kind === 'about' && staticPage('About Kalkio', (<>
           <Typography variant="body1" paragraph>Kalkio is a collection of 42 free calculators and converters, covering property, tax and salary, prices, finance, files and everyday calculations.</Typography>
           <Typography variant="body1" paragraph>Every tool runs in the visitor’s browser - there is no backend, no database, no login and no sign-up. File converters also run fully in the browser.</Typography>

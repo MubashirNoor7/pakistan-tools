@@ -143,4 +143,53 @@ export const CONTENT_BY_ID = {
       'This tool does the arithmetic. It does not give a religious ruling. For questions about which assets count, how to value them, or when your Zakat year starts, confirm with a qualified scholar.',
     ] },
   ],
+  gold: [
+    { h: 'How the gold calculator works', p: [
+      'Gold in Pakistan is priced per tola. One tola is 11.664 grams. Enter the 24 karat rate per tola from your local sarafa, choose the purity of your gold and the quantity, and the calculator gives the value, plus the price per tola, per gram and per 10 grams.',
+      'This tool does not fetch live prices. Gold rates change daily, so type in today’s sarafa rate to get an accurate result.',
+    ] },
+    { h: 'Purity factors used', p: ['The value of lower-karat gold is the 24 karat value multiplied by a purity factor:'], table: {
+      head: ['Karat', 'Purity factor'],
+      rows: [['24K', '1.000'], ['22K', '0.916'], ['21K', '0.875'], ['18K', '0.750']] } },
+    { h: 'Example', p: ['These figures use an example rate of Rs 400,000 per tola for 24K gold. It is not today’s price.'], table: {
+      head: ['Item', 'Value'],
+      rows: [
+        ['1 tola of 24K', 'Rs 400,000'],
+        ['1 tola of 22K', 'Rs 366,400'],
+        ['1 tola of 21K', 'Rs 350,000'],
+        ['1 tola of 18K', 'Rs 300,000'],
+        ['1 gram of 24K', 'Rs 34,294'],
+        ['1 gram of 22K', 'Rs 31,413'],
+        ['10 grams of 24K', 'Rs 342,936'],
+      ] } },
+    { h: 'What the result does not include', p: [
+      'Jewellers add making charges and sometimes a wastage deduction when you sell, so the price you pay or receive for jewellery will differ from the pure gold value. Use this tool for the gold value only.',
+    ] },
+  ],
+
+  fuel: [
+    { h: 'How trip fuel cost is calculated', p: [
+      'The calculator divides the distance by your vehicle’s mileage to get the litres needed, then multiplies by the fuel rate per litre. Cost = (distance in km ÷ km per litre) × rate per litre.',
+      'Choose petrol or diesel and the rate fills in from the latest rate saved on this site. Fuel rates in Pakistan are notified by OGRA and change often, so edit the rate if today’s price is different.',
+    ] },
+    { h: 'Example', p: [
+      'A 100 km trip in a car that does 12 km per litre needs 100 ÷ 12 = 8.33 litres. At an example rate of Rs 300 per litre (not today’s rate) the fuel cost is about Rs 2,500.',
+    ] },
+    { h: 'What affects your real cost', p: [
+      'Real mileage depends on traffic, speed, air conditioning, load and road type. Highway mileage is usually different from city mileage, so use a figure from your own recent driving. The Fuel Average Calculator on this site can work it out from your last tank.',
+    ] },
+  ],
+
+  fuelavg: [
+    { h: 'How to measure your fuel average', p: [
+      'Fill the tank fully and note the odometer reading. Drive as usual. At the next fill-up, fill the tank fully again and note the odometer. The litres you added are the fuel used for the kilometres driven in between.',
+      'Fuel average in km per litre = distance travelled ÷ fuel used. The calculator also shows litres per 100 km and the fuel cost per kilometre.',
+    ] },
+    { h: 'Example', p: [
+      'Driving 400 km and adding 32 litres gives 400 ÷ 32 = 12.5 km per litre, which is 8 litres per 100 km. At an example price of Rs 300 per litre (not today’s rate), the cost is Rs 24 per km.',
+    ] },
+    { h: 'Tips for a reliable number', p: [
+      'Use the same pump and fill to the same point each time, and measure over a few hundred kilometres rather than one short trip. A single short trip can give a misleading result.',
+    ] },
+  ],
 };
