@@ -48,7 +48,7 @@ export function TaxSlabTool() {
 export function GoldTool() {
   const [tolaRate, setTolaRate] = useState('413800'); const [qty, setQty] = useState('1'); const [unit, setUnit] = useState('tola'); const [purity, setPurity] = useState('24');
   const rate = parseFloat(tolaRate) || 0; const q = parseFloat(qty) || 0; const purityF = { 24: 1, 22: 0.916, 21: 0.875, 18: 0.75 }[purity];
-  const tolas = unit === 'tola' ? q : unit === 'gram' ? q / 11.664 : q / 10 * (10 / 11.664);
+  const tolas = unit === 'tola' ? q : unit === 'gram' ? q / 11.664 : q * 10 / 11.664;
   const value = tolas * rate * purityF;
   return (<Wrap note="Default rate is 4 Nov 2026, 24K Rs 413,800 per tola (Sarafa Association). Gold rates change daily and jewellers add making charges - edit the rate to today's sarafa rate for an exact value. This tool does NOT fetch live gold prices automatically.">
     <TextField fullWidth label="Gold rate - 24K, Rs per tola (editable)" type="number" value={tolaRate} onChange={(e) => setTolaRate(e.target.value)} sx={{ mb: 2 }} />
