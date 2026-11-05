@@ -10,6 +10,8 @@ import { FuelTool, HeicTool, AvifTool, WebpTool } from './tools/utility.jsx';
 import { RentVsBuyTool, TaxSlabTool, GoldTool, PrizeBondTool, JpgToPdfTool, FuelAverageTool, CurrencyTool } from './tools/newtools.jsx';
 import { LoanEmiTool, MortgageTool, QrTool, BmiTool, AgeTool, PercentageTool, WordCounterTool, PasswordTool, CgpaTool, PngToJpgTool, PdfToJpgTool } from './tools/globaltools.jsx';
 import { SalaryCalcTool, SipTool, DateCalcTool, AreaCalcTool, HomeLoanTool, UnitConverterTool, FontTool, LoveTool, AttendanceTool, CarLoanTool } from './tools/countrytools.jsx';
+import { HtmlToVideoTool } from './tools/htmltovideo.jsx';
+import { WhatsMyIpTool } from './tools/iptool.jsx';
 import { SEO_BY_ID, BASE_URL, HOME_TITLE, HOME_DESC, seoTitle, toolUrl, pageUrl } from './seo-data.js';
 
 function MarlaTool() {
@@ -70,6 +72,8 @@ const TOOLS = [
   { id: 'love', title: 'Love Calculator (For Fun Only)', cat: 'Fun - global', el: <LoveTool /> },
   { id: 'attendance', title: 'Attendance Calculator (Students)', cat: 'Study - global', el: <AttendanceTool /> },
   { id: 'carloan', title: 'Car Loan Calculator (EMI + Total Interest)', cat: 'Finance - global', el: <CarLoanTool /> },
+  { id: 'htmltovideo', title: 'HTML to Video Converter Online (Code to Video)', cat: 'Files & converters', el: <HtmlToVideoTool /> },
+  { id: 'whatsmyip', title: 'What Is My IP Address? (IP, Location & ISP)', cat: 'Everyday tools', el: <WhatsMyIpTool /> },
 ];
 // Attach SEO data (slug, description, FAQs) from the single source in seo-data.js.
 // No tool component, formula or rate is changed here.
@@ -85,8 +89,8 @@ const CATEGORIES = [
   { name: 'Home & Property', ids: ['marla', 'kanal', 'plotsize', 'rentvsbuy', 'areacalc'] },
   { name: 'Money & Tax', ids: ['salarytax', 'bps', 'pta', 'freelancer', 'taxslab', 'zakat', 'loanemi', 'mortgage', 'homeloan', 'carloan', 'sip', 'salarycalc'] },
   { name: 'Prices & Fuel', ids: ['gold', 'prizebond', 'currency', 'fuel', 'fuelavg'] },
-  { name: 'Files & converters', ids: ['jpgtopdf', 'pdftojpg', 'pngtojpg', 'heic', 'avif', 'webp', 'qr', 'unitconv'] },
-  { name: 'Everyday tools', ids: ['age', 'bmi', 'percentage', 'wordcounter', 'datecalc', 'password', 'cgpa', 'attendance'] },
+  { name: 'Files & converters', ids: ['jpgtopdf', 'pdftojpg', 'pngtojpg', 'heic', 'avif', 'webp', 'qr', 'unitconv', 'htmltovideo'] },
+  { name: 'Everyday tools', ids: ['age', 'bmi', 'percentage', 'wordcounter', 'datecalc', 'password', 'cgpa', 'attendance', 'whatsmyip'] },
   { name: 'Fun & Entertainment', ids: ['love', 'fontconv'] },
 ].map((c) => ({ name: c.name, tools: c.ids.map((id) => BY_ID[id]).filter(Boolean) }));
 const ID_TO_CAT = {};
@@ -150,10 +154,10 @@ export default function App() {
   useEffect(() => {
     if (route.kind === 'home') { document.title = HOME_TITLE; setMetaTag('description', HOME_DESC); setCanonical(BASE_URL + '/'); setFaqJsonLd(null); }
     else if (route.kind === 'tool' && cur) { document.title = seoTitle(cur.title); setMetaTag('description', cur.desc); setCanonical(toolUrl(cur.slug)); setFaqJsonLd(cur.faqs); }
-    else if (route.kind === 'about') { document.title = 'About | Kalkio'; setMetaTag('description', 'About Kalkio: 40 free calculators and converters that run in your browser. No sign-up, no accounts.'); setCanonical(pageUrl('/about/')); setFaqJsonLd(null); }
+    else if (route.kind === 'about') { document.title = 'About | Kalkio'; setMetaTag('description', 'About Kalkio: 42 free calculators and converters that run in your browser. No sign-up, no accounts.'); setCanonical(pageUrl('/about/')); setFaqJsonLd(null); }
     else if (route.kind === 'contact') { document.title = 'Contact | Kalkio'; setMetaTag('description', 'Contact Kalkio by email. Tools run in your browser and no sign-up is needed.'); setCanonical(pageUrl('/contact/')); setFaqJsonLd(null); }
     else if (route.kind === 'privacy') { document.title = 'Privacy Policy | Kalkio'; setMetaTag('description', 'Kalkio privacy: tools run in your browser, file converters do not upload your files to a server, and no account is needed.'); setCanonical(pageUrl('/privacy/')); setFaqJsonLd(null); }
-    else { document.title = 'Tool not found | Kalkio'; setMetaTag('description', 'That tool does not exist on Kalkio. Browse all 40 free tools on the home page.'); setCanonical(BASE_URL + '/'); setFaqJsonLd(null); }
+    else { document.title = 'Tool not found | Kalkio'; setMetaTag('description', 'That tool does not exist on Kalkio. Browse all 42 free tools on the home page.'); setCanonical(BASE_URL + '/'); setFaqJsonLd(null); }
   }, [route, cur]);
 
   // Keep the sidebar on the open tool's category, so the user always sees where they are.
@@ -238,7 +242,7 @@ export default function App() {
           </>)}
         </>)}
         {route.kind === 'about' && staticPage('About Kalkio', (<>
-          <Typography variant="body1" paragraph>Kalkio is a collection of 40 free calculators and converters, covering property, tax and salary, prices, finance, files and everyday calculations.</Typography>
+          <Typography variant="body1" paragraph>Kalkio is a collection of 42 free calculators and converters, covering property, tax and salary, prices, finance, files and everyday calculations.</Typography>
           <Typography variant="body1" paragraph>Every tool runs in the visitor’s browser - there is no backend, no database, no login and no sign-up. File converters also run fully in the browser.</Typography>
           <Typography variant="body1" paragraph>Tax, bill and fuel results are estimates - confirm official rates before a financial decision.</Typography>
         </>))}
