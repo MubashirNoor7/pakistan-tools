@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AppBar, Toolbar, Typography, Container, Card, CardContent, Box, TextField, InputAdornment, ToggleButton, ToggleButtonGroup, Chip, Stack, Button, List, ListItem, ListItemText, ListItemButton, Divider, Accordion, AccordionSummary, AccordionDetails, Table, TableBody, TableRow, TableCell, CssBaseline, Link, Grid } from '@mui/material';
+import { AppBar, Toolbar, Typography, Container, Card, CardContent, Box, TextField, InputAdornment, ToggleButton, ToggleButtonGroup, Chip, Stack, Button, List, ListItem, ListItemText, ListItemButton, Divider, Accordion, AccordionSummary, AccordionDetails, Table, TableBody, TableRow, TableCell, CssBaseline, Link } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
@@ -169,8 +169,11 @@ export default function App() {
   }, [cur]);
 
   // Three-pane layout (desktop): left = tools of the selected category, center =
-  // the selected tool (or home), right = all category names + logo. On phones the
-  // panes stack: categories first, then tools, then the tool.
+  // the selected tool (or home), right = all category names + logo. Plain CSS grid
+  // on purpose: MUI's legacy Grid ignores the `size` prop, so the three panes
+  // sized by content and the center wrapped below the sidebar (tool opened below
+  // the fold). On phones the panes stack with the tool first, then categories,
+  // then the tools list. Sidebars stick while the center scrolls.
   const listTools = query ? searchResults : openCat === '__popular' ? POPULAR : (CATEGORIES.find((c) => c.name === openCat) || CATEGORIES[0]).tools;
   const listTitle = query ? `Results for "${q.trim()}"` : openCat === '__popular' ? 'Most popular' : openCat;
   const sidebarTools = (<Card elevation={1} sx={{ borderRadius: 3 }}>
@@ -216,10 +219,10 @@ export default function App() {
     <CssBaseline />
     <AppBar position="static" color="primary" elevation={0}><Toolbar><Box sx={{ bgcolor: 'rgba(255,255,255,0.2)', borderRadius: 2, p: 0.5, mr: 1.5, display: 'flex' }}><CalculateIcon /></Box><Typography variant="h6" fontWeight={700} component="a" href="/" onClick={(e) => go(e, '/')} sx={{ color: 'inherit', textDecoration: 'none' }}>Kalkio</Typography></Toolbar></AppBar>
     <Box sx={{ bgcolor: '#f5f7fa', minHeight: '100vh', py: 4 }}>
-      <Container maxWidth="lg">
-      <Grid container spacing={2}>
-        <Grid size={{ xs: 12, md: 3 }} sx={{ order: { xs: 2, md: 1 } }}>{sidebarTools}</Grid>
-        <Grid size={{ xs: 12, md: 6 }} sx={{ order: { xs: 3, md: 2 } }}>
+      <Container maxWidth="xl">
+      <Box sx={{ display: 'grid', gap: 3, alignItems: 'start', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: '300px minmax(0, 1fr) 280px' } }}>
+        <Box sx={{ order: { xs: 3, md: 1 }, minWidth: 0, position: { md: 'sticky' }, top: { md: 24 } }}>{sidebarTools}</Box>
+        <Box sx={{ order: { xs: 1, md: 2 }, minWidth: 0 }}>
         {route.kind === 'home' && (<>
           <Typography variant="h4" fontWeight={800} gutterBottom>What do you want to calculate?</Typography>
           <Typography variant="body1" color="text.secondary" gutterBottom>{TOOLS.length} tools, one style. No sign-up. Pick a category on the right, or a tool on the left.</Typography>
@@ -258,9 +261,9 @@ export default function App() {
           <Typography variant="body1" paragraph>Questions about this policy: <Link href="mailto:sammykhanmalng@gmail.com">sammykhanmalng@gmail.com</Link>.</Typography>
         </>))}
         {footer}
-        </Grid>
-        <Grid size={{ xs: 12, md: 3 }} sx={{ order: { xs: 1, md: 3 } }}>{sidebarCats}</Grid>
-      </Grid>
+        </Box>
+        <Box sx={{ order: { xs: 2, md: 3 }, minWidth: 0, position: { md: 'sticky' }, top: { md: 24 } }}>{sidebarCats}</Box>
+      </Box>
     </Container>
     </Box>
   </>);
