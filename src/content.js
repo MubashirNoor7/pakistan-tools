@@ -3,6 +3,7 @@
 // or are computed from it. No invented rates. No em/en dashes. Worked examples are computed
 // from the same slabs/bands the tool uses (checked 5 Nov 2026).
 // Shape: { h: heading, p: [paragraphs], table?: { head: [...], rows: [[...]] } }
+import { CONTENT_MORE } from './content-more.js';
 export const CONTENT_BY_ID = {
   salarytax: [
     { h: 'How salary tax is worked out for 2026-27', p: [
@@ -193,3 +194,4 @@ export const CONTENT_BY_ID = {
     ] },
   ],
 };
+Object.assign(CONTENT_BY_ID, CONTENT_MORE);
