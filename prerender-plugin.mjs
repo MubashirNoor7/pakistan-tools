@@ -51,14 +51,14 @@ export async function prerender(root, dist) {
     n++;
   }
   const statics = [
-    ['about', 'About | Kalkio', 'About Kalkio', 'About Kalkio: 42 free calculators and converters that run in your browser. No sign-up, no accounts.'],
+    ['about', 'About | Kalkio', 'About Kalkio', 'About Kalkio: 39 free calculators and converters that run in your browser. No sign-up, no accounts.'],
     ['contact', 'Contact | Kalkio', 'Contact Kalkio', 'Contact Kalkio by email. Tools run in your browser and no sign-up is needed.'],
     ['privacy', 'Privacy Policy | Kalkio', 'Privacy Policy', 'Kalkio privacy: tools run in your browser, file converters do not upload your files to a server, and no account is needed.'],
   ];
   for (const [p, title, h1, desc] of statics) { write(p, page(tpl, { title, desc, url: pageUrl(`/${p}/`), h1, body: `<p>${esc(desc)}</p><p><a href="/">All Kalkio tools</a></p>` })); n++; }
-  // Home page: intro + FAQ + all 42 tool links in the raw HTML, so crawlers see it
+  // Home page: intro + FAQ + all 39 tool links in the raw HTML, so crawlers see it
   // without JavaScript (same words as the live home page in src/App.jsx).
-  const homeFaqs = [['Are the tools free?', 'Yes. All 42 tools are free and no sign-up is needed.'], ['Does my data leave my device?', 'No. Every tool runs in your browser and does not ask you to create an account.'], ['Are tax results official?', 'No. Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.']];
+  const homeFaqs = [['Are the tools free?', 'Yes. All 39 tools are free and no sign-up is needed.'], ['Does my data leave my device?', 'No. Every tool runs in your browser and does not ask you to create an account.'], ['Are tax results official?', 'No. Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.']];
   const homeBody = `<p>${esc(HOME_DESC)}</p><p>Free Pakistan calculators (Marla, salary tax, PTA tax, BPS, Zakat, gold and fuel) plus file converters, QR codes, BMI and more. Everything runs in your browser.</p><h2>Common questions</h2>` + homeFaqs.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('') + allLinks;
   write('', page(tpl, { title: HOME_TITLE, desc: HOME_DESC, url: pageUrl('/'), h1: 'What do you want to calculate?', body: homeBody, jsonld: null }));
   n++;
