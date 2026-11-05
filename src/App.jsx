@@ -75,6 +75,23 @@ const TOOLS = [
 // No tool component, formula or rate is changed here.
 TOOLS.forEach((t) => { const s = SEO_BY_ID[t.id]; if (s) { t.slug = s.slug; t.desc = s.desc; t.faqs = s.faqs; } });
 
+// Home-page grouping: every tool sits in exactly one category; Most Popular is a
+// shortcut list (Trends evidence: JPG to PDF, loan, age, BMI, mortgage strongest
+// worldwide; Marla/PTA/currency strongest in Pakistan). No tool, rate or formula
+// is changed here — only how the home page lists them.
+const BY_ID = Object.fromEntries(TOOLS.map((t) => [t.id, t]));
+const CATEGORIES = [
+  { name: 'Pakistan tools', ids: ['marla', 'kanal', 'plotsize', 'rentvsbuy', 'salarytax', 'bps', 'pta', 'freelancer', 'taxslab', 'zakat', 'gold', 'prizebond', 'fuel', 'fuelavg', 'currency'] },
+  { name: 'Money & loans', ids: ['loanemi', 'mortgage', 'homeloan', 'carloan', 'sip', 'salarycalc'] },
+  { name: 'Files & converters', ids: ['jpgtopdf', 'pdftojpg', 'pngtojpg', 'heic', 'avif', 'webp', 'qr', 'unitconv'] },
+  { name: 'Everyday tools', ids: ['age', 'bmi', 'percentage', 'wordcounter', 'datecalc', 'areacalc', 'password', 'fontconv', 'cgpa', 'attendance', 'love'] },
+].map((c) => ({ name: c.name, tools: c.ids.map((id) => BY_ID[id]).filter(Boolean) }));
+const POPULAR = ['jpgtopdf', 'loanemi', 'age', 'bmi', 'mortgage', 'marla', 'pta', 'currency'].map((id) => BY_ID[id]).filter(Boolean);
+
+function toolListItems(tools, go) {
+  return tools.map((t, i) => (<React.Fragment key={t.id}>{i > 0 && <Divider />}<ListItemButton component="a" href={`/tools/${t.slug}/`} onClick={(e) => go(e, `/tools/${t.slug}/`)}><ListItemText primary={t.title} secondary={t.cat} /></ListItemButton></React.Fragment>));
+}
+
 // Tiny pathname router — no new dependency. Trailing slashes are ignored.
 function parseRoute(pathname) {
   const p = (pathname.replace(/\/+$/, '') || '/');
@@ -109,8 +126,12 @@ function setFaqJsonLd(faqs) {
 
 export default function App() {
   const [route, setRoute] = useState(() => parseRoute(window.location.pathname));
+  const [q, setQ] = useState('');
+  const [openCat, setOpenCat] = useState(null);
   const navigate = (path) => { if (window.location.pathname !== path) { window.history.pushState(null, '', path); setRoute(parseRoute(path)); } window.scrollTo(0, 0); };
   const go = (e, path) => { e.preventDefault(); navigate(path); };
+  const query = q.trim().toLowerCase();
+  const searchResults = query ? TOOLS.filter((t) => (t.title + ' ' + t.cat).toLowerCase().includes(query)) : [];
 
   useEffect(() => {
     const onPop = () => setRoute(parseRoute(window.location.pathname));
@@ -159,7 +180,22 @@ export default function App() {
         {route.kind === 'home' && (<>
           <Typography variant="h4" fontWeight={800} gutterBottom>What do you want to calculate?</Typography>
           <Typography variant="body1" color="text.secondary" gutterBottom>{TOOLS.length} tools, one style. No sign-up.</Typography>
-          <Card elevation={1} sx={{ borderRadius: 3, mt: 2 }}><List>{TOOLS.map((t, i) => (<React.Fragment key={t.id}>{i > 0 && <Divider />}<ListItemButton component="a" href={`/tools/${t.slug}/`} onClick={(e) => go(e, `/tools/${t.slug}/`)}><ListItemText primary={t.title} secondary={t.cat} /></ListItemButton></React.Fragment>))}</List></Card>
+          <TextField fullWidth placeholder="Search a tool… e.g. JPG to PDF" value={q} onChange={(e) => setQ(e.target.value)} sx={{ mt: 1, mb: 2, bgcolor: 'white', borderRadius: 2 }} />
+          {query ? (<>
+            <Typography variant="h6" fontWeight={700} gutterBottom>Results for “{q.trim()}”</Typography>
+            {searchResults.length === 0
+              ? (<Typography variant="body1" color="text.secondary">No tool found — try another word, e.g. PDF, loan or Marla.</Typography>)
+              : (<Card elevation={1} sx={{ borderRadius: 3 }}><List>{toolListItems(searchResults, go)}</List></Card>)}
+          </>) : (<>
+            <Typography variant="h6" fontWeight={700} gutterBottom>Most popular</Typography>
+            <Card elevation={1} sx={{ borderRadius: 3 }}><List>{toolListItems(POPULAR, go)}</List></Card>
+            {CATEGORIES.map((c) => (
+              <Accordion key={c.name} expanded={openCat === c.name} onChange={() => setOpenCat(openCat === c.name ? null : c.name)} sx={{ mt: 2, borderRadius: 3 }}>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>{c.name} ({c.tools.length})</Typography></AccordionSummary>
+                <AccordionDetails sx={{ p: 0 }}><List disablePadding>{toolListItems(c.tools, go)}</List></AccordionDetails>
+              </Accordion>
+            ))}
+          </>)}
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3, textAlign: 'center' }}>Tax, bill and fuel results are estimates — confirm official rates before a financial decision.</Typography>
         </>)}
         {route.kind === 'tool' && !cur && notFound}
