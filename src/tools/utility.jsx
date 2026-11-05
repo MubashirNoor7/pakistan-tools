@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { RATES, fuelAgeDays } from '../rates.js';
 import { Card, CardContent, Typography, TextField, Box, MenuItem, ToggleButton, ToggleButtonGroup, Alert, Button, Link } from '@mui/material';
-import { fmt, Hero, Rows } from './property.jsx';
+import { fmt, Hero, Rows } from './shared.jsx';
 
 function Wrap({ children, note }) {
   return (<><Card elevation={2} sx={{ borderRadius: 3 }}><CardContent sx={{ p: 3 }}>{children}</CardContent></Card>{note && <Alert severity="info" sx={{ mt: 2 }}>{note}</Alert>}</>);

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardContent, Typography, TextField, Box, List, ListItem, ListItemText, Divider, MenuItem, ToggleButton, ToggleButtonGroup, Alert, FormControlLabel, Checkbox, Button } from '@mui/material';
-import { fmt, Hero, Rows } from './property.jsx';
+import { fmt, Hero, Rows } from './shared.jsx';
 
 // FBR salaried slabs 2026-27 (Finance Act 2026), verified from multiple published tables:
 // 0 to 600k, 1% to 1.2M, 11% to 2.2M (6,000+), 20% to 3.2M (116,000+), 25% to 4.1M (316,000+),

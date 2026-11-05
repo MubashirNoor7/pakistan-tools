@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, Typography, TextField, Box, MenuItem, ToggleButton, ToggleButtonGroup, Alert, Button } from '@mui/material';
-import { fmt, Hero, Rows } from './property.jsx';
+import { fmt, Hero, Rows } from './shared.jsx';
 import { salaryTax } from './tax.jsx';
 
 function Wrap({ children, note }) {
