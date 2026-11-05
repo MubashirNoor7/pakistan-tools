@@ -54,18 +54,11 @@ function FileTool({ from, to, mime, ext }) {
   const [url, setUrl] = useState(''); const [name, setName] = useState(''); const [err, setErr] = useState(''); const [busy, setBusy] = useState(false);
   const onFile = async (f) => {
     if (!f) return; setErr(''); setUrl(''); setName(f.name.replace(/\.[^.]+$/, '') + '.' + ext); setBusy(true);
-    if (from === 'HEIC') {
-      try {
-        const heic2any = (await import('heic2any')).default;
-        const out = await heic2any({ blob: f, toType: 'image/jpeg', quality: 0.92 });
-        const blob = Array.isArray(out) ? out[0] : out; setUrl(URL.createObjectURL(blob)); setBusy(false); return;
-      } catch (e) { /* fall through to native decode below (Safari) */ }
-    }
     const img = new Image(); const src = URL.createObjectURL(f); img.onload = () => {
       const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; const ctx = c.getContext('2d');
       if (mime === 'image/jpeg') { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height); }
       ctx.drawImage(img, 0, 0); c.toBlob((b) => { if (b) setUrl(URL.createObjectURL(b)); else setErr('Conversion failed in this browser.'); setBusy(false); }, mime, 0.92);
-    }; img.onerror = () => { setErr(from === 'HEIC' ? 'This HEIC file could not be decoded in this browser. Try exporting it as JPG from Photos, or try again in Chrome / Safari.' : 'This file could not be decoded in this browser.'); setBusy(false); }; img.src = src;
+    }; img.onerror = () => { setErr('This file could not be decoded in this browser.'); setBusy(false); }; img.src = src;
   };
   return (<Wrap note="Private by design - your file never leaves your device. Conversion runs in your browser only, nothing is uploaded to a server.">
     <Button variant="contained" component="label" fullWidth sx={{ mb: 2 }}>{busy ? 'Converting…' : `Choose ${from} file`}<input type="file" hidden accept="image/*" onChange={(e) => onFile(e.target.files[0])} /></Button>
@@ -74,6 +67,4 @@ function FileTool({ from, to, mime, ext }) {
     {!url && !err && <Typography variant="body2" color="text.secondary">Select a {from} file. The converted file downloads to your device.</Typography>}
   </Wrap>);
 }
-export function HeicTool() { return <FileTool from="HEIC" to="jpg" mime="image/jpeg" ext="jpg" />; }
-export function AvifTool() { return <FileTool from="AVIF" to="png" mime="image/png" ext="png" />; }
 export function WebpTool() { return <FileTool from="WebP" to="jpg" mime="image/jpeg" ext="jpg" />; }
