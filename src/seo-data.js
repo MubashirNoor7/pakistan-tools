@@ -4,7 +4,7 @@
 // official rules are invented here. Tool calculations are untouched.
 export const BASE_URL = 'https://kalkio.vercel.app';
 export const BRAND = 'Kalkio';
-export const HOME_TITLE = 'Kalkio - Free Pakistan Calculators & Converters';
+export const HOME_TITLE = 'Kalkio - Free Calculators & Converters';
 export const HOME_DESC = 'Kalkio: 40 free calculators and converters - Marla, salary tax, PTA tax, SIP, loan EMI, QR codes, BMI, file converters and more. No sign-up, everything runs in your browser.';
 
 // Universal FAQ answers (true for every tool on this site).
