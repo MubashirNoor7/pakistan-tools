@@ -37,14 +37,22 @@ p { font-size: 16px; opacity: 0.9; }
 </html>`;
 
 const MIME_CANDIDATES = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+const MP4_CANDIDATES = ['video/mp4;codecs="avc1.640028"', 'video/mp4;codecs="avc1.42E01E"', 'video/mp4'];
+// Chrome, Edge and Safari can record real MP4 (H.264) straight from the canvas -
+// tested 5 Nov 2026: a 2s MP4 recording came out as a valid file (ftypisom).
+// Firefox cannot, so it falls back to WebM.
+const MP4_SUPPORTED = typeof window !== 'undefined' && !!window.MediaRecorder && MP4_CANDIDATES.some((m) => { try { return MediaRecorder.isTypeSupported(m); } catch { return false; } });
 const VIDEO_BITRATE = 5000000;
+const fmtSize = (b) => b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB';
 
 export function HtmlToVideoTool() {
   const [code, setCode] = useState(SAMPLE);
   const [duration, setDuration] = useState('5');
+  const [format, setFormat] = useState(MP4_SUPPORTED ? 'mp4' : 'webm');
   const [recording, setRecording] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [videoUrl, setVideoUrl] = useState('');
+  const [resultInfo, setResultInfo] = useState('');
   const [error, setError] = useState('');
   const iframeRef = useRef(null);
   const canvasRef = useRef(null);
@@ -54,6 +62,7 @@ export function HtmlToVideoTool() {
   const startRecording = async () => {
     setError('');
     if (videoUrl) { URL.revokeObjectURL(videoUrl); setVideoUrl(''); }
+    setResultInfo('');
     if (!code.trim()) { setError('Paste some HTML code first.'); return; }
     if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) { setError('Recording is not supported in this browser. Try Chrome or Edge.'); return; }
     const iframe = iframeRef.current;
@@ -89,8 +98,10 @@ export function HtmlToVideoTool() {
     ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, cw, ch);
     ctx.drawImage(first, 0, 0, cw, ch);
     const total = parseInt(duration, 10) || 5;
+    const candidates = format === 'mp4' ? MP4_CANDIDATES : MIME_CANDIDATES;
     let mime = '';
-    for (const m of MIME_CANDIDATES) { if (window.MediaRecorder.isTypeSupported(m)) { mime = m; break; } }
+    for (const m of candidates) { if (window.MediaRecorder.isTypeSupported(m)) { mime = m; break; } }
+    if (format === 'mp4' && !mime) { setError('Your browser cannot make MP4. Try WebM instead.'); return; }
     let rec;
     try { rec = new MediaRecorder(canvas.captureStream(10), mime ? { mimeType: mime, videoBitsPerSecond: VIDEO_BITRATE } : { videoBitsPerSecond: VIDEO_BITRATE }); }
     catch { setError('Recording is not supported in this browser. Try Chrome or Edge.'); return; }
@@ -115,9 +126,10 @@ export function HtmlToVideoTool() {
     await done;
     clearInterval(timer);
     setRecording(false);
-    const blob = new Blob(chunks, { type: 'video/webm' });
+    const blob = new Blob(chunks, { type: format === 'mp4' ? 'video/mp4' : 'video/webm' });
     if (blob.size === 0) { setError('Recording failed. The preview may use something this recorder cannot capture.'); return; }
     setVideoUrl(URL.createObjectURL(blob));
+    setResultInfo(cw + ' x ' + ch + ' - about ' + total + ' seconds - ' + fmtSize(blob.size));
     if (snapFailedRef.current) setError('Some frames could not be captured. External images and fonts may not appear in the video.');
   };
 
@@ -131,6 +143,11 @@ export function HtmlToVideoTool() {
     <ToggleButtonGroup value={duration} exclusive fullWidth onChange={(_, nv) => nv && setDuration(nv)} sx={{ mb: 2, flexWrap: 'wrap' }}>
       <ToggleButton value="3">3 seconds</ToggleButton><ToggleButton value="5">5 seconds</ToggleButton><ToggleButton value="10">10 seconds</ToggleButton><ToggleButton value="15">15 seconds</ToggleButton><ToggleButton value="30">30 seconds</ToggleButton><ToggleButton value="60">60 seconds</ToggleButton>
     </ToggleButtonGroup>
+    <Typography variant="body2" color="text.secondary" gutterBottom>Video format</Typography>
+    <ToggleButtonGroup value={format} exclusive fullWidth onChange={(_, nv) => nv && setFormat(nv)} sx={{ mb: 2 }}>
+      <ToggleButton value="mp4" disabled={!MP4_SUPPORTED}>MP4 - plays everywhere</ToggleButton><ToggleButton value="webm">WebM</ToggleButton>
+    </ToggleButtonGroup>
+    {!MP4_SUPPORTED && <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Your browser cannot make MP4, so WebM is used.</Typography>}
     {error && <Alert severity="warning" sx={{ mb: 2 }}>{error}</Alert>}
     {recording
       ? (<><Button fullWidth variant="contained" color="error" sx={{ mb: 2 }} onClick={() => { stopRef.current = true; }}>Stop recording ({secondsLeft}s left)</Button>
@@ -142,7 +159,8 @@ export function HtmlToVideoTool() {
       <Box sx={{ mb: 2, border: '1px solid #e0e0e0', borderRadius: 2, overflow: 'hidden' }}>
         <video src={videoUrl} controls style={{ width: '100%', display: 'block', background: '#000' }} />
       </Box>
-      <Button fullWidth variant="outlined" component="a" href={videoUrl} download="kalkio-html-video.webm">Download video (.webm)</Button>
+      {resultInfo && <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Your video: {resultInfo}</Typography>}
+      <Button fullWidth variant="outlined" component="a" href={videoUrl} download={format === 'mp4' ? 'kalkio-html-video.mp4' : 'kalkio-html-video.webm'}>Download video ({format === 'mp4' ? '.MP4' : '.WEBM'})</Button>
     </>)}
   </Wrap>);
 }
