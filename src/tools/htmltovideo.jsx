@@ -10,6 +10,16 @@ function Wrap({ children, note }) {
 // with html2canvas about 10 times per second, draws each snapshot on a canvas, and
 // records that canvas with MediaRecorder. Output is .webm only - true .mp4 encoding
 // needs a server, so this tool does not claim to make .mp4 files.
+//
+// Quality rules (fixed 5 Nov 2026 - the old version recorded at preview size with
+// the browser's default bitrate, so the video looked soft, and a tall page was
+// squashed into the short preview frame):
+// - Snapshots are taken at 2x the preview size (1.5x on heavy pages, measured from
+//   the first snapshot), so the video stays sharp. The long side is capped at 1920.
+// - A tall fixed stage (for example a vertical 9:16 scene up to 1200px tall) is
+//   captured whole, so it comes out as a vertical video instead of being squashed.
+//   A long scrolling page is captured as the visible window instead.
+// - MediaRecorder runs at 5 Mbps so compression does not soften the picture.
 const SAMPLE = `<!DOCTYPE html>
 <html>
 <head><style>
@@ -27,6 +37,7 @@ p { font-size: 16px; opacity: 0.9; }
 </html>`;
 
 const MIME_CANDIDATES = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+const VIDEO_BITRATE = 5000000;
 
 export function HtmlToVideoTool() {
   const [code, setCode] = useState(SAMPLE);
@@ -53,24 +64,41 @@ export function HtmlToVideoTool() {
     catch { setError('Could not load the recorder. Check your connection and try again.'); return; }
     const w = iframe.clientWidth || 640;
     const h = iframe.clientHeight || 360;
+    const bodyH = doc.body.scrollHeight || h;
+    const fullBody = bodyH > h + 50 && bodyH <= 1200;
+    const shotOpts = { backgroundColor: '#ffffff', logging: false, useCORS: true, scale: 2 };
+    if (!fullBody) { shotOpts.width = w; shotOpts.height = h; }
+    // First snapshot before starting, so the video does not open on a blank frame.
+    // It is also timed: if one snapshot is slow, drop to 1.5x so frames keep coming.
+    let first;
+    try {
+      const t0 = Date.now();
+      first = await html2canvas(doc.body, shotOpts);
+      if (Date.now() - t0 > 400) {
+        shotOpts.scale = 1.5;
+        first = await html2canvas(doc.body, shotOpts);
+      }
+    } catch { snapFailedRef.current = true; }
+    if (!first) { setError('Recording failed. The preview may use something this recorder cannot capture.'); return; }
     const canvas = canvasRef.current;
-    canvas.width = w; canvas.height = h;
+    let cw = first.width, ch = first.height;
+    const longest = Math.max(cw, ch);
+    if (longest > 1920) { const k = 1920 / longest; cw = Math.round(cw * k); ch = Math.round(ch * k); }
+    canvas.width = cw; canvas.height = ch;
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, cw, ch);
+    ctx.drawImage(first, 0, 0, cw, ch);
     const total = parseInt(duration, 10) || 5;
     let mime = '';
     for (const m of MIME_CANDIDATES) { if (window.MediaRecorder.isTypeSupported(m)) { mime = m; break; } }
     let rec;
-    try { rec = new MediaRecorder(canvas.captureStream(10), mime ? { mimeType: mime } : undefined); }
+    try { rec = new MediaRecorder(canvas.captureStream(10), mime ? { mimeType: mime, videoBitsPerSecond: VIDEO_BITRATE } : { videoBitsPerSecond: VIDEO_BITRATE }); }
     catch { setError('Recording is not supported in this browser. Try Chrome or Edge.'); return; }
     const chunks = [];
     rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
     const done = new Promise((resolve) => { rec.onstop = resolve; });
     stopRef.current = false; snapFailedRef.current = false;
     setRecording(true); setSecondsLeft(total);
-    // First frame before starting, so the video does not open on a blank frame.
-    try { const first = await html2canvas(doc.body, { backgroundColor: '#ffffff', logging: false, useCORS: true }); ctx.drawImage(first, 0, 0, w, h); }
-    catch { snapFailedRef.current = true; }
     rec.start(200);
     const start = Date.now();
     let busy = false;
@@ -80,7 +108,7 @@ export function HtmlToVideoTool() {
       if (elapsed >= total || stopRef.current) { clearInterval(timer); if (rec.state !== 'inactive') rec.stop(); return; }
       if (busy) return;
       busy = true;
-      try { const shot = await html2canvas(doc.body, { backgroundColor: '#ffffff', logging: false, useCORS: true }); ctx.drawImage(shot, 0, 0, w, h); }
+      try { const shot = await html2canvas(doc.body, shotOpts); ctx.drawImage(shot, 0, 0, cw, ch); }
       catch { snapFailedRef.current = true; }
       busy = false;
     }, 100);
@@ -93,15 +121,15 @@ export function HtmlToVideoTool() {
     if (snapFailedRef.current) setError('Some frames could not be captured. External images and fonts may not appear in the video.');
   };
 
-  return (<Wrap note="Video downloads as .webm (plays in browsers and phones). True .mp4 needs a server, so this tool does not make .mp4 files. Everything runs in your browser. Nothing is uploaded.">
+  return (<Wrap>
     <TextField fullWidth multiline rows={10} label="Your HTML code (inline CSS allowed)" value={code} onChange={(e) => setCode(e.target.value)} sx={{ mb: 2, '& textarea': { fontFamily: 'monospace', fontSize: 13 } }} />
     <Typography variant="subtitle1" fontWeight={700} gutterBottom>Live preview</Typography>
     <Box sx={{ mb: 2, border: '1px solid #e0e0e0', borderRadius: 2, overflow: 'hidden' }}>
       <iframe ref={iframeRef} title="HTML preview" sandbox="allow-scripts allow-same-origin" srcDoc={code} style={{ width: '100%', height: 360, border: 0, display: 'block', background: '#fff' }} />
     </Box>
     <Typography variant="body2" color="text.secondary" gutterBottom>Video length</Typography>
-    <ToggleButtonGroup value={duration} exclusive fullWidth onChange={(_, nv) => nv && setDuration(nv)} sx={{ mb: 2 }}>
-      <ToggleButton value="3">3 seconds</ToggleButton><ToggleButton value="5">5 seconds</ToggleButton><ToggleButton value="10">10 seconds</ToggleButton>
+    <ToggleButtonGroup value={duration} exclusive fullWidth onChange={(_, nv) => nv && setDuration(nv)} sx={{ mb: 2, flexWrap: 'wrap' }}>
+      <ToggleButton value="3">3 seconds</ToggleButton><ToggleButton value="5">5 seconds</ToggleButton><ToggleButton value="10">10 seconds</ToggleButton><ToggleButton value="15">15 seconds</ToggleButton><ToggleButton value="30">30 seconds</ToggleButton><ToggleButton value="60">60 seconds</ToggleButton>
     </ToggleButtonGroup>
     {error && <Alert severity="warning" sx={{ mb: 2 }}>{error}</Alert>}
     {recording
