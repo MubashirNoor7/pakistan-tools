@@ -220,9 +220,9 @@ export const CONTENT_MORE = {
   ],
   htmltovideo: [
     { h: 'How HTML to video works', p: [
-      'Paste HTML and CSS, preview it live, then record from 3 to 60 seconds. The tool captures the preview at 10 frames per second and at up to twice the preview size, so the video stays sharp, and saves a .webm video you can download. Everything runs in your browser.',
+      'Paste HTML and CSS, preview it live, then record from 3 to 60 seconds. The tool captures the preview at 10 frames per second and at up to twice the preview size, so the video stays sharp. You can download the result as MP4 or WebM. Everything runs in your browser.',
     ] },
-    { h: 'Format and browser support', p: ['The video is .webm, which plays in browsers and on most phones. True .mp4 needs a server, so this tool does not make .mp4 files. Recording needs a browser that supports MediaRecorder, such as Chrome or Edge.'] },
+    { h: 'Format and browser support', p: ['The video downloads as MP4 in Chrome, Edge and Safari, which plays almost everywhere including WhatsApp and TikTok. If your browser cannot make MP4, the tool saves WebM instead. Recording needs a browser that supports MediaRecorder, such as Chrome or Edge.'] },
   ],
   age: [
     { h: 'How age is calculated', p: [
