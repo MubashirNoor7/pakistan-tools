@@ -6,10 +6,23 @@ function Wrap({ children, note }) {
 }
 
 // HTML to Video (Code to Video) - everything runs in the browser, nothing is uploaded.
-// The preview runs in a sandboxed iframe. Recording takes a snapshot of the preview
-// with html2canvas about 10 times per second, draws each snapshot on a canvas, and
-// records that canvas with MediaRecorder. Output is .webm only - true .mp4 encoding
-// needs a server, so this tool does not claim to make .mp4 files.
+// The preview runs in a sandboxed iframe. Recording snapshots the preview with
+// html2canvas, draws each snapshot on a canvas, and turns the frames into a video.
+//
+// Two recording engines:
+// - SMOOTH (default, MP4): offline frame-by-frame. The animation is paused, then
+//   stepped to the exact time of every frame (10, 30 or 60 frames per second) and
+//   each frame is encoded with its exact timestamp (VideoEncoder + mp4-muxer).
+//   The video is truly smooth at 30/60 fps, and it always has the right length,
+//   no matter how slow one snapshot is. Recording takes longer than the video
+//   itself (each snapshot takes a moment), so progress shows "Frame X of Y".
+//   Output is a real MP4 with fast-start (moov at the front), so it plays in
+//   WhatsApp and TikTok. Needs a browser with VideoEncoder (recent Chrome, Edge,
+//   Safari 16.4+, Firefox 130+).
+// - CLASSIC (fallback, MP4 or WebM): the old real-time path - snapshots about
+//   10 times per second while MediaRecorder records the canvas live. Used when
+//   VideoEncoder is missing, or when WebM is chosen. WebM is always real-time
+//   at 10 fps; for smooth 30/60 fps choose MP4.
 //
 // Quality rules (fixed 5 Nov 2026 - the old version recorded at preview size with
 // the browser's default bitrate, so the video looked soft, and a tall page was
@@ -19,7 +32,7 @@ function Wrap({ children, note }) {
 // - A tall fixed stage (for example a vertical 9:16 scene up to 1200px tall) is
 //   captured whole, so it comes out as a vertical video instead of being squashed.
 //   A long scrolling page is captured as the visible window instead.
-// - MediaRecorder runs at 5 Mbps so compression does not soften the picture.
+// - Video bitrate is 5 Mbps so compression does not soften the picture.
 const SAMPLE = `<!DOCTYPE html>
 <html>
 <head><style>
@@ -42,43 +55,97 @@ const MP4_CANDIDATES = ['video/mp4;codecs="avc1.640028"', 'video/mp4;codecs="avc
 // tested 5 Nov 2026: a 2s MP4 recording came out as a valid file (ftypisom).
 // Firefox cannot, so it falls back to WebM.
 const MP4_SUPPORTED = typeof window !== 'undefined' && !!window.MediaRecorder && MP4_CANDIDATES.some((m) => { try { return MediaRecorder.isTypeSupported(m); } catch { return false; } });
+const VIDEO_ENCODER_SUPPORTED = typeof window !== 'undefined' && 'VideoEncoder' in window && 'VideoFrame' in window;
+const CAN_MAKE_MP4 = MP4_SUPPORTED || VIDEO_ENCODER_SUPPORTED;
 const VIDEO_BITRATE = 5000000;
+const MAX_FRAMES = 1800; // offline rendering cap: 60s at 30fps, 30s at 60fps
 const fmtSize = (b) => b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB';
+const tick = () => new Promise((r) => setTimeout(r, 0));
+
+function getAnims(doc) {
+  try { return doc.getAnimations ? doc.getAnimations() : []; } catch { return []; }
+}
+// Length of one full run of the animation in the preview, in seconds.
+// A looping animation counts as one loop. Returns 0 when there is no animation.
+function fullAnimSeconds(doc) {
+  let max = 0;
+  for (const a of getAnims(doc)) {
+    try {
+      const t = a.effect ? a.effect.getComputedTiming() : null;
+      if (!t) continue;
+      const dur = (t.duration === 'auto' || t.duration == null) ? 0 : +t.duration;
+      const iter = t.iterations === Infinity ? 1 : (+t.iterations || 1);
+      const delay = +t.delay || 0;
+      if (dur > 0) max = Math.max(max, (delay + dur * iter) / 1000);
+    } catch { /* ignore one bad animation */ }
+  }
+  return max;
+}
 
 export function HtmlToVideoTool() {
   const [code, setCode] = useState(SAMPLE);
   const [duration, setDuration] = useState('5');
-  const [format, setFormat] = useState(MP4_SUPPORTED ? 'mp4' : 'webm');
+  const [customSeconds, setCustomSeconds] = useState('10');
+  const [fps, setFps] = useState('30');
+  const [startFrom, setStartFrom] = useState('start');
+  const [format, setFormat] = useState(CAN_MAKE_MP4 ? 'mp4' : 'webm');
   const [recording, setRecording] = useState(false);
+  const [progress, setProgress] = useState('');
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [videoUrl, setVideoUrl] = useState('');
   const [resultInfo, setResultInfo] = useState('');
   const [error, setError] = useState('');
+  const [paused, setPaused] = useState(false);
   const iframeRef = useRef(null);
   const canvasRef = useRef(null);
   const stopRef = useRef(false);
   const snapFailedRef = useRef(false);
 
-  const startRecording = async () => {
-    setError('');
-    if (videoUrl) { URL.revokeObjectURL(videoUrl); setVideoUrl(''); }
-    setResultInfo('');
-    if (!code.trim()) { setError('Paste some HTML code first.'); return; }
-    if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) { setError('Recording is not supported in this browser. Try Chrome or Edge.'); return; }
+  const previewDoc = () => {
     const iframe = iframeRef.current;
-    const doc = iframe && iframe.contentDocument;
-    if (!doc || !doc.body) { setError('Preview is not ready yet. Wait a second and try again.'); return; }
-    let html2canvas;
-    try { ({ default: html2canvas } = await import('html2canvas')); }
-    catch { setError('Could not load the recorder. Check your connection and try again.'); return; }
-    const w = iframe.clientWidth || 640;
-    const h = iframe.clientHeight || 360;
-    const bodyH = doc.body.scrollHeight || h;
+    return iframe ? iframe.contentDocument : null;
+  };
+
+  const pausePreview = () => {
+    const doc = previewDoc();
+    if (!doc) return;
+    getAnims(doc).forEach((a) => { try { a.pause(); } catch { /* ignore */ } });
+    setPaused(true);
+  };
+  const playPreview = () => {
+    const doc = previewDoc();
+    if (!doc) return;
+    getAnims(doc).forEach((a) => { try { a.play(); } catch { /* ignore */ } });
+    setPaused(false);
+  };
+  const restartPreview = () => {
+    const iframe = iframeRef.current;
+    if (iframe) iframe.srcdoc = code;
+    setPaused(false);
+  };
+
+  const resolveDuration = (doc) => {
+    if (duration === 'full') {
+      const f = fullAnimSeconds(doc);
+      return f > 0 ? Math.min(120, Math.max(1, Math.ceil(f))) : 5;
+    }
+    if (duration === 'custom') {
+      const n = parseInt(customSeconds, 10);
+      return Math.min(120, Math.max(1, Number.isNaN(n) ? 5 : n));
+    }
+    return parseInt(duration, 10) || 5;
+  };
+
+  // Shared first step for both engines: load html2canvas, take a timed first
+  // snapshot, size the hidden canvas. Returns null on failure.
+  const prepareCanvas = async (doc, html2canvas) => {
+    const iframe = iframeRef.current;
+    const w = (iframe && iframe.clientWidth) || 640;
+    const h = (iframe && iframe.clientHeight) || 360;
+    const bodyH = (doc.body && doc.body.scrollHeight) || h;
     const fullBody = bodyH > h + 50 && bodyH <= 1200;
     const shotOpts = { backgroundColor: '#ffffff', logging: false, useCORS: true, scale: 2 };
     if (!fullBody) { shotOpts.width = w; shotOpts.height = h; }
-    // First snapshot before starting, so the video does not open on a blank frame.
-    // It is also timed: if one snapshot is slow, drop to 1.5x so frames keep coming.
     let first;
     try {
       const t0 = Date.now();
@@ -88,7 +155,7 @@ export function HtmlToVideoTool() {
         first = await html2canvas(doc.body, shotOpts);
       }
     } catch { snapFailedRef.current = true; }
-    if (!first) { setError('Recording failed. The preview may use something this recorder cannot capture.'); return; }
+    if (!first) return null;
     const canvas = canvasRef.current;
     let cw = first.width, ch = first.height;
     const longest = Math.max(cw, ch);
@@ -97,18 +164,85 @@ export function HtmlToVideoTool() {
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, cw, ch);
     ctx.drawImage(first, 0, 0, cw, ch);
-    const total = parseInt(duration, 10) || 5;
+    return { canvas, ctx, cw, ch, shotOpts };
+  };
+
+  // SMOOTH engine: offline frame-by-frame MP4 at the chosen fps.
+  // Returns the video Blob, or throws so the caller can fall back to classic.
+  const recordSmooth = async (doc, html2canvas, total, fpsNum, offsets) => {
+    const prep = await prepareCanvas(doc, html2canvas);
+    if (!prep) throw new Error('snapshot failed');
+    const { canvas, ctx, cw, ch, shotOpts } = prep;
+    const { Muxer, ArrayBufferTarget } = await import('mp4-muxer');
+    let totalFrames = Math.round(total * fpsNum);
+    let capped = false;
+    if (totalFrames > MAX_FRAMES) { totalFrames = MAX_FRAMES; capped = true; }
+    const actualSeconds = totalFrames / fpsNum;
+    const muxer = new Muxer({
+      target: new ArrayBufferTarget(),
+      video: { codec: 'avc', width: cw, height: ch },
+      fastStart: 'in-memory',
+      firstTimestampBehavior: 'offset',
+    });
+    let encError = null;
+    const encoder = new VideoEncoder({
+      output: (chunk, meta) => { try { muxer.addVideoChunk(chunk, meta); } catch (e) { encError = e; } },
+      error: (e) => { encError = e; },
+    });
+    let codec = 'avc1.640028';
+    try { encoder.configure({ codec, width: cw, height: ch, bitrate: VIDEO_BITRATE, framerate: fpsNum }); }
+    catch {
+      codec = 'avc1.42E01E';
+      encoder.configure({ codec, width: cw, height: ch, bitrate: VIDEO_BITRATE, framerate: fpsNum });
+    }
+    const anims = getAnims(doc);
+    const frameDurUs = 1000000 / fpsNum;
+    const t0 = Date.now();
+    let framesDone = 0;
+    for (let i = 0; i < totalFrames; i++) {
+      if (stopRef.current || encError) break;
+      anims.forEach((a, j) => { try { a.currentTime = offsets[j] + (i / fpsNum) * 1000; } catch { /* ignore */ } });
+      await tick();
+      try {
+        const shot = await html2canvas(doc.body, shotOpts);
+        ctx.drawImage(shot, 0, 0, cw, ch);
+      } catch { snapFailedRef.current = true; }
+      const frame = new VideoFrame(canvas, { timestamp: Math.round(i * frameDurUs) });
+      encoder.encode(frame, { keyFrame: i % fpsNum === 0 });
+      frame.close();
+      framesDone = i + 1;
+      const avgMs = (Date.now() - t0) / framesDone;
+      const leftMs = avgMs * (totalFrames - framesDone);
+      setProgress('Frame ' + framesDone + ' of ' + totalFrames + (leftMs > 5000 ? ' - about ' + Math.max(1, Math.round(leftMs / 1000)) + 's left' : ''));
+    }
+    await encoder.flush();
+    if (encError) throw encError;
+    muxer.finalize();
+    const { buffer } = muxer.target;
+    if (!buffer || buffer.byteLength === 0) throw new Error('empty video');
+    return {
+      blob: new Blob([buffer], { type: 'video/mp4' }),
+      info: cw + ' x ' + ch + ' - ' + actualSeconds.toFixed(actualSeconds % 1 ? 1 : 0) + ' seconds - ' + fpsNum + ' fps - ' + fmtSize(buffer.byteLength) + (capped ? ' - capped at ' + MAX_FRAMES + ' frames' : ''),
+    };
+  };
+
+  // CLASSIC engine: real-time MediaRecorder, about 10 fps. Used when the
+  // smooth engine is not available, or for WebM.
+  const recordClassic = async (doc, html2canvas, total) => {
+    const prep = await prepareCanvas(doc, html2canvas);
+    if (!prep) throw new Error('snapshot failed');
+    const { canvas, ctx, cw, ch, shotOpts } = prep;
     const candidates = format === 'mp4' ? MP4_CANDIDATES : MIME_CANDIDATES;
     let mime = '';
     for (const m of candidates) { if (window.MediaRecorder.isTypeSupported(m)) { mime = m; break; } }
-    if (format === 'mp4' && !mime) { setError('Your browser cannot make MP4. Try WebM instead.'); return; }
+    if (format === 'mp4' && !mime) throw new Error('Your browser cannot make MP4. Try WebM instead.');
     let rec;
     try { rec = new MediaRecorder(canvas.captureStream(10), mime ? { mimeType: mime, videoBitsPerSecond: VIDEO_BITRATE } : { videoBitsPerSecond: VIDEO_BITRATE }); }
-    catch { setError('Recording is not supported in this browser. Try Chrome or Edge.'); return; }
+    catch { throw new Error('Recording is not supported in this browser. Try Chrome or Edge.'); }
     const chunks = [];
     rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
     const done = new Promise((resolve) => { rec.onstop = resolve; });
-    stopRef.current = false; snapFailedRef.current = false;
+    stopRef.current = false;
     setRecording(true); setSecondsLeft(total);
     rec.start(200);
     const start = Date.now();
@@ -127,31 +261,135 @@ export function HtmlToVideoTool() {
     clearInterval(timer);
     setRecording(false);
     const blob = new Blob(chunks, { type: format === 'mp4' ? 'video/mp4' : 'video/webm' });
-    if (blob.size === 0) { setError('Recording failed. The preview may use something this recorder cannot capture.'); return; }
-    setVideoUrl(URL.createObjectURL(blob));
-    setResultInfo(cw + ' x ' + ch + ' - about ' + total + ' seconds - ' + fmtSize(blob.size));
-    if (snapFailedRef.current) setError('Some frames could not be captured. External images and fonts may not appear in the video.');
+    if (blob.size === 0) throw new Error('Recording failed. The preview may use something this recorder cannot capture.');
+    return {
+      blob,
+      info: cw + ' x ' + ch + ' - about ' + total + ' seconds - 10 fps - ' + fmtSize(blob.size),
+    };
   };
+
+  const startRecording = async () => {
+    setError('');
+    if (videoUrl) { URL.revokeObjectURL(videoUrl); setVideoUrl(''); }
+    setResultInfo('');
+    setProgress('');
+    if (!code.trim()) { setError('Paste some HTML code first.'); return; }
+    if (!window.MediaRecorder && !VIDEO_ENCODER_SUPPORTED) { setError('Recording is not supported in this browser. Try Chrome or Edge.'); return; }
+    const doc = previewDoc();
+    if (!doc || !doc.body) { setError('Preview is not ready yet. Wait a second and try again.'); return; }
+    let html2canvas;
+    try { ({ default: html2canvas } = await import('html2canvas')); }
+    catch { setError('Could not load the recorder. Check your connection and try again.'); return; }
+    const total = resolveDuration(doc);
+    const fpsNum = parseInt(fps, 10) || 30;
+    const anims = getAnims(doc);
+    // Save the animation state so the preview goes back to how it was.
+    const saved = anims.map((a) => ({ a, t: a.currentTime, state: a.playState }));
+    const offsets = startFrom === 'start' ? anims.map(() => 0) : anims.map((a) => (a.currentTime == null ? 0 : a.currentTime));
+    // Pause the animation so frames are exact; "from start" seeks to 0,
+    // "from where it is" keeps each animation's own current time.
+    if (startFrom === 'start') anims.forEach((a) => { try { a.currentTime = 0; } catch { /* ignore */ } });
+    anims.forEach((a) => { try { a.pause(); } catch { /* ignore */ } });
+    stopRef.current = false; snapFailedRef.current = false;
+    setRecording(true);
+    let result = null;
+    let usedClassic = false;
+    try {
+      if (VIDEO_ENCODER_SUPPORTED && format === 'mp4') {
+        result = await recordSmooth(doc, html2canvas, total, fpsNum, offsets);
+      } else {
+        usedClassic = true;
+        // Classic records in real time: "from start" restarts the animation live.
+        if (startFrom === 'start') {
+          anims.forEach((a) => { try { a.currentTime = 0; a.play(); } catch { /* ignore */ } });
+        } else {
+          anims.forEach((a) => { try { a.play(); } catch { /* ignore */ } });
+        }
+        result = await recordClassic(doc, html2canvas, total);
+      }
+    } catch (e) {
+      // Smooth engine failed (for example an old browser): fall back to classic.
+      if (!usedClassic && window.MediaRecorder) {
+        try {
+          if (startFrom === 'start') {
+            anims.forEach((a) => { try { a.currentTime = 0; a.play(); } catch { /* ignore */ } });
+          } else {
+            anims.forEach((a) => { try { a.play(); } catch { /* ignore */ } });
+          }
+          setProgress('Smooth recording did not work here, recording in real time instead.');
+          result = await recordClassic(doc, html2canvas, total);
+          usedClassic = true;
+        } catch (e2) { setError(e2.message || 'Recording failed.'); }
+      } else {
+        setError(e.message || 'Recording failed.');
+      }
+    } finally {
+      // Put the preview back how it was before recording.
+      saved.forEach(({ a, t, state }) => {
+        try {
+          a.currentTime = t;
+          if (state === 'running') a.play();
+          else if (state === 'paused') a.pause();
+        } catch { /* ignore */ }
+      });
+    }
+    setRecording(false);
+    setProgress('');
+    if (!result) return;
+    setVideoUrl(URL.createObjectURL(result.blob));
+    setResultInfo(result.info);
+    if (snapFailedRef.current) setError('Some frames could not be captured. External images and fonts may not appear in the video.');
+    else if (usedClassic && VIDEO_ENCODER_SUPPORTED && format === 'mp4') setError('Smooth recording did not work here, so this video was recorded in real time at 10 fps. Try Chrome or Edge for 30/60 fps.');
+  };
+
+  const totalFramesHint = (() => {
+    const doc = previewDoc();
+    if (!doc || !doc.body) return '';
+    const total = resolveDuration(doc);
+    const fpsNum = parseInt(fps, 10) || 30;
+    const frames = Math.round(total * fpsNum);
+    if (format === 'webm' || !VIDEO_ENCODER_SUPPORTED) return 'Records in real time, about ' + total + ' seconds, 10 fps.';
+    return frames + ' frames at ' + fpsNum + ' fps' + (frames > MAX_FRAMES ? ' - capped at ' + MAX_FRAMES + ' frames' : '') + '. Recording takes longer than the video itself.';
+  })();
 
   return (<Wrap>
     <TextField fullWidth multiline rows={10} label="Your HTML code (inline CSS allowed)" value={code} onChange={(e) => setCode(e.target.value)} sx={{ mb: 2, '& textarea': { fontFamily: 'monospace', fontSize: 13 } }} />
     <Typography variant="subtitle1" fontWeight={700} gutterBottom>Live preview</Typography>
-    <Box sx={{ mb: 2, border: '1px solid #e0e0e0', borderRadius: 2, overflow: 'hidden' }}>
+    <Box sx={{ mb: 1, border: '1px solid #e0e0e0', borderRadius: 2, overflow: 'hidden' }}>
       <iframe ref={iframeRef} title="HTML preview" sandbox="allow-scripts allow-same-origin" srcDoc={code} style={{ width: '100%', height: 360, border: 0, display: 'block', background: '#fff' }} />
     </Box>
+    <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+      {paused
+        ? <Button size="small" variant="outlined" onClick={playPreview}>Play preview</Button>
+        : <Button size="small" variant="outlined" onClick={pausePreview}>Pause preview</Button>}
+      <Button size="small" variant="outlined" onClick={restartPreview}>Restart from beginning</Button>
+    </Box>
     <Typography variant="body2" color="text.secondary" gutterBottom>Video length</Typography>
-    <ToggleButtonGroup value={duration} exclusive fullWidth onChange={(_, nv) => nv && setDuration(nv)} sx={{ mb: 2, flexWrap: 'wrap' }}>
+    <ToggleButtonGroup value={duration} exclusive fullWidth onChange={(_, nv) => nv && setDuration(nv)} sx={{ mb: 1, flexWrap: 'wrap' }}>
       <ToggleButton value="3">3 seconds</ToggleButton><ToggleButton value="5">5 seconds</ToggleButton><ToggleButton value="10">10 seconds</ToggleButton><ToggleButton value="15">15 seconds</ToggleButton><ToggleButton value="30">30 seconds</ToggleButton><ToggleButton value="60">60 seconds</ToggleButton>
+      <ToggleButton value="full">Full animation</ToggleButton><ToggleButton value="custom">Custom</ToggleButton>
     </ToggleButtonGroup>
+    {duration === 'custom' && (<TextField label="Seconds (1 to 120)" type="number" value={customSeconds} onChange={(e) => setCustomSeconds(e.target.value)} inputProps={{ min: 1, max: 120 }} size="small" sx={{ mb: 1, width: 220 }} />)}
+    {duration === 'full' && <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Full animation records one full run of your animation. For a looping animation, that is one loop.</Typography>}
+    <Typography variant="body2" color="text.secondary" gutterBottom>Video smoothness (frames per second)</Typography>
+    <ToggleButtonGroup value={fps} exclusive fullWidth onChange={(_, nv) => nv && setFps(nv)} sx={{ mb: 1 }}>
+      <ToggleButton value="10">10 fps</ToggleButton><ToggleButton value="30">30 fps - smooth</ToggleButton><ToggleButton value="60">60 fps - smoothest</ToggleButton>
+    </ToggleButtonGroup>
+    <Typography variant="body2" color="text.secondary" gutterBottom>Start recording</Typography>
+    <ToggleButtonGroup value={startFrom} exclusive fullWidth onChange={(_, nv) => nv && setStartFrom(nv)} sx={{ mb: 1 }}>
+      <ToggleButton value="start">From the beginning</ToggleButton><ToggleButton value="current">From where it is now</ToggleButton>
+    </ToggleButtonGroup>
+    {totalFramesHint && <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{totalFramesHint}</Typography>}
     <Typography variant="body2" color="text.secondary" gutterBottom>Video format</Typography>
     <ToggleButtonGroup value={format} exclusive fullWidth onChange={(_, nv) => nv && setFormat(nv)} sx={{ mb: 2 }}>
-      <ToggleButton value="mp4" disabled={!MP4_SUPPORTED}>MP4 - plays everywhere</ToggleButton><ToggleButton value="webm">WebM</ToggleButton>
+      <ToggleButton value="mp4" disabled={!CAN_MAKE_MP4}>MP4 - plays everywhere</ToggleButton><ToggleButton value="webm">WebM</ToggleButton>
     </ToggleButtonGroup>
-    {!MP4_SUPPORTED && <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Your browser cannot make MP4, so WebM is used.</Typography>}
+    {!CAN_MAKE_MP4 && <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Your browser cannot make MP4, so WebM is used.</Typography>}
+    {format === 'webm' && VIDEO_ENCODER_SUPPORTED && <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>WebM records in real time at 10 frames per second. For smooth 30 or 60 fps, choose MP4.</Typography>}
     {error && <Alert severity="warning" sx={{ mb: 2 }}>{error}</Alert>}
     {recording
-      ? (<><Button fullWidth variant="contained" color="error" sx={{ mb: 2 }} onClick={() => { stopRef.current = true; }}>Stop recording ({secondsLeft}s left)</Button>
-        <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 2 }}>Recording... {secondsLeft}s left. Keep this tab open.</Typography></>)
+      ? (<><Button fullWidth variant="contained" color="error" sx={{ mb: 2 }} onClick={() => { stopRef.current = true; }}>Stop recording</Button>
+        <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 2 }}>{progress || ('Recording... ' + secondsLeft + 's left. Keep this tab open.')}</Typography></>)
       : (<Button fullWidth variant="contained" sx={{ mb: 2 }} onClick={startRecording}>Record video</Button>)}
     <canvas ref={canvasRef} style={{ display: 'none' }} />
     {videoUrl && (<>
