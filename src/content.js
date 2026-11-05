@@ -3,7 +3,6 @@
 // or are computed from it. No invented rates. No em/en dashes. Worked examples are computed
 // from the same slabs/bands the tool uses (checked 5 Nov 2026).
 // Shape: { h: heading, p: [paragraphs], table?: { head: [...], rows: [[...]] } }
-import { CONTENT_MORE } from './content-more.js';
 // Date the guide content was last updated (shown under each tool title).
 export const CONTENT_UPDATED = '5 Nov 2026';
 export const CONTENT_BY_ID = {
@@ -245,4 +244,13 @@ export const CONTENT_BY_ID = {
     ] },
   ],
 };
-Object.assign(CONTENT_BY_ID, CONTENT_MORE);
+// Guides for the other tools live in content-more.js and are loaded on demand
+// (one small chunk, only when a tool page that needs one opens), so the home
+// page never downloads them. The pre-render plugin still imports both files
+// at build time, so the static crawler pages keep their full guide text.
+let moreCache = null;
+export async function loadGuide(id) {
+  if (CONTENT_BY_ID[id]) return CONTENT_BY_ID[id];
+  if (!moreCache) moreCache = (await import('./content-more.js')).CONTENT_MORE;
+  return moreCache[id] || null;
+}

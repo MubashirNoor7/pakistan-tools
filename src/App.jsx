@@ -1,79 +1,96 @@
-import React, { useState, useEffect } from 'react';
-import { AppBar, Toolbar, Typography, Container, Card, CardContent, Box, TextField, InputAdornment, ToggleButton, ToggleButtonGroup, Chip, Stack, Button, List, ListItem, ListItemText, ListItemButton, Divider, Accordion, AccordionSummary, AccordionDetails, Table, TableBody, TableRow, TableCell, CssBaseline, Link } from '@mui/material';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
+import { AppBar, Toolbar, Typography, Container, Card, CardContent, Box, TextField, Button, List, ListItem, ListItemText, ListItemButton, Accordion, AccordionSummary, AccordionDetails, Table, TableBody, TableRow, TableCell, CssBaseline, Link, CircularProgress } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CalculateIcon from '@mui/icons-material/Calculate';
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
-import { KanalTool, PlotSizeTool, fmt } from './tools/property.jsx';
-import { SalaryTaxTool, BpsTool, PtaTool, FreelancerTool, ZakatTool } from './tools/tax.jsx';
-import { FuelTool, HeicTool, WebpTool } from './tools/utility.jsx';
-import { RentVsBuyTool, TaxSlabTool, GoldTool, PrizeBondTool, JpgToPdfTool, FuelAverageTool, CurrencyTool } from './tools/newtools.jsx';
-import { LoanEmiTool, MortgageTool, QrTool, BmiTool, AgeTool, PercentageTool, WordCounterTool, PasswordTool, CgpaTool, PngToJpgTool, PdfToJpgTool } from './tools/globaltools.jsx';
-import { SalaryCalcTool, SipTool, DateCalcTool, AreaCalcTool, HomeLoanTool, UnitConverterTool, LoveTool, AttendanceTool, CarLoanTool } from './tools/countrytools.jsx';
-import { HtmlToVideoTool } from './tools/htmltovideo.jsx';
-import { WhatsMyIpTool } from './tools/iptool.jsx';
-import { CONTENT_BY_ID, CONTENT_UPDATED } from './content.js';
+import { fmt } from './tools/shared.jsx';
+// Tool components load on demand (one small chunk per module) so the home page
+// never downloads calculator code the visitor has not opened yet.
+const MarlaTool = lazy(() => import('./tools/property.jsx').then((m) => ({ default: m.MarlaTool })));
+const KanalTool = lazy(() => import('./tools/property.jsx').then((m) => ({ default: m.KanalTool })));
+const PlotSizeTool = lazy(() => import('./tools/property.jsx').then((m) => ({ default: m.PlotSizeTool })));
+const SalaryTaxTool = lazy(() => import('./tools/tax.jsx').then((m) => ({ default: m.SalaryTaxTool })));
+const BpsTool = lazy(() => import('./tools/tax.jsx').then((m) => ({ default: m.BpsTool })));
+const PtaTool = lazy(() => import('./tools/tax.jsx').then((m) => ({ default: m.PtaTool })));
+const FreelancerTool = lazy(() => import('./tools/tax.jsx').then((m) => ({ default: m.FreelancerTool })));
+const ZakatTool = lazy(() => import('./tools/tax.jsx').then((m) => ({ default: m.ZakatTool })));
+const FuelTool = lazy(() => import('./tools/utility.jsx').then((m) => ({ default: m.FuelTool })));
+const HeicTool = lazy(() => import('./tools/utility.jsx').then((m) => ({ default: m.HeicTool })));
+const WebpTool = lazy(() => import('./tools/utility.jsx').then((m) => ({ default: m.WebpTool })));
+const RentVsBuyTool = lazy(() => import('./tools/newtools.jsx').then((m) => ({ default: m.RentVsBuyTool })));
+const TaxSlabTool = lazy(() => import('./tools/newtools.jsx').then((m) => ({ default: m.TaxSlabTool })));
+const GoldTool = lazy(() => import('./tools/newtools.jsx').then((m) => ({ default: m.GoldTool })));
+const PrizeBondTool = lazy(() => import('./tools/newtools.jsx').then((m) => ({ default: m.PrizeBondTool })));
+const JpgToPdfTool = lazy(() => import('./tools/newtools.jsx').then((m) => ({ default: m.JpgToPdfTool })));
+const FuelAverageTool = lazy(() => import('./tools/newtools.jsx').then((m) => ({ default: m.FuelAverageTool })));
+const CurrencyTool = lazy(() => import('./tools/newtools.jsx').then((m) => ({ default: m.CurrencyTool })));
+const LoanEmiTool = lazy(() => import('./tools/globaltools.jsx').then((m) => ({ default: m.LoanEmiTool })));
+const MortgageTool = lazy(() => import('./tools/globaltools.jsx').then((m) => ({ default: m.MortgageTool })));
+const QrTool = lazy(() => import('./tools/globaltools.jsx').then((m) => ({ default: m.QrTool })));
+const BmiTool = lazy(() => import('./tools/globaltools.jsx').then((m) => ({ default: m.BmiTool })));
+const AgeTool = lazy(() => import('./tools/globaltools.jsx').then((m) => ({ default: m.AgeTool })));
+const PercentageTool = lazy(() => import('./tools/globaltools.jsx').then((m) => ({ default: m.PercentageTool })));
+const WordCounterTool = lazy(() => import('./tools/globaltools.jsx').then((m) => ({ default: m.WordCounterTool })));
+const PasswordTool = lazy(() => import('./tools/globaltools.jsx').then((m) => ({ default: m.PasswordTool })));
+const CgpaTool = lazy(() => import('./tools/globaltools.jsx').then((m) => ({ default: m.CgpaTool })));
+const PngToJpgTool = lazy(() => import('./tools/globaltools.jsx').then((m) => ({ default: m.PngToJpgTool })));
+const PdfToJpgTool = lazy(() => import('./tools/globaltools.jsx').then((m) => ({ default: m.PdfToJpgTool })));
+const SalaryCalcTool = lazy(() => import('./tools/countrytools.jsx').then((m) => ({ default: m.SalaryCalcTool })));
+const SipTool = lazy(() => import('./tools/countrytools.jsx').then((m) => ({ default: m.SipTool })));
+const DateCalcTool = lazy(() => import('./tools/countrytools.jsx').then((m) => ({ default: m.DateCalcTool })));
+const AreaCalcTool = lazy(() => import('./tools/countrytools.jsx').then((m) => ({ default: m.AreaCalcTool })));
+const HomeLoanTool = lazy(() => import('./tools/countrytools.jsx').then((m) => ({ default: m.HomeLoanTool })));
+const UnitConverterTool = lazy(() => import('./tools/countrytools.jsx').then((m) => ({ default: m.UnitConverterTool })));
+const LoveTool = lazy(() => import('./tools/countrytools.jsx').then((m) => ({ default: m.LoveTool })));
+const AttendanceTool = lazy(() => import('./tools/countrytools.jsx').then((m) => ({ default: m.AttendanceTool })));
+const CarLoanTool = lazy(() => import('./tools/countrytools.jsx').then((m) => ({ default: m.CarLoanTool })));
+const HtmlToVideoTool = lazy(() => import('./tools/htmltovideo.jsx').then((m) => ({ default: m.HtmlToVideoTool })));
+const WhatsMyIpTool = lazy(() => import('./tools/iptool.jsx').then((m) => ({ default: m.WhatsMyIpTool })));
+import { CONTENT_UPDATED, loadGuide } from './content.js';
 import { SEO_BY_ID, BASE_URL, HOME_TITLE, HOME_DESC, seoTitle, toolUrl, pageUrl } from './seo-data.js';
 
-function MarlaTool() {
-  const [std, setStd] = useState('272.25'); const [custom, setCustom] = useState('225'); const [mode, setMode] = useState('marla'); const [val, setVal] = useState('5');
-  const s = std === 'custom' ? parseFloat(custom) || 0 : parseFloat(std); const v = parseFloat(val) || 0; const valid = v > 0 && s > 0;
-  const sqft = mode === 'marla' ? v * s : v; const marla = mode === 'marla' ? v : v / s;
-  return (<Card elevation={2} sx={{ borderRadius: 3 }}><CardContent sx={{ p: 3 }}>
-    <ToggleButtonGroup value={std} exclusive fullWidth onChange={(_, nv) => nv && setStd(nv)} sx={{ mb: 2 }}>
-      <ToggleButton value="225">225 sq ft</ToggleButton><ToggleButton value="250">250 sq ft</ToggleButton><ToggleButton value="272.25">272.25 sq ft</ToggleButton><ToggleButton value="custom">Custom</ToggleButton>
-    </ToggleButtonGroup>
-    {std === 'custom' && <TextField fullWidth label="Custom sq ft per Marla" type="number" value={custom} onChange={(e) => setCustom(e.target.value)} sx={{ mb: 2 }} />}
-    <TextField fullWidth label={mode === 'marla' ? 'Marla' : 'Square Feet'} type="number" value={val} onChange={(e) => setVal(e.target.value)} inputProps={{ inputMode: 'decimal' }} InputProps={{ endAdornment: <InputAdornment position="end">{mode === 'marla' ? 'Marla' : 'Sq Ft'}</InputAdornment> }} sx={{ '& input': { fontSize: 26, fontWeight: 700 } }} />
-    {mode === 'marla' && <Stack direction="row" spacing={1} sx={{ mt: 2 }}>{[1, 5, 10, 20].map((n) => (<Chip key={n} label={n} variant="outlined" clickable onClick={() => setVal(String(n))} />))}</Stack>}
-    <Box textAlign="center" sx={{ py: 3 }}><Typography variant="h2" fontWeight={800}>{valid ? fmt(mode === 'marla' ? sqft : marla) : '-'}</Typography><Typography color="text.secondary">{mode === 'marla' ? 'Square Feet' : 'Marla'}</Typography><Typography variant="body2" color="text.disabled" sx={{ mt: 1 }}>{valid && (mode === 'marla' ? `${fmt(v)} Marla × ${fmt(s)} sq ft` : `${fmt(v)} sq ft ÷ ${fmt(s)} sq ft`)}</Typography></Box>
-    {valid && <List disablePadding>{mode === 'marla' ? (<><ListItem disableGutters><ListItemText primary="Square Yards" /><Typography fontWeight={700}>{fmt(sqft / 9)}</Typography></ListItem><Divider /><ListItem disableGutters><ListItemText primary="Square Metres" /><Typography fontWeight={700}>{fmt(sqft / 10.7639)}</Typography></ListItem><Divider /><ListItem disableGutters><ListItemText primary="Kanal" /><Typography fontWeight={700}>{fmt(v / 20)}</Typography></ListItem><Divider /><ListItem disableGutters><ListItemText primary="Acre" /><Typography fontWeight={700}>{fmt(v / 160)}</Typography></ListItem></>) : (<><ListItem disableGutters><ListItemText primary="Kanal" /><Typography fontWeight={700}>{fmt(marla / 20)}</Typography></ListItem><Divider /><ListItem disableGutters><ListItemText primary="Square Yards" /><Typography fontWeight={700}>{fmt(v / 9)}</Typography></ListItem></>)}</List>}
-    <Button fullWidth variant="outlined" startIcon={<SwapHorizIcon />} sx={{ mt: 3 }} onClick={() => { if (mode === 'marla') { setMode('sqft'); setVal(valid ? String(sqft) : val); } else { setMode('marla'); setVal(valid ? String(marla) : val); } }}>{mode === 'marla' ? 'Switch to Sq Ft → Marla' : 'Switch to Marla → Sq Ft'}</Button>
-  </CardContent></Card>);
-}
-
 const TOOLS = [
-  { id: 'marla', title: 'Marla to Sq Ft Converter Pakistan (2026)', cat: 'Property', el: <MarlaTool /> },
-  { id: 'kanal', title: 'Kanal to Marla Converter Pakistan', cat: 'Property', el: <KanalTool /> },
-  { id: 'plotsize', title: 'Plot Size Calculator: Length × Width to Marla', cat: 'Property', el: <PlotSizeTool /> },
-  { id: 'salarytax', title: 'Pakistan Salary Tax Calculator 2026-27', cat: 'Tax & salary', el: <SalaryTaxTool /> },
-  { id: 'bps', title: 'BPS Salary Calculator Pakistan 2026-27', cat: 'Tax & salary', el: <BpsTool /> },
-  { id: 'pta', title: 'PTA Tax Calculator Pakistan by Phone Model', cat: 'Tax & salary', el: <PtaTool /> },
-  { id: 'freelancer', title: 'Freelancer Tax Calculator Pakistan (154A, PSEB 0.25%)', cat: 'Tax & salary', el: <FreelancerTool /> },
-  { id: 'zakat', title: 'Zakat Calculator Pakistan 2026: Cash, Gold', cat: 'Tax & salary', el: <ZakatTool /> },
-  { id: 'fuel', title: 'Fuel Trip Cost Calculator Pakistan (OGRA)', cat: 'Utility', el: <FuelTool /> },
-  { id: 'heic', title: 'HEIC to JPG Converter Online (Free, Private)', cat: 'Files - private', el: <HeicTool /> },
-  { id: 'webp', title: 'WebP to JPG Converter Online Free', cat: 'Files - private', el: <WebpTool /> },
-  { id: 'rentvsbuy', title: 'Rent vs Buy Calculator Pakistan', cat: 'Property', el: <RentVsBuyTool /> },
-  { id: 'taxslab', title: 'FBR Pakistan Tax Slab 2026-27: Which Slab Are You In?', cat: 'Tax & salary', el: <TaxSlabTool /> },
-  { id: 'gold', title: 'Gold Price Pakistan Today: 1 Tola Calculator', cat: 'Prices', el: <GoldTool /> },
-  { id: 'prizebond', title: 'Prize Bond Pakistan: Prize After Tax Calculator', cat: 'Prices', el: <PrizeBondTool /> },
-  { id: 'jpgtopdf', title: 'JPG to PDF Converter Online (Free, Private)', cat: 'Files - private', el: <JpgToPdfTool /> },
-  { id: 'fuelavg', title: 'Fuel Average Calculator Pakistan (km per litre)', cat: 'Utility', el: <FuelAverageTool /> },
-  { id: 'currency', title: 'Currency Converter: USD to PKR & More', cat: 'Prices', el: <CurrencyTool /> },
-  { id: 'loanemi', title: 'Loan EMI Calculator', cat: 'Finance - global', el: <LoanEmiTool /> },
-  { id: 'mortgage', title: 'Mortgage Calculator: How Much House Can I Afford?', cat: 'Finance - global', el: <MortgageTool /> },
-  { id: 'qr', title: 'QR Code Generator (Free, Private)', cat: 'Tools - global', el: <QrTool /> },
-  { id: 'bmi', title: 'BMI Calculator', cat: 'Health - global', el: <BmiTool /> },
-  { id: 'age', title: 'Age Calculator (Date of Birth)', cat: 'Tools - global', el: <AgeTool /> },
-  { id: 'percentage', title: 'Percentage Calculator', cat: 'Tools - global', el: <PercentageTool /> },
-  { id: 'wordcounter', title: 'Word Counter & Character Counter', cat: 'Tools - global', el: <WordCounterTool /> },
-  { id: 'password', title: 'Password Generator (Secure, Private)', cat: 'Tools - global', el: <PasswordTool /> },
-  { id: 'cgpa', title: 'CGPA Calculator (4.0 Scale)', cat: 'Study - global', el: <CgpaTool /> },
-  { id: 'pngtojpg', title: 'PNG to JPG Converter Online (Free, Private)', cat: 'Files - global', el: <PngToJpgTool /> },
-  { id: 'pdftojpg', title: 'PDF to JPG Converter Online (Free, Private)', cat: 'Files - global', el: <PdfToJpgTool /> },
-  { id: 'salarycalc', title: 'Salary Calculator (Net Salary After Tax)', cat: 'Finance - global', el: <SalaryCalcTool /> },
-  { id: 'sip', title: 'SIP Calculator (Monthly Investment + Step-up)', cat: 'Finance - India/global', el: <SipTool /> },
-  { id: 'datecalc', title: 'Date Calculator: Days Between Dates & Weekday', cat: 'Tools - global', el: <DateCalcTool /> },
-  { id: 'areacalc', title: 'Area Calculator (Room & Land Area)', cat: 'Tools - global', el: <AreaCalcTool /> },
-  { id: 'homeloan', title: 'Home Loan Calculator (EMI + Total Interest)', cat: 'Finance - global', el: <HomeLoanTool /> },
-  { id: 'unitconv', title: 'Unit Converter: Length, Weight & Temperature', cat: 'Tools - global', el: <UnitConverterTool /> },
-  { id: 'love', title: 'Love Calculator (For Fun Only)', cat: 'Fun - global', el: <LoveTool /> },
-  { id: 'attendance', title: 'Attendance Calculator (Students)', cat: 'Study - global', el: <AttendanceTool /> },
-  { id: 'carloan', title: 'Car Loan Calculator (EMI + Total Interest)', cat: 'Finance - global', el: <CarLoanTool /> },
-  { id: 'htmltovideo', title: 'HTML to Video & MP4 Converter Online (Code to Video)', cat: 'Files & converters', el: <HtmlToVideoTool /> },
-  { id: 'whatsmyip', title: "What's My IP Address? (IP, Location & ISP)", cat: 'Everyday tools', el: <WhatsMyIpTool /> },
+  { id: 'marla', title: 'Marla to Sq Ft Converter Pakistan (2026)', cat: 'Property', Component: MarlaTool },
+  { id: 'kanal', title: 'Kanal to Marla Converter Pakistan', cat: 'Property', Component: KanalTool },
+  { id: 'plotsize', title: 'Plot Size Calculator: Length × Width to Marla', cat: 'Property', Component: PlotSizeTool },
+  { id: 'salarytax', title: 'Pakistan Salary Tax Calculator 2026-27', cat: 'Tax & salary', Component: SalaryTaxTool },
+  { id: 'bps', title: 'BPS Salary Calculator Pakistan 2026-27', cat: 'Tax & salary', Component: BpsTool },
+  { id: 'pta', title: 'PTA Tax Calculator Pakistan by Phone Model', cat: 'Tax & salary', Component: PtaTool },
+  { id: 'freelancer', title: 'Freelancer Tax Calculator Pakistan (154A, PSEB 0.25%)', cat: 'Tax & salary', Component: FreelancerTool },
+  { id: 'zakat', title: 'Zakat Calculator Pakistan 2026: Cash, Gold', cat: 'Tax & salary', Component: ZakatTool },
+  { id: 'fuel', title: 'Fuel Trip Cost Calculator Pakistan (OGRA)', cat: 'Utility', Component: FuelTool },
+  { id: 'heic', title: 'HEIC to JPG Converter Online (Free, Private)', cat: 'Files - private', Component: HeicTool },
+  { id: 'webp', title: 'WebP to JPG Converter Online Free', cat: 'Files - private', Component: WebpTool },
+  { id: 'rentvsbuy', title: 'Rent vs Buy Calculator Pakistan', cat: 'Property', Component: RentVsBuyTool },
+  { id: 'taxslab', title: 'FBR Pakistan Tax Slab 2026-27: Which Slab Are You In?', cat: 'Tax & salary', Component: TaxSlabTool },
+  { id: 'gold', title: 'Gold Price Pakistan Today: 1 Tola Calculator', cat: 'Prices', Component: GoldTool },
+  { id: 'prizebond', title: 'Prize Bond Pakistan: Prize After Tax Calculator', cat: 'Prices', Component: PrizeBondTool },
+  { id: 'jpgtopdf', title: 'JPG to PDF Converter Online (Free, Private)', cat: 'Files - private', Component: JpgToPdfTool },
+  { id: 'fuelavg', title: 'Fuel Average Calculator Pakistan (km per litre)', cat: 'Utility', Component: FuelAverageTool },
+  { id: 'currency', title: 'Currency Converter: USD to PKR & More', cat: 'Prices', Component: CurrencyTool },
+  { id: 'loanemi', title: 'Loan EMI Calculator', cat: 'Finance - global', Component: LoanEmiTool },
+  { id: 'mortgage', title: 'Mortgage Calculator: How Much House Can I Afford?', cat: 'Finance - global', Component: MortgageTool },
+  { id: 'qr', title: 'QR Code Generator (Free, Private)', cat: 'Tools - global', Component: QrTool },
+  { id: 'bmi', title: 'BMI Calculator', cat: 'Health - global', Component: BmiTool },
+  { id: 'age', title: 'Age Calculator (Date of Birth)', cat: 'Tools - global', Component: AgeTool },
+  { id: 'percentage', title: 'Percentage Calculator', cat: 'Tools - global', Component: PercentageTool },
+  { id: 'wordcounter', title: 'Word Counter & Character Counter', cat: 'Tools - global', Component: WordCounterTool },
+  { id: 'password', title: 'Password Generator (Secure, Private)', cat: 'Tools - global', Component: PasswordTool },
+  { id: 'cgpa', title: 'CGPA Calculator (4.0 Scale)', cat: 'Study - global', Component: CgpaTool },
+  { id: 'pngtojpg', title: 'PNG to JPG Converter Online (Free, Private)', cat: 'Files - global', Component: PngToJpgTool },
+  { id: 'pdftojpg', title: 'PDF to JPG Converter Online (Free, Private)', cat: 'Files - global', Component: PdfToJpgTool },
+  { id: 'salarycalc', title: 'Salary Calculator (Net Salary After Tax)', cat: 'Finance - global', Component: SalaryCalcTool },
+  { id: 'sip', title: 'SIP Calculator (Monthly Investment + Step-up)', cat: 'Finance - India/global', Component: SipTool },
+  { id: 'datecalc', title: 'Date Calculator: Days Between Dates & Weekday', cat: 'Tools - global', Component: DateCalcTool },
+  { id: 'areacalc', title: 'Area Calculator (Room & Land Area)', cat: 'Tools - global', Component: AreaCalcTool },
+  { id: 'homeloan', title: 'Home Loan Calculator (EMI + Total Interest)', cat: 'Finance - global', Component: HomeLoanTool },
+  { id: 'unitconv', title: 'Unit Converter: Length, Weight & Temperature', cat: 'Tools - global', Component: UnitConverterTool },
+  { id: 'love', title: 'Love Calculator (For Fun Only)', cat: 'Fun - global', Component: LoveTool },
+  { id: 'attendance', title: 'Attendance Calculator (Students)', cat: 'Study - global', Component: AttendanceTool },
+  { id: 'carloan', title: 'Car Loan Calculator (EMI + Total Interest)', cat: 'Finance - global', Component: CarLoanTool },
+  { id: 'htmltovideo', title: 'HTML to Video & MP4 Converter Online (Code to Video)', cat: 'Files & converters', Component: HtmlToVideoTool },
+  { id: 'whatsmyip', title: "What's My IP Address? (IP, Location & ISP)", cat: 'Everyday tools', Component: WhatsMyIpTool },
 ];
 // Attach SEO data (slug, description, FAQs) from the single source in seo-data.js.
 // No tool component, formula or rate is changed here.
@@ -101,7 +118,7 @@ CATEGORIES.forEach((c) => c.tools.forEach((t) => { ID_TO_CAT[t.id] = c.name; }))
 const POPULAR = ['jpgtopdf', 'loanemi', 'age', 'bmi', 'mortgage', 'marla', 'pta', 'currency'].map((id) => BY_ID[id]).filter(Boolean);
 
 function toolListItems(tools, go, selectedId) {
-  return tools.map((t, i) => (<React.Fragment key={t.id}>{i > 0 && <Divider />}<ListItemButton component="a" href={`/tools/${t.slug}/`} selected={selectedId === t.id} onClick={(e) => go(e, `/tools/${t.slug}/`)}><ListItemText primary={`${CAT_EMOJI[ID_TO_CAT[t.id]] || ''} ${t.title}`} secondary={ID_TO_CAT[t.id] || t.cat} /></ListItemButton></React.Fragment>));
+  return tools.map((t, i) => (<ListItem key={t.id} disablePadding divider={i < tools.length - 1}><ListItemButton component="a" href={`/tools/${t.slug}/`} selected={selectedId === t.id} onClick={(e) => go(e, `/tools/${t.slug}/`)}><ListItemText primary={`${CAT_EMOJI[ID_TO_CAT[t.id]] || ''} ${t.title}`} secondary={ID_TO_CAT[t.id] || t.cat} /></ListItemButton></ListItem>));
 }
 
 // Tiny pathname router - no new dependency. Trailing slashes are ignored.
@@ -153,6 +170,16 @@ export default function App() {
 
   const cur = route.kind === 'tool' ? TOOLS.find((t) => t.slug === route.slug) : null;
 
+  // Guide text loads on demand: the 8 core guides come from content.js, the
+  // other 32 arrive as one small chunk the first time a tool page needs one.
+  const [guide, setGuide] = useState(null);
+  useEffect(() => {
+    let alive = true;
+    setGuide(null);
+    if (cur) loadGuide(cur.id).then((g) => { if (alive) setGuide(g); });
+    return () => { alive = false; };
+  }, [cur]);
+
   // Per-route SEO: title, description, canonical and FAQ JSON-LD.
   useEffect(() => {
     setMetaTag('robots', (route.kind === 'notfound' || (route.kind === 'tool' && !cur)) ? 'noindex' : 'index, follow');
@@ -194,13 +221,13 @@ export default function App() {
       <Box><Typography fontWeight={800} lineHeight={1}>Kalkio</Typography><Typography variant="caption" color="text.secondary">Free tools, no sign-up</Typography></Box>
     </Box>
     <List>
-      <ListItemButton selected={openCat === '__popular'} onClick={() => { setOpenCat('__popular'); setQ(''); }}><ListItemText primary="⭐ Most popular" secondary="Most searched tools" /></ListItemButton>
-      {CATEGORIES.map((c) => (<React.Fragment key={c.name}><Divider /><ListItemButton selected={openCat === c.name} onClick={() => { setOpenCat(c.name); setQ(''); }}><ListItemText primary={`${CAT_EMOJI[c.name]} ${c.name}`} secondary={`${c.tools.length} tools`} /></ListItemButton></React.Fragment>))}
+      <ListItem disablePadding divider><ListItemButton selected={openCat === '__popular'} onClick={() => { setOpenCat('__popular'); setQ(''); }}><ListItemText primary="⭐ Most popular" secondary="Most searched tools" /></ListItemButton></ListItem>
+      {CATEGORIES.map((c, i) => (<ListItem key={c.name} disablePadding divider={i < CATEGORIES.length - 1}><ListItemButton selected={openCat === c.name} onClick={() => { setOpenCat(c.name); setQ(''); }}><ListItemText primary={`${CAT_EMOJI[c.name]} ${c.name}`} secondary={`${c.tools.length} tools`} /></ListItemButton></ListItem>))}
     </List>
   </Card>);
 
   const footer = (<Box component="footer" sx={{ mt: 4, pt: 2, borderTop: '1px solid #e0e0e0', textAlign: 'center' }}>
-    <Typography variant="body2" color="text.secondary" gutterBottom>
+    <Typography variant="body2" color="text.secondary" gutterBottom sx={{ '& a': { color: '#0d47a1' } }}>
       <Link href="/about/" onClick={(e) => go(e, '/about/')}>About</Link>{' · '}
       <Link href="/contact/" onClick={(e) => go(e, '/contact/')}>Contact</Link>{' · '}
       <Link href="/privacy/" onClick={(e) => go(e, '/privacy/')}>Privacy Policy</Link>
@@ -209,30 +236,31 @@ export default function App() {
   </Box>);
 
   const notFound = (<>
-    <Typography variant="h4" fontWeight={800} gutterBottom>Tool not found</Typography>
+    <Typography variant="h4" component="h1" fontWeight={800} gutterBottom>Tool not found</Typography>
     <Typography variant="body1" color="text.secondary" gutterBottom>That tool does not exist on Kalkio.</Typography>
     <Button variant="contained" component="a" href="/" onClick={(e) => go(e, '/')} sx={{ mt: 2 }}>Browse all tools</Button>
   </>);
 
   const staticPage = (title, children) => (<>
     <Button startIcon={<ArrowBackIcon />} component="a" href="/" onClick={(e) => go(e, '/')} sx={{ mb: 2 }}>All tools</Button>
-    <Typography variant="h4" fontWeight={800} gutterBottom>{title}</Typography>
+    <Typography variant="h4" component="h1" fontWeight={800} gutterBottom>{title}</Typography>
     {children}
   </>);
 
   return (<>
     <CssBaseline />
+    <a href="#main-content" className="skip-link">Skip to main content</a>
     <AppBar position="static" color="primary" elevation={0}><Toolbar><Box sx={{ bgcolor: 'rgba(255,255,255,0.2)', borderRadius: 2, p: 0.5, mr: 1.5, display: 'flex' }}><CalculateIcon /></Box><Typography variant="h6" fontWeight={700} component="a" href="/" onClick={(e) => go(e, '/')} sx={{ color: 'inherit', textDecoration: 'none' }}>Kalkio</Typography></Toolbar></AppBar>
     <Box sx={{ bgcolor: '#f5f7fa', minHeight: '100vh', py: 4 }}>
       <Container maxWidth="xl">
       <Box sx={{ display: 'grid', gap: 3, alignItems: 'start', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: '300px minmax(0, 1fr) 280px' } }}>
-        <Box sx={{ order: { xs: 3, md: 1 }, minWidth: 0, position: { md: 'sticky' }, top: { md: 24 } }}>{sidebarTools}</Box>
-        <Box sx={{ order: { xs: 1, md: 2 }, minWidth: 0 }}>
+        <Box component="nav" aria-label="Tools in this category" sx={{ order: { xs: 3, md: 1 }, minWidth: 0, position: { md: 'sticky' }, top: { md: 24 } }}>{sidebarTools}</Box>
+        <Box component="main" id="main-content" sx={{ order: { xs: 1, md: 2 }, minWidth: 0 }}>
         {route.kind === 'home' && (<>
-          <Typography variant="h4" fontWeight={800} gutterBottom>What do you want to calculate?</Typography>
+          <Typography variant="h4" component="h1" fontWeight={800} gutterBottom>What do you want to calculate?</Typography>
           <Typography variant="body1" color="text.secondary" gutterBottom>{TOOLS.length} tools, one style. No sign-up. Pick a category on the right, or a tool on the left.</Typography>
           <Typography variant="body1" color="text.secondary" gutterBottom>Free Pakistan calculators (Marla, salary tax, PTA tax, BPS, Zakat, gold and fuel) plus file converters, QR codes, BMI and more. Everything runs in your browser.</Typography>
-          <Typography variant="h6" fontWeight={700} gutterBottom>⭐ Most popular</Typography>
+          <Typography variant="h6" component="h2" fontWeight={700} gutterBottom>⭐ Most popular</Typography>
           <Card elevation={1} sx={{ borderRadius: 3 }}><List>{toolListItems(POPULAR, go, null)}</List></Card>
           <Accordion sx={{ mt: 2 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>❓ Common questions</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary" paragraph><b>Are the tools free?</b> Yes. All 40 tools are free and no sign-up is needed.</Typography><Typography variant="body2" color="text.secondary" paragraph><b>Does my data leave my device?</b> No. Every tool runs in your browser and does not ask you to create an account.</Typography><Typography variant="body2" color="text.secondary"><b>Are tax results official?</b> No. Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.</Typography></AccordionDetails></Accordion>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3, textAlign: 'center' }}>Tax, bill and fuel results are estimates - confirm official rates before a financial decision.</Typography>
@@ -241,10 +269,10 @@ export default function App() {
         {route.kind === 'notfound' && notFound}
         {route.kind === 'tool' && cur && (<>
           <Button startIcon={<ArrowBackIcon />} component="a" href="/" onClick={(e) => go(e, '/')} sx={{ mb: 2 }}>All tools</Button>
-          <Typography variant="h4" fontWeight={800} gutterBottom>{cur.title}</Typography>
+          <Typography variant="h4" component="h1" fontWeight={800} gutterBottom>{cur.title}</Typography>
           <Typography variant="body1" color="text.secondary" gutterBottom>{CAT_EMOJI[ID_TO_CAT[cur.id]] || ''} {ID_TO_CAT[cur.id] || cur.cat} · No sign-up.</Typography>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>Guide last updated {CONTENT_UPDATED}.</Typography>
-          {cur.el}
+          {cur && (<Suspense fallback={<Box sx={{ py: 4, textAlign: 'center' }}><CircularProgress /><Typography color="text.secondary" sx={{ mt: 1 }}>Loading calculator...</Typography></Box>}><cur.Component /></Suspense>)}
           {cur.id === 'marla' && (<>
             <Box sx={{ bgcolor: '#fff8e1', borderRadius: 2, p: 2, mt: 2 }}><Typography variant="body2">225 sq ft is common in housing societies like DHA and Bahria Town. 250 sq ft is the CDA Islamabad standard. 272.25 sq ft is the revenue-record Marla. Confirm from your plot documents which one applies to you.</Typography></Box>
             <Accordion sx={{ mt: 2 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>How it works</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary">Square feet = Marla × sq ft per Marla. Square yards = square feet ÷ 9. Square metres = square feet ÷ 10.7639. Kanal = Marla ÷ 20. Acre = Marla ÷ 160.</Typography></AccordionDetails></Accordion>
@@ -253,7 +281,7 @@ export default function App() {
           </>)}
         </>)}
         {route.kind === 'tool' && cur && (<Box sx={{ mt: 2 }}><Button variant="outlined" color="success" startIcon={<WhatsAppIcon />} component="a" href={`https://wa.me/?text=${encodeURIComponent(cur.title + ' - ' + toolUrl(cur.slug))}`} target="_blank" rel="noopener noreferrer">Share on WhatsApp</Button></Box>)}
-        {route.kind === 'tool' && cur && CONTENT_BY_ID[cur.id] && (<Box component="section" sx={{ mt: 4 }}>{CONTENT_BY_ID[cur.id].map((s) => (<Box key={s.h} sx={{ mb: 3 }}>
+        {route.kind === 'tool' && cur && guide && (<Box component="section" sx={{ mt: 4 }}>{guide.map((s) => (<Box key={s.h} sx={{ mb: 3 }}>
           <Typography variant="h5" component="h2" fontWeight={700} gutterBottom>{s.h}</Typography>
           {s.p.map((para, i) => (<Typography key={i} variant="body1" color="text.secondary" paragraph>{para}</Typography>))}
           {s.table && (<Box sx={{ overflowX: 'auto' }}><Table size="small"><TableBody><TableRow>{s.table.head.map((c) => (<TableCell key={c} sx={{ fontWeight: 700 }}>{c}</TableCell>))}</TableRow>{s.table.rows.map((r, ri) => (<TableRow key={ri}>{r.map((c, ci) => (<TableCell key={ci}>{c}</TableCell>))}</TableRow>))}</TableBody></Table></Box>)}
@@ -278,7 +306,7 @@ export default function App() {
         </>))}
         {footer}
         </Box>
-        <Box sx={{ order: { xs: 2, md: 3 }, minWidth: 0, position: { md: 'sticky' }, top: { md: 24 } }}>{sidebarCats}</Box>
+        <Box component="nav" aria-label="Tool categories" sx={{ order: { xs: 2, md: 3 }, minWidth: 0, position: { md: 'sticky' }, top: { md: 24 } }}>{sidebarCats}</Box>
       </Box>
     </Container>
     </Box>
