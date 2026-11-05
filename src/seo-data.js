@@ -5,7 +5,7 @@
 export const BASE_URL = 'https://kalkio.vercel.app';
 export const BRAND = 'Kalkio';
 export const HOME_TITLE = 'Kalkio - Free Pakistan Calculators & Converters';
-export const HOME_DESC = 'Kalkio: 42 free calculators and converters - Marla, salary tax, PTA tax, SIP, loan EMI, QR codes, BMI, file converters and more. No sign-up, everything runs in your browser.';
+export const HOME_DESC = 'Kalkio: 39 free calculators and converters - Marla, salary tax, PTA tax, SIP, loan EMI, QR codes, BMI, file converters and more. No sign-up, everything runs in your browser.';
 
 // Universal FAQ answers (true for every tool on this site).
 const FREE = ['Is this tool free?', 'Yes. It is free and no sign-up is needed.'];
@@ -24,8 +24,6 @@ export const SEO_BY_ID = {
   freelancer: { slug: 'freelancer-tax-calculator-pakistan-154a', desc: 'Estimate freelancer tax under Section 154A from annual export receipts, with PSEB-registered and filer options. The result is an estimate - confirm from FBR or your tax adviser.', faqs: [FREE, ESTIMATE, BROWSER] },
   zakat: { slug: 'zakat-calculator-pakistan-cash-gold', desc: 'Work out Zakat at 2.5% of zakatable wealth from cash, gold, silver, stocks and debts. For religious rulings, confirm with a scholar.', faqs: [FREE, ['What rate does this use?', 'Zakat is 2.5% of zakatable wealth held for a lunar year, above nisab.'], BROWSER] },
   fuel: { slug: 'fuel-trip-cost-calculator-pakistan-ogra', desc: 'Work out a trip’s fuel cost and litres needed from distance, mileage and the fuel rate, which you can edit. Fuel rates change often, so check today’s OGRA rate for an exact cost.', faqs: [FREE, ['Why can I edit the fuel rate?', 'Fuel rates change often. Editing the rate to today’s OGRA rate gives an exact trip cost.'], BROWSER] },
-  heic: { slug: 'heic-to-jpg-converter-online', desc: 'Convert HEIC photos to JPG in your browser. Your file is never uploaded to a server. Free, no sign-up.', faqs: [FREE, FILE_PRIVATE] },
-  avif: { slug: 'avif-to-png-converter-online', desc: 'Convert AVIF images to PNG in your browser. Your file is never uploaded to a server. Free, no sign-up.', faqs: [FREE, FILE_PRIVATE] },
   webp: { slug: 'webp-to-jpg-converter-online', desc: 'Convert WebP images to JPG in your browser. Your file is never uploaded to a server. Free, no sign-up.', faqs: [FREE, FILE_PRIVATE] },
   rentvsbuy: { slug: 'rent-vs-buy-calculator-pakistan', desc: 'Compare the cost of renting versus buying a home in Pakistan. An estimate only, to help you weigh the two options.', faqs: [FREE, ESTIMATE, BROWSER] },
   taxslab: { slug: 'pakistan-tax-slab-2026-27-which-slab-are-you-in', desc: 'Find which Pakistan salary tax slab for 2026-27 your annual salary falls in. An estimate tool - confirm from FBR before filing.', faqs: [FREE, ESTIMATE, BROWSER] },
@@ -51,7 +49,6 @@ export const SEO_BY_ID = {
   areacalc: { slug: 'area-calculator-room-land-area', desc: 'Work out the area of a room, wall or floor from length and width. Plot and Marla conversions are in the separate Property tools.', faqs: [FREE, ['Can I use it for plots in Marla?', 'Plot and Marla conversions are in the separate Property tools.'], BROWSER] },
   homeloan: { slug: 'home-loan-calculator-emi-total-interest', desc: 'Estimate a home loan’s EMI and total interest from price, down payment and rate. An estimate only, not a bank offer.', faqs: [FREE, ['Is this a bank offer?', 'No. It is an estimate only. Banks also check income, credit score and property valuation, and the actual rate may differ.'], BROWSER] },
   unitconv: { slug: 'unit-converter-length-weight-temperature', desc: 'Convert length, weight and temperature units. Free, no sign-up, and it runs in your browser.', faqs: [FREE, BROWSER] },
-  fontconv: { slug: 'font-converter-stylish-text-generator', desc: 'Turn plain text into stylish text. Free, no sign-up, and it runs in your browser.', faqs: [FREE, BROWSER] },
   love: { slug: 'love-calculator-for-fun-only', desc: 'A love calculator for fun only - not a real prediction. Free, no sign-up, and it runs in your browser.', faqs: [FREE, ['Is the love calculator real?', 'No. It is for fun only.'], BROWSER] },
   attendance: { slug: 'attendance-calculator-students', desc: 'Work out attendance percentage for students from attended and total classes. Free, no sign-up, and it runs in your browser.', faqs: [FREE, BROWSER] },
   carloan: { slug: 'car-loan-calculator-emi-total-interest', desc: 'Estimate a car loan’s EMI and total interest from price, down payment and rate. An estimate only, not a bank offer.', faqs: [FREE, ESTIMATE, BROWSER] },

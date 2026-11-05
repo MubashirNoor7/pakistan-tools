@@ -184,20 +184,6 @@ export const CONTENT_MORE = {
     PRIV,
     { h: 'When to use JPG or PNG', p: ['JPG gives smaller files for photos. PNG keeps sharp edges and transparency, which is better for logos and screenshots.'] },
   ],
-  heic: [
-    { h: 'How to convert HEIC to JPG', p: [
-      'iPhone photos are often saved as HEIC, which many Windows and Android apps cannot open. Choose a HEIC file and the tool converts it to a JPG at 92% quality in your browser.',
-    ] },
-    PRIV,
-    { h: 'Large files', p: ['HEIC conversion can take a few seconds per photo, especially on a phone. Convert one photo at a time.'] },
-  ],
-  avif: [
-    { h: 'How to convert AVIF to PNG', p: [
-      'AVIF is a newer image format that some programs and websites do not accept. Choose an AVIF file and the tool saves it as a PNG, which almost every program can open.',
-      'The tool uses your browser’s own image decoder, so your browser must be able to open AVIF files. Most recent browsers can.',
-    ] },
-    PRIV,
-  ],
   webp: [
     { h: 'How to convert WebP to JPG', p: [
       'WebP images from websites often will not open in older programs. Choose a WebP file and the tool saves it as a JPG that works almost everywhere.',
@@ -293,11 +279,5 @@ export const CONTENT_MORE = {
       'The Love Calculator is entertainment. It turns the two names into a number with a fixed formula, so the same two names always give the same result. The score is always between 40% and 100%.',
       'It does not measure real compatibility. Do not use it to make decisions about relationships.',
     ] },
-  ],
-  fontconv: [
-    { h: 'How the stylish text generator works', p: [
-      'Type your text and the tool shows it in Bold, Italic, Bold Italic, Script, Monospace and Small Caps styles. These are special Unicode characters, not real fonts, so you can copy and paste them into social media bios and messages.',
-    ] },
-    { h: 'Limits', p: ['Some apps and older phones may show boxes instead of a style, especially for Script. The styles apply to English letters only.'] },
   ],
 };

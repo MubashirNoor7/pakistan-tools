@@ -7,10 +7,10 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { KanalTool, PlotSizeTool, fmt } from './tools/property.jsx';
 import { SalaryTaxTool, BpsTool, PtaTool, FreelancerTool, ZakatTool } from './tools/tax.jsx';
-import { FuelTool, HeicTool, AvifTool, WebpTool } from './tools/utility.jsx';
+import { FuelTool, WebpTool } from './tools/utility.jsx';
 import { RentVsBuyTool, TaxSlabTool, GoldTool, PrizeBondTool, JpgToPdfTool, FuelAverageTool, CurrencyTool } from './tools/newtools.jsx';
 import { LoanEmiTool, MortgageTool, QrTool, BmiTool, AgeTool, PercentageTool, WordCounterTool, PasswordTool, CgpaTool, PngToJpgTool, PdfToJpgTool } from './tools/globaltools.jsx';
-import { SalaryCalcTool, SipTool, DateCalcTool, AreaCalcTool, HomeLoanTool, UnitConverterTool, FontTool, LoveTool, AttendanceTool, CarLoanTool } from './tools/countrytools.jsx';
+import { SalaryCalcTool, SipTool, DateCalcTool, AreaCalcTool, HomeLoanTool, UnitConverterTool, LoveTool, AttendanceTool, CarLoanTool } from './tools/countrytools.jsx';
 import { HtmlToVideoTool } from './tools/htmltovideo.jsx';
 import { WhatsMyIpTool } from './tools/iptool.jsx';
 import { CONTENT_BY_ID, CONTENT_UPDATED } from './content.js';
@@ -43,8 +43,6 @@ const TOOLS = [
   { id: 'freelancer', title: 'Freelancer Tax Calculator Pakistan (154A, PSEB 0.25%)', cat: 'Tax & salary', el: <FreelancerTool /> },
   { id: 'zakat', title: 'Zakat Calculator Pakistan 2026: Cash, Gold', cat: 'Tax & salary', el: <ZakatTool /> },
   { id: 'fuel', title: 'Fuel Trip Cost Calculator Pakistan (OGRA)', cat: 'Utility', el: <FuelTool /> },
-  { id: 'heic', title: 'HEIC to JPG Converter Online (Free, Private)', cat: 'Files - private', el: <HeicTool /> },
-  { id: 'avif', title: 'AVIF to PNG Converter Online Free', cat: 'Files - private', el: <AvifTool /> },
   { id: 'webp', title: 'WebP to JPG Converter Online Free', cat: 'Files - private', el: <WebpTool /> },
   { id: 'rentvsbuy', title: 'Rent vs Buy Calculator Pakistan', cat: 'Property', el: <RentVsBuyTool /> },
   { id: 'taxslab', title: 'FBR Pakistan Tax Slab 2026-27: Which Slab Are You In?', cat: 'Tax & salary', el: <TaxSlabTool /> },
@@ -70,7 +68,6 @@ const TOOLS = [
   { id: 'areacalc', title: 'Area Calculator (Room & Land Area)', cat: 'Tools - global', el: <AreaCalcTool /> },
   { id: 'homeloan', title: 'Home Loan Calculator (EMI + Total Interest)', cat: 'Finance - global', el: <HomeLoanTool /> },
   { id: 'unitconv', title: 'Unit Converter: Length, Weight & Temperature', cat: 'Tools - global', el: <UnitConverterTool /> },
-  { id: 'fontconv', title: 'Font Converter: Stylish Text Generator', cat: 'Tools - global', el: <FontTool /> },
   { id: 'love', title: 'Love Calculator (For Fun Only)', cat: 'Fun - global', el: <LoveTool /> },
   { id: 'attendance', title: 'Attendance Calculator (Students)', cat: 'Study - global', el: <AttendanceTool /> },
   { id: 'carloan', title: 'Car Loan Calculator (EMI + Total Interest)', cat: 'Finance - global', el: <CarLoanTool /> },
@@ -91,16 +88,19 @@ const CATEGORIES = [
   { name: 'Home & Property', ids: ['marla', 'kanal', 'plotsize', 'rentvsbuy', 'areacalc'] },
   { name: 'Money & Tax', ids: ['salarytax', 'bps', 'pta', 'freelancer', 'taxslab', 'zakat', 'loanemi', 'mortgage', 'homeloan', 'carloan', 'sip', 'salarycalc'] },
   { name: 'Prices & Fuel', ids: ['gold', 'prizebond', 'currency', 'fuel', 'fuelavg'] },
-  { name: 'Files & converters', ids: ['jpgtopdf', 'pdftojpg', 'pngtojpg', 'heic', 'avif', 'webp', 'qr', 'unitconv', 'htmltovideo'] },
+  { name: 'Files & converters', ids: ['jpgtopdf', 'pdftojpg', 'pngtojpg', 'webp', 'qr', 'unitconv', 'htmltovideo'] },
   { name: 'Everyday tools', ids: ['age', 'bmi', 'percentage', 'wordcounter', 'datecalc', 'password', 'cgpa', 'attendance', 'whatsmyip'] },
-  { name: 'Fun & Entertainment', ids: ['love', 'fontconv'] },
+  { name: 'Fun & Entertainment', ids: ['love'] },
 ].map((c) => ({ name: c.name, tools: c.ids.map((id) => BY_ID[id]).filter(Boolean) }));
+// One emoji per category - used as a visual anchor in sidebars, lists and headings
+// so the page is easier to scan. Emojis never go in page titles or H1s.
+const CAT_EMOJI = { 'Home & Property': '🏠', 'Money & Tax': '💰', 'Prices & Fuel': '⛽', 'Files & converters': '📁', 'Everyday tools': '🧮', 'Fun & Entertainment': '🎉' };
 const ID_TO_CAT = {};
 CATEGORIES.forEach((c) => c.tools.forEach((t) => { ID_TO_CAT[t.id] = c.name; }));
 const POPULAR = ['jpgtopdf', 'loanemi', 'age', 'bmi', 'mortgage', 'marla', 'pta', 'currency'].map((id) => BY_ID[id]).filter(Boolean);
 
 function toolListItems(tools, go, selectedId) {
-  return tools.map((t, i) => (<React.Fragment key={t.id}>{i > 0 && <Divider />}<ListItemButton component="a" href={`/tools/${t.slug}/`} selected={selectedId === t.id} onClick={(e) => go(e, `/tools/${t.slug}/`)}><ListItemText primary={t.title} secondary={ID_TO_CAT[t.id] || t.cat} /></ListItemButton></React.Fragment>));
+  return tools.map((t, i) => (<React.Fragment key={t.id}>{i > 0 && <Divider />}<ListItemButton component="a" href={`/tools/${t.slug}/`} selected={selectedId === t.id} onClick={(e) => go(e, `/tools/${t.slug}/`)}><ListItemText primary={`${CAT_EMOJI[ID_TO_CAT[t.id]] || ''} ${t.title}`} secondary={ID_TO_CAT[t.id] || t.cat} /></ListItemButton></React.Fragment>));
 }
 
 // Tiny pathname router - no new dependency. Trailing slashes are ignored.
@@ -157,10 +157,10 @@ export default function App() {
     setMetaTag('robots', (route.kind === 'notfound' || (route.kind === 'tool' && !cur)) ? 'noindex' : 'index, follow');
     if (route.kind === 'home') { document.title = HOME_TITLE; setMetaTag('description', HOME_DESC); setCanonical(BASE_URL + '/'); setFaqJsonLd(null); }
     else if (route.kind === 'tool' && cur) { document.title = seoTitle(cur.title); setMetaTag('description', cur.desc); setCanonical(toolUrl(cur.slug)); setFaqJsonLd(cur.faqs); }
-    else if (route.kind === 'about') { document.title = 'About | Kalkio'; setMetaTag('description', 'About Kalkio: 42 free calculators and converters that run in your browser. No sign-up, no accounts.'); setCanonical(pageUrl('/about/')); setFaqJsonLd(null); }
+    else if (route.kind === 'about') { document.title = 'About | Kalkio'; setMetaTag('description', 'About Kalkio: 39 free calculators and converters that run in your browser. No sign-up, no accounts.'); setCanonical(pageUrl('/about/')); setFaqJsonLd(null); }
     else if (route.kind === 'contact') { document.title = 'Contact | Kalkio'; setMetaTag('description', 'Contact Kalkio by email. Tools run in your browser and no sign-up is needed.'); setCanonical(pageUrl('/contact/')); setFaqJsonLd(null); }
     else if (route.kind === 'privacy') { document.title = 'Privacy Policy | Kalkio'; setMetaTag('description', 'Kalkio privacy: tools run in your browser, file converters do not upload your files to a server, and no account is needed.'); setCanonical(pageUrl('/privacy/')); setFaqJsonLd(null); }
-    else { document.title = 'Tool not found | Kalkio'; setMetaTag('description', 'That tool does not exist on Kalkio. Browse all 42 free tools on the home page.'); setCanonical(BASE_URL + '/'); setFaqJsonLd(null); }
+    else { document.title = 'Tool not found | Kalkio'; setMetaTag('description', 'That tool does not exist on Kalkio. Browse all 39 free tools on the home page.'); setCanonical(BASE_URL + '/'); setFaqJsonLd(null); }
   }, [route, cur]);
 
   // Keep the sidebar on the open tool's category, so the user always sees where they are.
@@ -178,10 +178,11 @@ export default function App() {
   // the fold). On phones the panes stack with the tool first, then categories,
   // then the tools list. Sidebars stick while the center scrolls.
   const listTools = query ? searchResults : openCat === '__popular' ? POPULAR : (CATEGORIES.find((c) => c.name === openCat) || CATEGORIES[0]).tools;
-  const listTitle = query ? `Results for "${q.trim()}"` : openCat === '__popular' ? 'Most popular' : openCat;
+  const listTitle = query ? `Results for "${q.trim()}"` : openCat === '__popular' ? '⭐ Most popular' : openCat;
+  const listEmoji = query ? '' : openCat === '__popular' ? '' : (CAT_EMOJI[openCat] || '');
   const sidebarTools = (<Card elevation={1} sx={{ borderRadius: 3 }}>
     <Box sx={{ p: 2, pb: 1 }}><TextField fullWidth size="small" placeholder="Search a tool... e.g. JPG to PDF" value={q} onChange={(e) => setQ(e.target.value)} /></Box>
-    <Typography variant="subtitle1" fontWeight={700} sx={{ px: 2, pt: 1 }}>{listTitle}{!query && ` (${listTools.length})`}</Typography>
+    <Typography variant="subtitle1" fontWeight={700} sx={{ px: 2, pt: 1 }}>{listEmoji}{listEmoji && ' '}{listTitle}{!query && ` (${listTools.length})`}</Typography>
     {listTools.length === 0
       ? (<Typography variant="body1" color="text.secondary" sx={{ px: 2, py: 2 }}>No tool found - try another word, e.g. PDF, loan or Marla.</Typography>)
       : (<List>{toolListItems(listTools, go, cur ? cur.id : null)}</List>)}
@@ -192,8 +193,8 @@ export default function App() {
       <Box><Typography fontWeight={800} lineHeight={1}>Kalkio</Typography><Typography variant="caption" color="text.secondary">Free tools, no sign-up</Typography></Box>
     </Box>
     <List>
-      <ListItemButton selected={openCat === '__popular'} onClick={() => { setOpenCat('__popular'); setQ(''); }}><ListItemText primary="Most popular" secondary="Most searched tools" /></ListItemButton>
-      {CATEGORIES.map((c) => (<React.Fragment key={c.name}><Divider /><ListItemButton selected={openCat === c.name} onClick={() => { setOpenCat(c.name); setQ(''); }}><ListItemText primary={c.name} secondary={`${c.tools.length} tools`} /></ListItemButton></React.Fragment>))}
+      <ListItemButton selected={openCat === '__popular'} onClick={() => { setOpenCat('__popular'); setQ(''); }}><ListItemText primary="⭐ Most popular" secondary="Most searched tools" /></ListItemButton>
+      {CATEGORIES.map((c) => (<React.Fragment key={c.name}><Divider /><ListItemButton selected={openCat === c.name} onClick={() => { setOpenCat(c.name); setQ(''); }}><ListItemText primary={`${CAT_EMOJI[c.name]} ${c.name}`} secondary={`${c.tools.length} tools`} /></ListItemButton></React.Fragment>))}
     </List>
   </Card>);
 
@@ -230,9 +231,9 @@ export default function App() {
           <Typography variant="h4" fontWeight={800} gutterBottom>What do you want to calculate?</Typography>
           <Typography variant="body1" color="text.secondary" gutterBottom>{TOOLS.length} tools, one style. No sign-up. Pick a category on the right, or a tool on the left.</Typography>
           <Typography variant="body1" color="text.secondary" gutterBottom>Free Pakistan calculators (Marla, salary tax, PTA tax, BPS, Zakat, gold and fuel) plus file converters, QR codes, BMI and more. Everything runs in your browser.</Typography>
-          <Typography variant="h6" fontWeight={700} gutterBottom>Most popular</Typography>
+          <Typography variant="h6" fontWeight={700} gutterBottom>⭐ Most popular</Typography>
           <Card elevation={1} sx={{ borderRadius: 3 }}><List>{toolListItems(POPULAR, go, null)}</List></Card>
-          <Accordion sx={{ mt: 2 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>Common questions</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary" paragraph><b>Are the tools free?</b> Yes. All 42 tools are free and no sign-up is needed.</Typography><Typography variant="body2" color="text.secondary" paragraph><b>Does my data leave my device?</b> No. Every tool runs in your browser and does not ask you to create an account.</Typography><Typography variant="body2" color="text.secondary"><b>Are tax results official?</b> No. Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.</Typography></AccordionDetails></Accordion>
+          <Accordion sx={{ mt: 2 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>❓ Common questions</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary" paragraph><b>Are the tools free?</b> Yes. All 39 tools are free and no sign-up is needed.</Typography><Typography variant="body2" color="text.secondary" paragraph><b>Does my data leave my device?</b> No. Every tool runs in your browser and does not ask you to create an account.</Typography><Typography variant="body2" color="text.secondary"><b>Are tax results official?</b> No. Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.</Typography></AccordionDetails></Accordion>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3, textAlign: 'center' }}>Tax, bill and fuel results are estimates - confirm official rates before a financial decision.</Typography>
         </>)}
         {route.kind === 'tool' && !cur && notFound}
@@ -240,14 +241,14 @@ export default function App() {
         {route.kind === 'tool' && cur && (<>
           <Button startIcon={<ArrowBackIcon />} component="a" href="/" onClick={(e) => go(e, '/')} sx={{ mb: 2 }}>All tools</Button>
           <Typography variant="h4" fontWeight={800} gutterBottom>{cur.title}</Typography>
-          <Typography variant="body1" color="text.secondary" gutterBottom>{ID_TO_CAT[cur.id] || cur.cat} · No sign-up.</Typography>
+          <Typography variant="body1" color="text.secondary" gutterBottom>{CAT_EMOJI[ID_TO_CAT[cur.id]] || ''} {ID_TO_CAT[cur.id] || cur.cat} · No sign-up.</Typography>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>Guide last updated {CONTENT_UPDATED}.</Typography>
           {cur.el}
           {cur.id === 'marla' && (<>
             <Box sx={{ bgcolor: '#fff8e1', borderRadius: 2, p: 2, mt: 2 }}><Typography variant="body2">225 sq ft is common in housing societies like DHA and Bahria Town. 250 sq ft is the CDA Islamabad standard. 272.25 sq ft is the revenue-record Marla. Confirm from your plot documents which one applies to you.</Typography></Box>
             <Accordion sx={{ mt: 2 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>How it works</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary">Square feet = Marla × sq ft per Marla. Square yards = square feet ÷ 9. Square metres = square feet ÷ 10.7639. Kanal = Marla ÷ 20. Acre = Marla ÷ 160.</Typography></AccordionDetails></Accordion>
             <Accordion><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>225 vs 250 vs 272.25 - quick table</Typography></AccordionSummary><AccordionDetails><Table size="small"><TableBody>{[[1, 225, 250, 272.25], [5, 1125, 1250, 1361.25], [10, 2250, 2500, 2722.5], [20, 4500, 5000, 5445]].map(([m, a, b, c]) => (<TableRow key={m}><TableCell>{m === 20 ? '20 = 1 Kanal' : `${m} Marla`}</TableCell><TableCell>{fmt(a)}</TableCell><TableCell>{fmt(b)}</TableCell><TableCell>{fmt(c)}</TableCell></TableRow>))}</TableBody></Table></AccordionDetails></Accordion>
-            <Accordion><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>Common questions</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary" paragraph><b>How many Marla in 1 Kanal?</b> 20 Marla, under both standards.</Typography><Typography variant="body2" color="text.secondary"><b>Which standard should I use?</b> The one written in your plot documents.</Typography></AccordionDetails></Accordion>
+            <Accordion><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>❓ Common questions</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary" paragraph><b>How many Marla in 1 Kanal?</b> 20 Marla, under both standards.</Typography><Typography variant="body2" color="text.secondary"><b>Which standard should I use?</b> The one written in your plot documents.</Typography></AccordionDetails></Accordion>
           </>)}
         </>)}
         {route.kind === 'tool' && cur && (<Box sx={{ mt: 2 }}><Button variant="outlined" color="success" startIcon={<WhatsAppIcon />} component="a" href={`https://wa.me/?text=${encodeURIComponent(cur.title + ' - ' + toolUrl(cur.slug))}`} target="_blank" rel="noopener noreferrer">Share on WhatsApp</Button></Box>)}
@@ -256,10 +257,10 @@ export default function App() {
           {s.p.map((para, i) => (<Typography key={i} variant="body1" color="text.secondary" paragraph>{para}</Typography>))}
           {s.table && (<Box sx={{ overflowX: 'auto' }}><Table size="small"><TableBody><TableRow>{s.table.head.map((c) => (<TableCell key={c} sx={{ fontWeight: 700 }}>{c}</TableCell>))}</TableRow>{s.table.rows.map((r, ri) => (<TableRow key={ri}>{r.map((c, ci) => (<TableCell key={ci}>{c}</TableCell>))}</TableRow>))}</TableBody></Table></Box>)}
         </Box>))}</Box>)}
-        {route.kind === 'tool' && cur && cur.id !== 'marla' && cur.faqs && cur.faqs.length > 0 && (<Accordion sx={{ mt: 2 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>Common questions</Typography></AccordionSummary><AccordionDetails>{cur.faqs.map(([fq, fa]) => (<Typography key={fq} variant="body2" color="text.secondary" paragraph><b>{fq}</b> {fa}</Typography>))}</AccordionDetails></Accordion>)}
-        {route.kind === 'tool' && cur && (() => { const sib = (CATEGORIES.find((c) => c.name === ID_TO_CAT[cur.id]) || { tools: [] }).tools.filter((t) => t.id !== cur.id).slice(0, 5); return sib.length > 0 ? (<Box sx={{ mt: 4 }}><Typography variant="h6" component="h2" fontWeight={700} gutterBottom>More free tools</Typography><Card elevation={1} sx={{ borderRadius: 3 }}><List>{toolListItems(sib, go, null)}</List></Card></Box>) : null; })()}
+        {route.kind === 'tool' && cur && cur.id !== 'marla' && cur.faqs && cur.faqs.length > 0 && (<Accordion sx={{ mt: 2 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>❓ Common questions</Typography></AccordionSummary><AccordionDetails>{cur.faqs.map(([fq, fa]) => (<Typography key={fq} variant="body2" color="text.secondary" paragraph><b>{fq}</b> {fa}</Typography>))}</AccordionDetails></Accordion>)}
+        {route.kind === 'tool' && cur && (() => { const sib = (CATEGORIES.find((c) => c.name === ID_TO_CAT[cur.id]) || { tools: [] }).tools.filter((t) => t.id !== cur.id).slice(0, 5); return sib.length > 0 ? (<Box sx={{ mt: 4 }}><Typography variant="h6" component="h2" fontWeight={700} gutterBottom>🔗 More free tools</Typography><Card elevation={1} sx={{ borderRadius: 3 }}><List>{toolListItems(sib, go, null)}</List></Card></Box>) : null; })()}
         {route.kind === 'about' && staticPage('About Kalkio', (<>
-          <Typography variant="body1" paragraph>Kalkio is a collection of 42 free calculators and converters, covering property, tax and salary, prices, finance, files and everyday calculations.</Typography>
+          <Typography variant="body1" paragraph>Kalkio is a collection of 39 free calculators and converters, covering property, tax and salary, prices, finance, files and everyday calculations.</Typography>
           <Typography variant="body1" paragraph>Every tool runs in the visitor’s browser - there is no backend, no database, no login and no sign-up. File converters also run fully in the browser.</Typography>
           <Typography variant="body1" paragraph>Tax, bill and fuel results are estimates - confirm official rates before a financial decision.</Typography>
         </>))}
