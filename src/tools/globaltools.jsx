@@ -12,11 +12,11 @@ function emi(principal, annualPct, months) {
   return principal * r / (1 - Math.pow(1 + r, -months));
 }
 
-// Loan / EMI calculator — global, pure arithmetic.
+// Loan / EMI calculator - global, pure arithmetic.
 export function LoanEmiTool() {
   const [amt, setAmt] = useState('1000000'); const [rate, setRate] = useState('12'); const [years, setYears] = useState('5');
   const p = parseFloat(amt) || 0; const m = emi(p, parseFloat(rate) || 0, (parseFloat(years) || 0) * 12); const total = m * (parseFloat(years) || 0) * 12;
-  return (<Wrap note="Monthly EMI = P × r × (1+r)^n ÷ ((1+r)^n − 1). Rates vary by bank and country — enter your bank's actual rate. No personal data is stored or sent anywhere.">
+  return (<Wrap note="Monthly EMI = P × r × (1+r)^n ÷ ((1+r)^n − 1). Rates vary by bank and country - enter your bank's actual rate. No personal data is stored or sent anywhere.">
     <TextField fullWidth label="Loan amount" type="number" value={amt} onChange={(e) => setAmt(e.target.value)} sx={{ mb: 2 }} />
     <TextField fullWidth label="Interest rate (% per year)" type="number" value={rate} onChange={(e) => setRate(e.target.value)} sx={{ mb: 2 }} />
     <TextField fullWidth label="Loan duration (years)" type="number" value={years} onChange={(e) => setYears(e.target.value)} />
@@ -24,12 +24,12 @@ export function LoanEmiTool() {
   </Wrap>);
 }
 
-// Mortgage affordability — how much house can your income afford?
+// Mortgage affordability - how much house can your income afford?
 export function MortgageTool() {
   const [income, setIncome] = useState('100000'); const [down, setDown] = useState('2000000'); const [rate, setRate] = useState('12'); const [years, setYears] = useState('20'); const [share, setShare] = useState('30');
   const inc = parseFloat(income) || 0; const d = parseFloat(down) || 0; const r = (parseFloat(rate) || 0) / 100 / 12; const n = (parseFloat(years) || 0) * 12; const budget = inc * (parseFloat(share) || 0) / 100;
   const loan = budget > 0 && n > 0 ? (r === 0 ? budget * n : budget * (1 - Math.pow(1 + r, -n)) / r) : 0;
-  return (<Wrap note="Rule of thumb used here: keep the monthly mortgage payment at or below the % of income you choose (default 30%). This is an affordability estimate, not a bank approval — banks also check credit, debts and property value.">
+  return (<Wrap note="Rule of thumb used here: keep the monthly mortgage payment at or below the % of income you choose (default 30%). This is an affordability estimate, not a bank approval - banks also check credit, debts and property value.">
     <TextField fullWidth label="Monthly income" type="number" value={income} onChange={(e) => setIncome(e.target.value)} sx={{ mb: 2 }} />
     <TextField fullWidth label="Down payment saved" type="number" value={down} onChange={(e) => setDown(e.target.value)} sx={{ mb: 2 }} />
     <TextField fullWidth label="Mortgage rate (% per year)" type="number" value={rate} onChange={(e) => setRate(e.target.value)} sx={{ mb: 2 }} />
@@ -39,14 +39,14 @@ export function MortgageTool() {
   </Wrap>);
 }
 
-// QR Code Generator — fully client-side via qrcode library. Nothing is uploaded.
+// QR Code Generator - fully client-side via qrcode library. Nothing is uploaded.
 export function QrTool() {
   const [text, setText] = useState('https://example.com'); const [url, setUrl] = useState(''); const [err, setErr] = useState('');
   const gen = async () => {
     try { const QRCode = (await import('qrcode')).default; setUrl(await QRCode.toDataURL(text || ' ', { width: 512, margin: 2 })); setErr(''); }
     catch (e) { setErr('QR generation failed in this browser.'); }
   };
-  return (<Wrap note="Your text never leaves your device — the QR code is drawn in your browser only. Use it for links, Wi-Fi details, or plain text.">
+  return (<Wrap note="Your text never leaves your device - the QR code is drawn in your browser only. Use it for links, Wi-Fi details, or plain text.">
     <TextField fullWidth label="Text or link for the QR code" value={text} onChange={(e) => setText(e.target.value)} sx={{ mb: 2 }} />
     <Button variant="contained" fullWidth onClick={gen} sx={{ mb: 2 }}>Generate QR Code</Button>
     {err && <Alert severity="warning" sx={{ mb: 2 }}>{err}</Alert>}
@@ -54,18 +54,18 @@ export function QrTool() {
   </Wrap>);
 }
 
-// BMI calculator — WHO categories.
+// BMI calculator - WHO categories.
 export function BmiTool() {
   const [h, setH] = useState('170'); const [w, setW] = useState('70'); const hm = (parseFloat(h) || 0) / 100; const kg = parseFloat(w) || 0; const bmi = hm > 0 ? kg / (hm * hm) : 0;
   const cat = bmi === 0 ? '' : bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Normal weight' : bmi < 30 ? 'Overweight' : 'Obese';
-  return (<Wrap note="BMI = weight (kg) ÷ height (m)². Categories follow WHO ranges. BMI does not distinguish muscle from fat — athletes and children need a different assessment.">
+  return (<Wrap note="BMI = weight (kg) ÷ height (m)². Categories follow WHO ranges. BMI does not distinguish muscle from fat - athletes and children need a different assessment.">
     <TextField fullWidth label="Height (cm)" type="number" value={h} onChange={(e) => setH(e.target.value)} sx={{ mb: 2 }} />
     <TextField fullWidth label="Weight (kg)" type="number" value={w} onChange={(e) => setW(e.target.value)} />
-    {bmi > 0 && (<><Hero value={fmt(bmi)} unit={cat} /><Rows rows={[['Underweight', 'Below 18.5'], ['Normal', '18.5 – 24.9'], ['Overweight', '25 – 29.9'], ['Obese', '30 and above']]} /></>)}
+    {bmi > 0 && (<><Hero value={fmt(bmi)} unit={cat} /><Rows rows={[['Underweight', 'Below 18.5'], ['Normal', '18.5 - 24.9'], ['Overweight', '25 - 29.9'], ['Obese', '30 and above']]} /></>)}
   </Wrap>);
 }
 
-// Age calculator — from date of birth to today.
+// Age calculator - from date of birth to today.
 export function AgeTool() {
   const [dob, setDob] = useState('2000-01-01'); const [target, setTarget] = useState('');
   const calc = () => {
@@ -86,7 +86,7 @@ export function AgeTool() {
   </Wrap>);
 }
 
-// Percentage calculator — three modes.
+// Percentage calculator - three modes.
 export function PercentageTool() {
   const [mode, setMode] = useState('of'); const [a, setA] = useState('20'); const [b, setB] = useState('500');
   const x = parseFloat(a) || 0; const y = parseFloat(b) || 0;
@@ -100,17 +100,17 @@ export function PercentageTool() {
   </Wrap>);
 }
 
-// Word counter — counts in the browser, text never leaves the device.
+// Word counter - counts in the browser, text never leaves the device.
 export function WordCounterTool() {
   const [text, setText] = useState('');
   const words = text.trim() ? text.trim().split(/\s+/).length : 0; const chars = text.length; const charsNoSpace = text.replace(/\s/g, '').length; const sentences = text.split(/[.!?]+/).filter((s) => s.trim()).length; const paras = text.split(/\n\s*\n/).filter((s) => s.trim()).length;
-  return (<Wrap note="Your text is counted in your browser only — nothing is uploaded or stored. Reading time assumes about 200 words per minute.">
+  return (<Wrap note="Your text is counted in your browser only - nothing is uploaded or stored. Reading time assumes about 200 words per minute.">
     <TextField fullWidth multiline rows={6} label="Paste or type your text" value={text} onChange={(e) => setText(e.target.value)} />
     <Rows rows={[['Words', fmt(words)], ['Characters (with spaces)', fmt(chars)], ['Characters (no spaces)', fmt(charsNoSpace)], ['Sentences', fmt(sentences)], ['Paragraphs', fmt(paras)], ['Reading time', words === 0 ? '0 min' : (words / 200 < 1 ? 'Under 1 min' : fmt(words / 200) + ' min')]]} />
   </Wrap>);
 }
 
-// Password generator — generated locally, never stored or sent.
+// Password generator - generated locally, never stored or sent.
 export function PasswordTool() {
   const [len, setLen] = useState('16'); const [upper, setUpper] = useState(true); const [lower, setLower] = useState(true); const [nums, setNums] = useState(true); const [syms, setSyms] = useState(true); const [pwd, setPwd] = useState(''); const [copied, setCopied] = useState(false);
   const gen = () => {
@@ -118,12 +118,12 @@ export function PasswordTool() {
     if (!pool) { setPwd(''); return; }
     const arr = new Uint32Array(parseInt(len, 10) || 16); crypto.getRandomValues(arr); setPwd(Array.from(arr, (n) => pool[n % pool.length]).join('')); setCopied(false);
   };
-  return (<Wrap note="Generated with your browser's secure random generator. It is never stored, never sent to a server, and never shown to anyone else. Use a password manager to save it — do not reuse it across sites.">
+  return (<Wrap note="Generated with your browser's secure random generator. It is never stored, never sent to a server, and never shown to anyone else. Use a password manager to save it - do not reuse it across sites.">
     <TextField fullWidth label="Length" type="number" value={len} onChange={(e) => setLen(e.target.value)} sx={{ mb: 2 }} />
     <ToggleButtonGroup value={''} sx={{ mb: 2, flexWrap: 'wrap' }}>
-      <ToggleButton value="upper" selected={upper} onClick={() => setUpper(!upper)}>A–Z</ToggleButton>
-      <ToggleButton value="lower" selected={lower} onClick={() => setLower(!lower)}>a–z</ToggleButton>
-      <ToggleButton value="nums" selected={nums} onClick={() => setNums(!nums)}>0–9</ToggleButton>
+      <ToggleButton value="upper" selected={upper} onClick={() => setUpper(!upper)}>A-Z</ToggleButton>
+      <ToggleButton value="lower" selected={lower} onClick={() => setLower(!lower)}>a-z</ToggleButton>
+      <ToggleButton value="nums" selected={nums} onClick={() => setNums(!nums)}>0-9</ToggleButton>
       <ToggleButton value="syms" selected={syms} onClick={() => setSyms(!syms)}>Symbols</ToggleButton>
     </ToggleButtonGroup>
     <Button variant="contained" fullWidth onClick={gen} sx={{ mb: 2 }}>Generate Password</Button>
@@ -131,11 +131,11 @@ export function PasswordTool() {
   </Wrap>);
 }
 
-// CGPA calculator — grades + credit hours, plus CGPA to percentage.
+// CGPA calculator - grades + credit hours, plus CGPA to percentage.
 export function CgpaTool() {
   const [rows, setRows] = useState([{ grade: '4.0', credits: '3' }, { grade: '3.7', credits: '3' }, { grade: '3.3', credits: '3' }]);
   const totalCredits = rows.reduce((s, r) => s + (parseFloat(r.credits) || 0), 0); const points = rows.reduce((s, r) => s + (parseFloat(r.grade) || 0) * (parseFloat(r.credits) || 0), 0); const cgpa = totalCredits > 0 ? points / totalCredits : 0;
-  return (<Wrap note="CGPA = total grade points ÷ total credit hours. Grade points use the 4.0 scale (A = 4.0, A− = 3.7, B+ = 3.3, B = 3.0, etc.) — if your university uses a different scale, enter its grade points. Percentage = CGPA × 25 is only a rough conversion used by some universities; confirm with your university.">
+  return (<Wrap note="CGPA = total grade points ÷ total credit hours. Grade points use the 4.0 scale (A = 4.0, A− = 3.7, B+ = 3.3, B = 3.0, etc.) - if your university uses a different scale, enter its grade points. Percentage = CGPA × 25 is only a rough conversion used by some universities; confirm with your university.">
     {rows.map((r, i) => (<Box key={i} sx={{ display: 'flex', gap: 1, mb: 1 }}>
       <TextField select fullWidth label="Grade point" value={r.grade} onChange={(e) => { const c = [...rows]; c[i].grade = e.target.value; setRows(c); }}>{['4.0', '3.7', '3.3', '3.0', '2.7', '2.3', '2.0', '1.7', '1.0', '0'].map((g) => (<MenuItem key={g} value={g}>{g}</MenuItem>))}</TextField>
       <TextField fullWidth label="Credit hours" type="number" value={r.credits} onChange={(e) => { const c = [...rows]; c[i].credits = e.target.value; setRows(c); }} />
@@ -145,7 +145,7 @@ export function CgpaTool() {
   </Wrap>);
 }
 
-// PNG to JPG — browser-only, white background for transparency.
+// PNG to JPG - browser-only, white background for transparency.
 export function PngToJpgTool() {
   const [url, setUrl] = useState(''); const [name, setName] = useState(''); const [err, setErr] = useState(''); const [busy, setBusy] = useState(false);
   const onFile = (f) => {
@@ -155,14 +155,14 @@ export function PngToJpgTool() {
       c.toBlob((b) => { if (b) setUrl(URL.createObjectURL(b)); else setErr('Conversion failed in this browser.'); setBusy(false); }, 'image/jpeg', 0.92);
     }; img.onerror = () => { setErr('This file could not be decoded in this browser.'); setBusy(false); }; img.src = src;
   };
-  return (<Wrap note="Private by design — your file never leaves your device. JPG has no transparency, so transparent areas become white.">
+  return (<Wrap note="Private by design - your file never leaves your device. JPG has no transparency, so transparent areas become white.">
     <Button variant="contained" component="label" fullWidth sx={{ mb: 2 }}>{busy ? 'Converting…' : 'Choose PNG file'}<input type="file" hidden accept="image/png" onChange={(e) => onFile(e.target.files[0])} /></Button>
     {err && <Alert severity="warning" sx={{ mb: 2 }}>{err}</Alert>}
     {url && (<Box textAlign="center"><Typography variant="body1" sx={{ mb: 1 }}>Ready: {name}</Typography><Button variant="outlined" href={url} download={name}>Download JPG</Button></Box>)}
   </Wrap>);
 }
 
-// PDF to JPG — renders PDF pages in the browser via pdfjs-dist, downloads as JPGs.
+// PDF to JPG - renders PDF pages in the browser via pdfjs-dist, downloads as JPGs.
 export function PdfToJpgTool() {
   const [urls, setUrls] = useState([]); const [err, setErr] = useState(''); const [busy, setBusy] = useState(false);
   const onFile = async (f) => {
@@ -180,7 +180,7 @@ export function PdfToJpgTool() {
     } catch (e) { setErr('This PDF could not be rendered in this browser. Try a simpler PDF, or use a desktop PDF tool.'); }
     setBusy(false);
   };
-  return (<Wrap note="Private by design — your PDF never leaves your device. Each page downloads as a separate JPG. Very large PDFs may be slow on a phone.">
+  return (<Wrap note="Private by design - your PDF never leaves your device. Each page downloads as a separate JPG. Very large PDFs may be slow on a phone.">
     <Button variant="contained" component="label" fullWidth sx={{ mb: 2 }}>{busy ? 'Rendering…' : 'Choose PDF file'}<input type="file" hidden accept="application/pdf" onChange={(e) => onFile(e.target.files[0])} /></Button>
     {err && <Alert severity="warning" sx={{ mb: 2 }}>{err}</Alert>}
     {urls.length > 0 && (<Box>{urls.map((u, i) => (<Box key={i} sx={{ mb: 1, textAlign: 'center' }}><Button variant="outlined" href={u} download={`page-${i + 1}.jpg`}>Download Page {i + 1} JPG</Button></Box>))}</Box>)}

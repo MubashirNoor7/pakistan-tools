@@ -6,7 +6,7 @@ import { fmt, Hero, Rows } from './property.jsx';
 function Wrap({ children, note }) {
   return (<><Card elevation={2} sx={{ borderRadius: 3 }}><CardContent sx={{ p: 3 }}>{children}</CardContent></Card>{note && <Alert severity="info" sx={{ mt: 2 }}>{note}</Alert>}</>);
 }
-// Electricity 2026 — NEPRA SRO 279(I)/2026, effective 12 Feb 2026. Key correction:
+// Electricity 2026 - NEPRA SRO 279(I)/2026, effective 12 Feb 2026. Key correction:
 // Protected = slab-by-slab (telescopic) up to 200 units. Unprotected = rate of the slab reached
 // applied to EVERY unit (not telescopic). Lifeline = up to 100 units, no fixed charge.
 // GST 18% is added; FPA (fuel adjustment, varies monthly) is an editable input, default 0.
@@ -17,20 +17,20 @@ export function ElectricityTool() {
   let energy = 0; let fixed = 0; let note = ''; let parts = [];
   if (cat === 'lifeline') {
     if (u <= 100) { energy = u <= 50 ? u * 3.95 : 50 * 3.95 + (u - 50) * 7.74; parts = [['Energy charges (lifeline)', 'Rs ' + fmt(energy)]]; }
-    else { const b = UNPROT.find(([max]) => u <= max); energy = u * b[1]; fixed = kw * b[2]; parts = [['Unprotected rate applied to all units (lifeline ended at 100)', `Rs ${fmt(b[1])} × ${fmt(u)}`]]; note = 'Lifeline is only up to 100 units — above 100 the bill is calculated at unprotected rates, NOT at lifeline rates.'; }
+    else { const b = UNPROT.find(([max]) => u <= max); energy = u * b[1]; fixed = kw * b[2]; parts = [['Unprotected rate applied to all units (lifeline ended at 100)', `Rs ${fmt(b[1])} × ${fmt(u)}`]]; note = 'Lifeline is only up to 100 units - above 100 the bill is calculated at unprotected rates, NOT at lifeline rates.'; }
   } else if (cat === 'protected') {
-    if (u > 200) { note = 'Above 200 units you lose protected status — calculated here at unprotected rates.'; const b = UNPROT.find(([max]) => u <= max); energy = u * b[1]; fixed = kw * b[2]; parts = [['Unprotected rate applied to all units', `Rs ${fmt(b[1])} × ${fmt(u)}`]]; }
+    if (u > 200) { note = 'Above 200 units you lose protected status - calculated here at unprotected rates.'; const b = UNPROT.find(([max]) => u <= max); energy = u * b[1]; fixed = kw * b[2]; parts = [['Unprotected rate applied to all units', `Rs ${fmt(b[1])} × ${fmt(u)}`]]; }
     else { energy = u <= 100 ? u * 10.54 : 100 * 10.54 + (u - 100) * 13.01; fixed = kw * (u <= 100 ? 200 : 300); parts = [['Energy charges (slab by slab)', 'Rs ' + fmt(energy)]]; }
   } else {
     const b = UNPROT.find(([max]) => u <= max); energy = u * b[1]; fixed = kw * b[2]; parts = [['Rate for your slab, on all units', `Rs ${fmt(b[1])} × ${fmt(u)}`]];
   }
   const fpaAmt = u * fpaR; const sub = energy + fixed + fpaAmt; const gst = sub * 0.18; const total = sub + gst;
-  return (<Wrap note="Estimate only — base tariff SRO 279(I)/2026. Fixed charge is per kW of sanctioned load. GST 18% included below; FPA changes monthly and is editable. Your actual bill also depends on arrears, meter rent and other adjustments.">
+  return (<Wrap note="Estimate only - base tariff SRO 279(I)/2026. Fixed charge is per kW of sanctioned load. GST 18% included below; FPA changes monthly and is editable. Your actual bill also depends on arrears, meter rent and other adjustments.">
     <TextField select fullWidth label="DISCO" value={disco} onChange={(e) => setDisco(e.target.value)} sx={{ mb: 2 }}>{['LESCO', 'K-Electric', 'IESCO', 'GEPCO', 'FESCO', 'MEPCO', 'PESCO', 'HESCO', 'SEPCO', 'QESCO'].map((d) => (<MenuItem key={d} value={d}>{d}</MenuItem>))}</TextField>
-    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>NEPRA's base tariff is uniform across DISCOs — changing DISCO does NOT change the rate, it only labels your bill. That is why the calculation stays the same.</Typography>
+    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>NEPRA's base tariff is uniform across DISCOs - changing DISCO does NOT change the rate, it only labels your bill. That is why the calculation stays the same.</Typography>
     <ToggleButtonGroup value={cat} exclusive fullWidth onChange={(_, nv) => nv && setCat(nv)} sx={{ mb: 2 }}><ToggleButton value="lifeline">Lifeline</ToggleButton><ToggleButton value="protected">Protected</ToggleButton><ToggleButton value="unprotected">Unprotected</ToggleButton></ToggleButtonGroup>
     <TextField fullWidth label="Units used (kWh)" type="number" value={units} onChange={(e) => setUnits(e.target.value)} sx={{ mb: 2 }} />
-    <TextField fullWidth label="Sanctioned load (kW) — for fixed charge" type="number" value={load} onChange={(e) => setLoad(e.target.value)} sx={{ mb: 2 }} />
+    <TextField fullWidth label="Sanctioned load (kW) - for fixed charge" type="number" value={load} onChange={(e) => setLoad(e.target.value)} sx={{ mb: 2 }} />
     <TextField fullWidth label="Fuel Price Adjustment (Rs per unit, 0 if unknown)" type="number" value={fpa} onChange={(e) => setFpa(e.target.value)} />
     {u > 0 && (<><Hero value={'Rs ' + fmt(total)} unit="Estimated total bill (incl. 18% GST)" eq={`${fmt(u)} units · ${disco} · ${cat}`} /><Rows rows={[...parts, ['Fixed charge', 'Rs ' + fmt(fixed)], ['FPA', 'Rs ' + fmt(fpaAmt)], ['GST (18%)', 'Rs ' + fmt(gst)]]} /></>)}
     {note && <Typography variant="body2" color="warning.main" sx={{ mt: 2 }}>{note}</Typography>}
@@ -43,7 +43,7 @@ export function FuelTool() {
   const d = parseFloat(dist) || 0; const m = parseFloat(mile) || 0; const r = parseFloat(rate) || 0; const litres = m > 0 ? d / m : 0; const cost = litres * r;
   return (<Wrap note="Fuel rates change often. Defaults are the 5 Nov 2026 OGRA notified rates (petrol Rs 362.00, diesel Rs 387.81), loaded from rates.json so they can be updated without rebuilding the app. Edit the rate to today's OGRA rate for an exact trip cost.">
     <ToggleButtonGroup value={fuel} exclusive fullWidth onChange={(_, nv) => { if (nv) { setFuel(nv); setRate(nv === 'petrol' ? String(fetched ? fetched.petrol : RATES.petrol) : String(fetched ? fetched.diesel : RATES.diesel)); } }} sx={{ mb: 2 }}><ToggleButton value="petrol">Petrol</ToggleButton><ToggleButton value="diesel">Diesel</ToggleButton></ToggleButtonGroup>
-    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Default rate date: {rateDate} — {rateSrc}. {fuelAgeDays(rateDate) > 15 ? 'Warning: this rate is more than 15 days old and may be out of date — enter today\'s OGRA rate.' : 'Rates are checked daily; if OGRA changes them, the default is updated from rates.json.'}</Typography>
+    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Default rate date: {rateDate} - {rateSrc}. {fuelAgeDays(rateDate) > 15 ? 'Warning: this rate is more than 15 days old and may be out of date - enter today\'s OGRA rate.' : 'Rates are checked daily; if OGRA changes them, the default is updated from rates.json.'}</Typography>
     <TextField fullWidth label="Distance (km)" type="number" value={dist} onChange={(e) => setDist(e.target.value)} sx={{ mb: 2 }} />
     <TextField fullWidth label="Mileage (km per litre)" type="number" value={mile} onChange={(e) => setMile(e.target.value)} sx={{ mb: 2 }} />
     <TextField fullWidth label="Fuel rate (Rs per litre)" type="number" value={rate} onChange={(e) => setRate(e.target.value)} />
@@ -67,7 +67,7 @@ function FileTool({ from, to, mime, ext }) {
       ctx.drawImage(img, 0, 0); c.toBlob((b) => { if (b) setUrl(URL.createObjectURL(b)); else setErr('Conversion failed in this browser.'); setBusy(false); }, mime, 0.92);
     }; img.onerror = () => { setErr(from === 'HEIC' ? 'This HEIC file could not be decoded in this browser. Try exporting it as JPG from Photos, or try again in Chrome / Safari.' : 'This file could not be decoded in this browser.'); setBusy(false); }; img.src = src;
   };
-  return (<Wrap note="Private by design — your file never leaves your device. Conversion runs in your browser only, nothing is uploaded to a server.">
+  return (<Wrap note="Private by design - your file never leaves your device. Conversion runs in your browser only, nothing is uploaded to a server.">
     <Button variant="contained" component="label" fullWidth sx={{ mb: 2 }}>{busy ? 'Converting…' : `Choose ${from} file`}<input type="file" hidden accept="image/*" onChange={(e) => onFile(e.target.files[0])} /></Button>
     {err && <Alert severity="warning" sx={{ mb: 2 }}>{err}</Alert>}
     {url && (<Box textAlign="center"><Typography variant="body1" sx={{ mb: 1 }}>Ready: {name}</Typography><Button variant="outlined" href={url} download={name}>Download {to.toUpperCase()}</Button></Box>)}
