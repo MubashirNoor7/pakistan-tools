@@ -5,7 +5,7 @@
 export const BASE_URL = 'https://kalkio.vercel.app';
 export const BRAND = 'Kalkio';
 export const HOME_TITLE = 'Kalkio - Free Calculators & Converters (No Sign-up)';
-export const HOME_DESC = 'Kalkio: 40 free calculators and converters - Marla, salary tax, PTA tax, SIP, loan EMI, QR codes, BMI, file converters and more. No sign-up, everything runs in your browser.';
+export const HOME_DESC = 'Kalkio: 42 free calculators and converters - Marla, salary tax, PTA tax, SIP, loan EMI, QR codes, BMI, file converters and more. No sign-up, everything runs in your browser.';
 
 // Universal FAQ answers (true for every tool on this site).
 const FREE = ['Is this tool free?', 'Yes. It is free and no sign-up is needed.'];
@@ -55,6 +55,8 @@ export const SEO_BY_ID = {
   love: { slug: 'love-calculator-for-fun-only', desc: 'A love calculator for fun only - not a real prediction. Free, no sign-up, and it runs in your browser.', faqs: [FREE, ['Is the love calculator real?', 'No. It is for fun only.'], BROWSER] },
   attendance: { slug: 'attendance-calculator-students', desc: 'Work out attendance percentage for students from attended and total classes. Free, no sign-up, and it runs in your browser.', faqs: [FREE, BROWSER] },
   carloan: { slug: 'car-loan-calculator-emi-total-interest', desc: 'Estimate a car loan’s EMI and total interest from price, down payment and rate. An estimate only, not a bank offer.', faqs: [FREE, ESTIMATE, BROWSER] },
+  htmltovideo: { slug: 'html-to-video-converter-online', desc: 'Turn HTML code into a video in your browser: paste code, preview it live, record 3, 5 or 10 seconds and download a .webm video. Free, no sign-up, nothing is uploaded.', faqs: [FREE, ['What format is the video?', 'The video downloads as .webm, which plays in browsers and phones. True .mp4 needs a server, so this tool does not make .mp4 files.'], BROWSER] },
+  whatsmyip: { slug: 'what-is-my-ip-address', desc: 'See your public IP address, approximate location, internet provider and time zone. Free, no sign-up, and your IP is not stored.', faqs: [FREE, ['Is my exact location shown?', 'No. The location is approximate and comes from your internet provider, not GPS.'], BROWSER] },
 };
 
 // Page title: tool title + " | Kalkio" wherever it fits under 60 characters
