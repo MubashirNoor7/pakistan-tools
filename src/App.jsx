@@ -73,7 +73,7 @@ const TOOLS = [
   { id: 'attendance', title: 'Attendance Calculator (Students)', cat: 'Study - global', el: <AttendanceTool /> },
   { id: 'carloan', title: 'Car Loan Calculator (EMI + Total Interest)', cat: 'Finance - global', el: <CarLoanTool /> },
   { id: 'htmltovideo', title: 'HTML to Video Converter Online (Code to Video)', cat: 'Files & converters', el: <HtmlToVideoTool /> },
-  { id: 'whatsmyip', title: 'What Is My IP Address? (IP, Location & ISP)', cat: 'Everyday tools', el: <WhatsMyIpTool /> },
+  { id: 'whatsmyip', title: "What's My IP Address? (IP, Location & ISP)", cat: 'Everyday tools', el: <WhatsMyIpTool /> },
 ];
 // Attach SEO data (slug, description, FAQs) from the single source in seo-data.js.
 // No tool component, formula or rate is changed here.
