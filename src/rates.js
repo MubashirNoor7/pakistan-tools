@@ -1,4 +1,4 @@
-// Central rates file — ONE place for rates that change.
+// Central rates file - ONE place for rates that change.
 // Fuel is the only rate that changes often (OGRA, fortnightly / daily mechanism).
 // Live site: FuelTool first tries /rates.json (public folder) so updating that
 // one JSON file on the server updates every visitor WITHOUT a rebuild.

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AppBar, Toolbar, Typography, Container, Card, CardContent, Box, TextField, InputAdornment, ToggleButton, ToggleButtonGroup, Chip, Stack, Button, List, ListItem, ListItemText, ListItemButton, Divider, Accordion, AccordionSummary, AccordionDetails, Table, TableBody, TableRow, TableCell, CssBaseline, Link } from '@mui/material';
+import { AppBar, Toolbar, Typography, Container, Card, CardContent, Box, TextField, InputAdornment, ToggleButton, ToggleButtonGroup, Chip, Stack, Button, List, ListItem, ListItemText, ListItemButton, Divider, Accordion, AccordionSummary, AccordionDetails, Table, TableBody, TableRow, TableCell, CssBaseline, Link, Grid } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
@@ -23,7 +23,7 @@ function MarlaTool() {
     {std === 'custom' && <TextField fullWidth label="Custom sq ft per Marla" type="number" value={custom} onChange={(e) => setCustom(e.target.value)} sx={{ mb: 2 }} />}
     <TextField fullWidth label={mode === 'marla' ? 'Marla' : 'Square Feet'} type="number" value={val} onChange={(e) => setVal(e.target.value)} inputProps={{ inputMode: 'decimal' }} InputProps={{ endAdornment: <InputAdornment position="end">{mode === 'marla' ? 'Marla' : 'Sq Ft'}</InputAdornment> }} sx={{ '& input': { fontSize: 26, fontWeight: 700 } }} />
     {mode === 'marla' && <Stack direction="row" spacing={1} sx={{ mt: 2 }}>{[1, 5, 10, 20].map((n) => (<Chip key={n} label={n} variant="outlined" clickable onClick={() => setVal(String(n))} />))}</Stack>}
-    <Box textAlign="center" sx={{ py: 3 }}><Typography variant="h2" fontWeight={800}>{valid ? fmt(mode === 'marla' ? sqft : marla) : '—'}</Typography><Typography color="text.secondary">{mode === 'marla' ? 'Square Feet' : 'Marla'}</Typography><Typography variant="body2" color="text.disabled" sx={{ mt: 1 }}>{valid && (mode === 'marla' ? `${fmt(v)} Marla × ${fmt(s)} sq ft` : `${fmt(v)} sq ft ÷ ${fmt(s)} sq ft`)}</Typography></Box>
+    <Box textAlign="center" sx={{ py: 3 }}><Typography variant="h2" fontWeight={800}>{valid ? fmt(mode === 'marla' ? sqft : marla) : '-'}</Typography><Typography color="text.secondary">{mode === 'marla' ? 'Square Feet' : 'Marla'}</Typography><Typography variant="body2" color="text.disabled" sx={{ mt: 1 }}>{valid && (mode === 'marla' ? `${fmt(v)} Marla × ${fmt(s)} sq ft` : `${fmt(v)} sq ft ÷ ${fmt(s)} sq ft`)}</Typography></Box>
     {valid && <List disablePadding>{mode === 'marla' ? (<><ListItem disableGutters><ListItemText primary="Square Yards" /><Typography fontWeight={700}>{fmt(sqft / 9)}</Typography></ListItem><Divider /><ListItem disableGutters><ListItemText primary="Square Metres" /><Typography fontWeight={700}>{fmt(sqft / 10.7639)}</Typography></ListItem><Divider /><ListItem disableGutters><ListItemText primary="Kanal" /><Typography fontWeight={700}>{fmt(v / 20)}</Typography></ListItem><Divider /><ListItem disableGutters><ListItemText primary="Acre" /><Typography fontWeight={700}>{fmt(v / 160)}</Typography></ListItem></>) : (<><ListItem disableGutters><ListItemText primary="Kanal" /><Typography fontWeight={700}>{fmt(marla / 20)}</Typography></ListItem><Divider /><ListItem disableGutters><ListItemText primary="Square Yards" /><Typography fontWeight={700}>{fmt(v / 9)}</Typography></ListItem></>)}</List>}
     <Button fullWidth variant="outlined" startIcon={<SwapHorizIcon />} sx={{ mt: 3 }} onClick={() => { if (mode === 'marla') { setMode('sqft'); setVal(valid ? String(sqft) : val); } else { setMode('marla'); setVal(valid ? String(marla) : val); } }}>{mode === 'marla' ? 'Switch to Sq Ft → Marla' : 'Switch to Marla → Sq Ft'}</Button>
   </CardContent></Card>);
@@ -39,37 +39,37 @@ const TOOLS = [
   { id: 'freelancer', title: 'Freelancer Tax Calculator Pakistan (154A)', cat: 'Tax & salary', el: <FreelancerTool /> },
   { id: 'zakat', title: 'Zakat Calculator Pakistan 2026: Cash, Gold', cat: 'Tax & salary', el: <ZakatTool /> },
   { id: 'fuel', title: 'Fuel Trip Cost Calculator Pakistan (OGRA)', cat: 'Utility', el: <FuelTool /> },
-  { id: 'heic', title: 'HEIC to JPG Converter Online (Free, Private)', cat: 'Files — private', el: <HeicTool /> },
-  { id: 'avif', title: 'AVIF to PNG Converter Online Free', cat: 'Files — private', el: <AvifTool /> },
-  { id: 'webp', title: 'WebP to JPG Converter Online Free', cat: 'Files — private', el: <WebpTool /> },
+  { id: 'heic', title: 'HEIC to JPG Converter Online (Free, Private)', cat: 'Files - private', el: <HeicTool /> },
+  { id: 'avif', title: 'AVIF to PNG Converter Online Free', cat: 'Files - private', el: <AvifTool /> },
+  { id: 'webp', title: 'WebP to JPG Converter Online Free', cat: 'Files - private', el: <WebpTool /> },
   { id: 'rentvsbuy', title: 'Rent vs Buy Calculator Pakistan', cat: 'Property', el: <RentVsBuyTool /> },
   { id: 'taxslab', title: 'Pakistan Tax Slab 2026-27: Which Slab Are You In?', cat: 'Tax & salary', el: <TaxSlabTool /> },
   { id: 'gold', title: 'Gold Price Pakistan Today: 1 Tola Calculator', cat: 'Prices', el: <GoldTool /> },
   { id: 'prizebond', title: 'Prize Bond Pakistan: Prize After Tax Calculator', cat: 'Prices', el: <PrizeBondTool /> },
-  { id: 'jpgtopdf', title: 'JPG to PDF Converter Online (Free, Private)', cat: 'Files — private', el: <JpgToPdfTool /> },
+  { id: 'jpgtopdf', title: 'JPG to PDF Converter Online (Free, Private)', cat: 'Files - private', el: <JpgToPdfTool /> },
   { id: 'fuelavg', title: 'Fuel Average Calculator Pakistan (km per litre)', cat: 'Utility', el: <FuelAverageTool /> },
   { id: 'currency', title: 'Currency Converter: USD to PKR & More', cat: 'Prices', el: <CurrencyTool /> },
-  { id: 'loanemi', title: 'Loan EMI Calculator', cat: 'Finance — global', el: <LoanEmiTool /> },
-  { id: 'mortgage', title: 'Mortgage Calculator: How Much House Can I Afford?', cat: 'Finance — global', el: <MortgageTool /> },
-  { id: 'qr', title: 'QR Code Generator (Free, Private)', cat: 'Tools — global', el: <QrTool /> },
-  { id: 'bmi', title: 'BMI Calculator', cat: 'Health — global', el: <BmiTool /> },
-  { id: 'age', title: 'Age Calculator (Date of Birth)', cat: 'Tools — global', el: <AgeTool /> },
-  { id: 'percentage', title: 'Percentage Calculator', cat: 'Tools — global', el: <PercentageTool /> },
-  { id: 'wordcounter', title: 'Word Counter & Character Counter', cat: 'Tools — global', el: <WordCounterTool /> },
-  { id: 'password', title: 'Password Generator (Secure, Private)', cat: 'Tools — global', el: <PasswordTool /> },
-  { id: 'cgpa', title: 'CGPA Calculator (4.0 Scale)', cat: 'Study — global', el: <CgpaTool /> },
-  { id: 'pngtojpg', title: 'PNG to JPG Converter Online (Free, Private)', cat: 'Files — global', el: <PngToJpgTool /> },
-  { id: 'pdftojpg', title: 'PDF to JPG Converter Online (Free, Private)', cat: 'Files — global', el: <PdfToJpgTool /> },
-  { id: 'salarycalc', title: 'Salary Calculator (Net Salary After Tax)', cat: 'Finance — global', el: <SalaryCalcTool /> },
-  { id: 'sip', title: 'SIP Calculator (Monthly Investment + Step-up)', cat: 'Finance — India/global', el: <SipTool /> },
-  { id: 'datecalc', title: 'Date Calculator: Days Between Dates & Weekday', cat: 'Tools — global', el: <DateCalcTool /> },
-  { id: 'areacalc', title: 'Area Calculator (Room & Land Area)', cat: 'Tools — global', el: <AreaCalcTool /> },
-  { id: 'homeloan', title: 'Home Loan Calculator (EMI + Total Interest)', cat: 'Finance — global', el: <HomeLoanTool /> },
-  { id: 'unitconv', title: 'Unit Converter: Length, Weight & Temperature', cat: 'Tools — global', el: <UnitConverterTool /> },
-  { id: 'fontconv', title: 'Font Converter: Stylish Text Generator', cat: 'Tools — global', el: <FontTool /> },
-  { id: 'love', title: 'Love Calculator (For Fun Only)', cat: 'Fun — global', el: <LoveTool /> },
-  { id: 'attendance', title: 'Attendance Calculator (Students)', cat: 'Study — global', el: <AttendanceTool /> },
-  { id: 'carloan', title: 'Car Loan Calculator (EMI + Total Interest)', cat: 'Finance — global', el: <CarLoanTool /> },
+  { id: 'loanemi', title: 'Loan EMI Calculator', cat: 'Finance - global', el: <LoanEmiTool /> },
+  { id: 'mortgage', title: 'Mortgage Calculator: How Much House Can I Afford?', cat: 'Finance - global', el: <MortgageTool /> },
+  { id: 'qr', title: 'QR Code Generator (Free, Private)', cat: 'Tools - global', el: <QrTool /> },
+  { id: 'bmi', title: 'BMI Calculator', cat: 'Health - global', el: <BmiTool /> },
+  { id: 'age', title: 'Age Calculator (Date of Birth)', cat: 'Tools - global', el: <AgeTool /> },
+  { id: 'percentage', title: 'Percentage Calculator', cat: 'Tools - global', el: <PercentageTool /> },
+  { id: 'wordcounter', title: 'Word Counter & Character Counter', cat: 'Tools - global', el: <WordCounterTool /> },
+  { id: 'password', title: 'Password Generator (Secure, Private)', cat: 'Tools - global', el: <PasswordTool /> },
+  { id: 'cgpa', title: 'CGPA Calculator (4.0 Scale)', cat: 'Study - global', el: <CgpaTool /> },
+  { id: 'pngtojpg', title: 'PNG to JPG Converter Online (Free, Private)', cat: 'Files - global', el: <PngToJpgTool /> },
+  { id: 'pdftojpg', title: 'PDF to JPG Converter Online (Free, Private)', cat: 'Files - global', el: <PdfToJpgTool /> },
+  { id: 'salarycalc', title: 'Salary Calculator (Net Salary After Tax)', cat: 'Finance - global', el: <SalaryCalcTool /> },
+  { id: 'sip', title: 'SIP Calculator (Monthly Investment + Step-up)', cat: 'Finance - India/global', el: <SipTool /> },
+  { id: 'datecalc', title: 'Date Calculator: Days Between Dates & Weekday', cat: 'Tools - global', el: <DateCalcTool /> },
+  { id: 'areacalc', title: 'Area Calculator (Room & Land Area)', cat: 'Tools - global', el: <AreaCalcTool /> },
+  { id: 'homeloan', title: 'Home Loan Calculator (EMI + Total Interest)', cat: 'Finance - global', el: <HomeLoanTool /> },
+  { id: 'unitconv', title: 'Unit Converter: Length, Weight & Temperature', cat: 'Tools - global', el: <UnitConverterTool /> },
+  { id: 'fontconv', title: 'Font Converter: Stylish Text Generator', cat: 'Tools - global', el: <FontTool /> },
+  { id: 'love', title: 'Love Calculator (For Fun Only)', cat: 'Fun - global', el: <LoveTool /> },
+  { id: 'attendance', title: 'Attendance Calculator (Students)', cat: 'Study - global', el: <AttendanceTool /> },
+  { id: 'carloan', title: 'Car Loan Calculator (EMI + Total Interest)', cat: 'Finance - global', el: <CarLoanTool /> },
 ];
 // Attach SEO data (slug, description, FAQs) from the single source in seo-data.js.
 // No tool component, formula or rate is changed here.
@@ -77,22 +77,27 @@ TOOLS.forEach((t) => { const s = SEO_BY_ID[t.id]; if (s) { t.slug = s.slug; t.de
 
 // Home-page grouping: every tool sits in exactly one category; Most Popular is a
 // shortcut list (Trends evidence: JPG to PDF, loan, age, BMI, mortgage strongest
-// worldwide; Marla/PTA/currency strongest in Pakistan). No tool, rate or formula
-// is changed here — only how the home page lists them.
+// worldwide; Marla/PTA/currency strongest in Pakistan). Category names are generic
+// on purpose - no country name in any category label. No tool, rate or formula
+// is changed here - only how the home page lists them.
 const BY_ID = Object.fromEntries(TOOLS.map((t) => [t.id, t]));
 const CATEGORIES = [
-  { name: 'Pakistan tools', ids: ['marla', 'kanal', 'plotsize', 'rentvsbuy', 'salarytax', 'bps', 'pta', 'freelancer', 'taxslab', 'zakat', 'gold', 'prizebond', 'fuel', 'fuelavg', 'currency'] },
-  { name: 'Money & loans', ids: ['loanemi', 'mortgage', 'homeloan', 'carloan', 'sip', 'salarycalc'] },
+  { name: 'Home & Property', ids: ['marla', 'kanal', 'plotsize', 'rentvsbuy', 'areacalc'] },
+  { name: 'Money & Tax', ids: ['salarytax', 'bps', 'pta', 'freelancer', 'taxslab', 'zakat', 'loanemi', 'mortgage', 'homeloan', 'carloan', 'sip', 'salarycalc'] },
+  { name: 'Prices & Fuel', ids: ['gold', 'prizebond', 'currency', 'fuel', 'fuelavg'] },
   { name: 'Files & converters', ids: ['jpgtopdf', 'pdftojpg', 'pngtojpg', 'heic', 'avif', 'webp', 'qr', 'unitconv'] },
-  { name: 'Everyday tools', ids: ['age', 'bmi', 'percentage', 'wordcounter', 'datecalc', 'areacalc', 'password', 'fontconv', 'cgpa', 'attendance', 'love'] },
+  { name: 'Everyday tools', ids: ['age', 'bmi', 'percentage', 'wordcounter', 'datecalc', 'password', 'cgpa', 'attendance'] },
+  { name: 'Fun & Entertainment', ids: ['love', 'fontconv'] },
 ].map((c) => ({ name: c.name, tools: c.ids.map((id) => BY_ID[id]).filter(Boolean) }));
+const ID_TO_CAT = {};
+CATEGORIES.forEach((c) => c.tools.forEach((t) => { ID_TO_CAT[t.id] = c.name; }));
 const POPULAR = ['jpgtopdf', 'loanemi', 'age', 'bmi', 'mortgage', 'marla', 'pta', 'currency'].map((id) => BY_ID[id]).filter(Boolean);
 
-function toolListItems(tools, go) {
-  return tools.map((t, i) => (<React.Fragment key={t.id}>{i > 0 && <Divider />}<ListItemButton component="a" href={`/tools/${t.slug}/`} onClick={(e) => go(e, `/tools/${t.slug}/`)}><ListItemText primary={t.title} secondary={t.cat} /></ListItemButton></React.Fragment>));
+function toolListItems(tools, go, selectedId) {
+  return tools.map((t, i) => (<React.Fragment key={t.id}>{i > 0 && <Divider />}<ListItemButton component="a" href={`/tools/${t.slug}/`} selected={selectedId === t.id} onClick={(e) => go(e, `/tools/${t.slug}/`)}><ListItemText primary={t.title} secondary={ID_TO_CAT[t.id] || t.cat} /></ListItemButton></React.Fragment>));
 }
 
-// Tiny pathname router — no new dependency. Trailing slashes are ignored.
+// Tiny pathname router - no new dependency. Trailing slashes are ignored.
 function parseRoute(pathname) {
   const p = (pathname.replace(/\/+$/, '') || '/');
   if (p === '/') return { kind: 'home' };
@@ -127,7 +132,7 @@ function setFaqJsonLd(faqs) {
 export default function App() {
   const [route, setRoute] = useState(() => parseRoute(window.location.pathname));
   const [q, setQ] = useState('');
-  const [openCat, setOpenCat] = useState(null);
+  const [openCat, setOpenCat] = useState(CATEGORIES[0].name);
   const navigate = (path) => { if (window.location.pathname !== path) { window.history.pushState(null, '', path); setRoute(parseRoute(path)); } window.scrollTo(0, 0); };
   const go = (e, path) => { e.preventDefault(); navigate(path); };
   const query = q.trim().toLowerCase();
@@ -151,13 +156,44 @@ export default function App() {
     else { document.title = 'Tool not found | Kalkio'; setMetaTag('description', 'That tool does not exist on Kalkio. Browse all 40 free tools on the home page.'); setCanonical(BASE_URL + '/'); setFaqJsonLd(null); }
   }, [route, cur]);
 
+  // Keep the sidebar on the open tool's category, so the user always sees where they are.
+  useEffect(() => {
+    if (cur) {
+      const c = CATEGORIES.find((cat) => cat.tools.some((t) => t.id === cur.id));
+      if (c) setOpenCat(c.name);
+    }
+  }, [cur]);
+
+  // Three-pane layout (desktop): left = tools of the selected category, center =
+  // the selected tool (or home), right = all category names + logo. On phones the
+  // panes stack: categories first, then tools, then the tool.
+  const listTools = query ? searchResults : openCat === '__popular' ? POPULAR : (CATEGORIES.find((c) => c.name === openCat) || CATEGORIES[0]).tools;
+  const listTitle = query ? `Results for "${q.trim()}"` : openCat === '__popular' ? 'Most popular' : openCat;
+  const sidebarTools = (<Card elevation={1} sx={{ borderRadius: 3 }}>
+    <Box sx={{ p: 2, pb: 1 }}><TextField fullWidth size="small" placeholder="Search a tool... e.g. JPG to PDF" value={q} onChange={(e) => setQ(e.target.value)} /></Box>
+    <Typography variant="subtitle1" fontWeight={700} sx={{ px: 2, pt: 1 }}>{listTitle}{!query && ` (${listTools.length})`}</Typography>
+    {listTools.length === 0
+      ? (<Typography variant="body1" color="text.secondary" sx={{ px: 2, py: 2 }}>No tool found - try another word, e.g. PDF, loan or Marla.</Typography>)
+      : (<List>{toolListItems(listTools, go, cur ? cur.id : null)}</List>)}
+  </Card>);
+  const sidebarCats = (<Card elevation={1} sx={{ borderRadius: 3 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 2, pb: 1 }}>
+      <Box sx={{ bgcolor: 'primary.main', borderRadius: 2, p: 0.5, display: 'flex', color: 'white' }}><CalculateIcon /></Box>
+      <Box><Typography fontWeight={800} lineHeight={1}>Kalkio</Typography><Typography variant="caption" color="text.secondary">Free tools, no sign-up</Typography></Box>
+    </Box>
+    <List>
+      <ListItemButton selected={openCat === '__popular'} onClick={() => { setOpenCat('__popular'); setQ(''); }}><ListItemText primary="Most popular" secondary="Most searched tools" /></ListItemButton>
+      {CATEGORIES.map((c) => (<React.Fragment key={c.name}><Divider /><ListItemButton selected={openCat === c.name} onClick={() => { setOpenCat(c.name); setQ(''); }}><ListItemText primary={c.name} secondary={`${c.tools.length} tools`} /></ListItemButton></React.Fragment>))}
+    </List>
+  </Card>);
+
   const footer = (<Box component="footer" sx={{ mt: 4, pt: 2, borderTop: '1px solid #e0e0e0', textAlign: 'center' }}>
     <Typography variant="body2" color="text.secondary" gutterBottom>
       <Link href="/about/" onClick={(e) => go(e, '/about/')}>About</Link>{' · '}
       <Link href="/contact/" onClick={(e) => go(e, '/contact/')}>Contact</Link>{' · '}
       <Link href="/privacy/" onClick={(e) => go(e, '/privacy/')}>Privacy Policy</Link>
     </Typography>
-    <Typography variant="caption" color="text.secondary">Kalkio — free tools, no sign-up.</Typography>
+    <Typography variant="caption" color="text.secondary">Kalkio - free tools, no sign-up.</Typography>
   </Box>);
 
   const notFound = (<>
@@ -176,46 +212,35 @@ export default function App() {
     <CssBaseline />
     <AppBar position="static" color="primary" elevation={0}><Toolbar><Box sx={{ bgcolor: 'rgba(255,255,255,0.2)', borderRadius: 2, p: 0.5, mr: 1.5, display: 'flex' }}><CalculateIcon /></Box><Typography variant="h6" fontWeight={700} component="a" href="/" onClick={(e) => go(e, '/')} sx={{ color: 'inherit', textDecoration: 'none' }}>Kalkio</Typography></Toolbar></AppBar>
     <Box sx={{ bgcolor: '#f5f7fa', minHeight: '100vh', py: 4 }}>
-      <Container maxWidth="sm">
+      <Container maxWidth="lg">
+      <Grid container spacing={2}>
+        <Grid size={{ xs: 12, md: 3 }} sx={{ order: { xs: 2, md: 1 } }}>{sidebarTools}</Grid>
+        <Grid size={{ xs: 12, md: 6 }} sx={{ order: { xs: 3, md: 2 } }}>
         {route.kind === 'home' && (<>
           <Typography variant="h4" fontWeight={800} gutterBottom>What do you want to calculate?</Typography>
-          <Typography variant="body1" color="text.secondary" gutterBottom>{TOOLS.length} tools, one style. No sign-up.</Typography>
-          <TextField fullWidth placeholder="Search a tool… e.g. JPG to PDF" value={q} onChange={(e) => setQ(e.target.value)} sx={{ mt: 1, mb: 2, bgcolor: 'white', borderRadius: 2 }} />
-          {query ? (<>
-            <Typography variant="h6" fontWeight={700} gutterBottom>Results for “{q.trim()}”</Typography>
-            {searchResults.length === 0
-              ? (<Typography variant="body1" color="text.secondary">No tool found — try another word, e.g. PDF, loan or Marla.</Typography>)
-              : (<Card elevation={1} sx={{ borderRadius: 3 }}><List>{toolListItems(searchResults, go)}</List></Card>)}
-          </>) : (<>
-            <Typography variant="h6" fontWeight={700} gutterBottom>Most popular</Typography>
-            <Card elevation={1} sx={{ borderRadius: 3 }}><List>{toolListItems(POPULAR, go)}</List></Card>
-            {CATEGORIES.map((c) => (
-              <Accordion key={c.name} expanded={openCat === c.name} onChange={() => setOpenCat(openCat === c.name ? null : c.name)} sx={{ mt: 2, borderRadius: 3 }}>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>{c.name} ({c.tools.length})</Typography></AccordionSummary>
-                <AccordionDetails sx={{ p: 0 }}><List disablePadding>{toolListItems(c.tools, go)}</List></AccordionDetails>
-              </Accordion>
-            ))}
-          </>)}
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3, textAlign: 'center' }}>Tax, bill and fuel results are estimates — confirm official rates before a financial decision.</Typography>
+          <Typography variant="body1" color="text.secondary" gutterBottom>{TOOLS.length} tools, one style. No sign-up. Pick a category on the right, or a tool on the left.</Typography>
+          <Typography variant="h6" fontWeight={700} gutterBottom>Most popular</Typography>
+          <Card elevation={1} sx={{ borderRadius: 3 }}><List>{toolListItems(POPULAR, go, null)}</List></Card>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3, textAlign: 'center' }}>Tax, bill and fuel results are estimates - confirm official rates before a financial decision.</Typography>
         </>)}
         {route.kind === 'tool' && !cur && notFound}
         {route.kind === 'notfound' && notFound}
         {route.kind === 'tool' && cur && (<>
           <Button startIcon={<ArrowBackIcon />} component="a" href="/" onClick={(e) => go(e, '/')} sx={{ mb: 2 }}>All tools</Button>
           <Typography variant="h4" fontWeight={800} gutterBottom>{cur.title}</Typography>
-          <Typography variant="body1" color="text.secondary" gutterBottom>{cur.cat} · No sign-up.</Typography>
+          <Typography variant="body1" color="text.secondary" gutterBottom>{ID_TO_CAT[cur.id] || cur.cat} · No sign-up.</Typography>
           {cur.el}
           {cur.id === 'marla' && (<>
             <Box sx={{ bgcolor: '#fff8e1', borderRadius: 2, p: 2, mt: 2 }}><Typography variant="body2">225 sq ft is common in housing societies like DHA and Bahria Town. 272.25 sq ft is the revenue-record Marla. Confirm from your plot documents which one applies to you.</Typography></Box>
             <Accordion sx={{ mt: 2 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>How it works</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary">Square feet = Marla × sq ft per Marla. Square yards = square feet ÷ 9. Square metres = square feet ÷ 10.7639. Kanal = Marla ÷ 20. Acre = Marla ÷ 160.</Typography></AccordionDetails></Accordion>
-            <Accordion><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>225 vs 272.25 — quick table</Typography></AccordionSummary><AccordionDetails><Table size="small"><TableBody>{[[1, 225, 272.25], [5, 1125, 1361.25], [10, 2250, 2722.5], [20, 4500, 5445]].map(([m, a, b]) => (<TableRow key={m}><TableCell>{m === 20 ? '20 = 1 Kanal' : `${m} Marla`}</TableCell><TableCell>{fmt(a)}</TableCell><TableCell>{fmt(b)}</TableCell></TableRow>))}</TableBody></Table></AccordionDetails></Accordion>
+            <Accordion><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>225 vs 272.25 - quick table</Typography></AccordionSummary><AccordionDetails><Table size="small"><TableBody>{[[1, 225, 272.25], [5, 1125, 1361.25], [10, 2250, 2722.5], [20, 4500, 5445]].map(([m, a, b]) => (<TableRow key={m}><TableCell>{m === 20 ? '20 = 1 Kanal' : `${m} Marla`}</TableCell><TableCell>{fmt(a)}</TableCell><TableCell>{fmt(b)}</TableCell></TableRow>))}</TableBody></Table></AccordionDetails></Accordion>
             <Accordion><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>Common questions</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary" paragraph><b>How many Marla in 1 Kanal?</b> 20 Marla, under both standards.</Typography><Typography variant="body2" color="text.secondary"><b>Which standard should I use?</b> The one written in your plot documents.</Typography></AccordionDetails></Accordion>
           </>)}
         </>)}
         {route.kind === 'about' && staticPage('About Kalkio', (<>
           <Typography variant="body1" paragraph>Kalkio is a collection of 40 free calculators and converters, covering property, tax and salary, prices, finance, files and everyday calculations.</Typography>
-          <Typography variant="body1" paragraph>Every tool runs in the visitor’s browser — there is no backend, no database, no login and no sign-up. File converters also run fully in the browser.</Typography>
-          <Typography variant="body1" paragraph>Tax, bill and fuel results are estimates — confirm official rates before a financial decision.</Typography>
+          <Typography variant="body1" paragraph>Every tool runs in the visitor’s browser - there is no backend, no database, no login and no sign-up. File converters also run fully in the browser.</Typography>
+          <Typography variant="body1" paragraph>Tax, bill and fuel results are estimates - confirm official rates before a financial decision.</Typography>
         </>))}
         {route.kind === 'contact' && staticPage('Contact Kalkio', (<>
           <Typography variant="body1" paragraph>Questions about Kalkio? Email us at <Link href="mailto:sammykhanmalng@gmail.com">sammykhanmalng@gmail.com</Link>.</Typography>
@@ -223,13 +248,16 @@ export default function App() {
         </>))}
         {route.kind === 'privacy' && staticPage('Privacy Policy', (<>
           <Typography variant="body1" paragraph>The tools on Kalkio run in your browser. They do not ask you to create an account, and they do not send your calculator inputs to a server.</Typography>
-          <Typography variant="body1" paragraph>File converters (HEIC, AVIF, WebP, PNG, JPG and PDF) also run fully in your browser — your files are never uploaded to a server.</Typography>
+          <Typography variant="body1" paragraph>File converters (HEIC, AVIF, WebP, PNG, JPG and PDF) also run fully in your browser - your files are never uploaded to a server.</Typography>
           <Typography variant="body1" paragraph>Passwords and QR codes are generated locally on your device and never sent anywhere.</Typography>
           <Typography variant="body1" paragraph>Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.</Typography>
           <Typography variant="body1" paragraph>Questions about this policy: <Link href="mailto:sammykhanmalng@gmail.com">sammykhanmalng@gmail.com</Link>.</Typography>
         </>))}
         {footer}
-      </Container>
+        </Grid>
+        <Grid size={{ xs: 12, md: 3 }} sx={{ order: { xs: 1, md: 3 } }}>{sidebarCats}</Grid>
+      </Grid>
+    </Container>
     </Box>
   </>);
 }
