@@ -39,12 +39,13 @@ export async function prerender(root, dist) {
   const tpl = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
   const titles = readTitles(fs.readFileSync(path.join(root, 'src/App.jsx'), 'utf8'));
   const write = (rel, html) => { const f = path.join(dist, rel, 'index.html'); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, html); };
+  const allLinks = '<h2>More free tools</h2><ul>' + Object.entries(SEO_BY_ID).filter(([i]) => titles[i]).map(([i, x]) => `<li><a href="/tools/${x.slug}/">${esc(titles[i])}</a></li>`).join('') + '</ul><p><a href="/">All Kalkio tools</a></p>';
   let n = 0;
   for (const [id, s] of Object.entries(SEO_BY_ID)) {
     const t = titles[id];
     if (!t) continue; // never invent a title
     const faqs = s.faqs || [];
-    const body = `<p>${esc(s.desc)}</p>` + guide(id) + (faqs.length ? '<h2>Common questions</h2>' + faqs.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('') : '') + '<p><a href="/">All Kalkio tools</a></p>';
+    const body = `<p>${esc(s.desc)}</p>` + guide(id) + (faqs.length ? '<h2>Common questions</h2>' + faqs.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('') : '') + allLinks;
     const jsonld = faqs.length ? { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) } : null;
     write(`tools/${s.slug}`, page(tpl, { title: seoTitle(t), desc: s.desc, url: toolUrl(s.slug), h1: t, body, jsonld }));
     n++;

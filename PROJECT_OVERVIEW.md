@@ -137,3 +137,8 @@ and is also written into the pre-rendered HTML. Rule: only figures already in th
 figures in this batch were checked against the tool code on 5 Nov 2026 (slabs, PTA bands, freelancer rates, BPS grades,
 Zakat nisab and examples). Add more tools by adding an entry keyed by tool id. Bug fixed: Gold tool "10 gram" unit was
 10x too low (now q * 10 / 11.664).
+
+## Growth additions (added 5 Nov 2026, later)
+- Guides added for Gold, Fuel Trip, Fuel Average (no stale rates; examples say "not today's rate").
+- WhatsApp share button + "More free tools" links on every tool page; pre-rendered HTML lists all tool links.
+- `public/og.png` (1200x630) + og:image/twitter tags in `index.html` so shared links show a preview card.
