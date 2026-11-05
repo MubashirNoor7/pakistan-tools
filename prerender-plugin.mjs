@@ -61,7 +61,7 @@ export async function prerender(root, dist) {
   // Home page: intro + FAQ + all 40 tool links in the raw HTML, so crawlers see it
   // without JavaScript (same words as the live home page in src/App.jsx).
   const homeFaqs = [['Are the tools free?', 'Yes. All 40 tools are free and no sign-up is needed.'], ['Does my data leave my device?', 'No. Every tool runs in your browser and does not ask you to create an account.'], ['Are tax results official?', 'No. Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.']];
-  const homeBody = `<p>${esc(HOME_DESC)}</p><p>Free Pakistan calculators (Marla, salary tax, PTA tax, BPS, Zakat, gold and fuel) plus file converters, QR codes, BMI and more. Everything runs in your browser.</p><h2>Common questions</h2>` + homeFaqs.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('') + allLinks;
+  const homeBody = `<p>${esc(HOME_DESC)}</p><p>Free calculators and converters, including Pakistan tools (Marla, salary tax, PTA tax, BPS, Zakat, gold and fuel), plus file converters, QR codes, BMI and more. Everything runs in your browser.</p><h2>Common questions</h2>` + homeFaqs.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('') + allLinks;
   write('', page(tpl, { title: HOME_TITLE, desc: HOME_DESC, url: pageUrl('/'), h1: 'What do you want to calculate?', body: homeBody, jsonld: null }));
   n++;
   return n;
