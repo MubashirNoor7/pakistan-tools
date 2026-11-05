@@ -1,6 +1,7 @@
 # Kalkio
 
 Kalkio is a free website with 42 calculators and converters. Every tool runs in the visitor's browser - no sign-up, no account, no backend. File converters run fully in the browser and files are never uploaded to a server. Tax, bill and fuel results are estimates; official rates are final.
+
 Contact: sammykhanmalng@gmail.com
 
 ## Tools
@@ -45,6 +46,8 @@ Contact: sammykhanmalng@gmail.com
 - Love Calculator (For Fun Only): https://kalkio.vercel.app/tools/love-calculator-for-fun-only/
 - Attendance Calculator (Students): https://kalkio.vercel.app/tools/attendance-calculator-students/
 - Car Loan Calculator (EMI + Total Interest): https://kalkio.vercel.app/tools/car-loan-calculator-emi-total-interest/
+- HTML to Video Converter Online (Code to Video): https://kalkio.vercel.app/tools/html-to-video-converter-online/
+- What's My IP Address? (IP, Location & ISP): https://kalkio.vercel.app/tools/what-is-my-ip-address/
 
 ## Pages
 
