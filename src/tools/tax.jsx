@@ -24,10 +24,10 @@ export function SalaryTaxTool() {
     <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>Slabs: 0% to Rs 600,000 · 1% to 1.2M · 11% to 2.2M · 20% to 3.2M · 25% to 4.1M · 29% to 5.6M · 32% to 7M · 35% above 7M.</Typography>
   </Wrap>);
 }
-// BPS-2026 minimum basic pay (Finance Division OM No.F.1(2)IMP/2026, 21 July 2026,
-// effective 1 July 2026, merging ARA-2022 + ARA-2025). Only grades verified from the
-// official chart are listed here - other grades must come from the payslip, not a guess.
-const BPS_2026_MIN = { 1: 16280, 6: 18930, 7: 19590, 16: 33720, 17: 54140, 22: 146770 };
+// BPS-2026 minimum basic pay, all 22 grades (Finance Division OM No.F.1(2)IMP/2026,
+// 21 July 2026, effective 1 July 2026, merging ARA-2022 + ARA-2025). Verified 5 Nov 2026
+// against the official chart; the same figures are in the BPS guide below the tool.
+const BPS_2026_MIN = { 1: 16280, 2: 16600, 3: 17130, 4: 17650, 5: 18300, 6: 18930, 7: 19590, 8: 20290, 9: 20990, 10: 21680, 11: 22410, 12: 23750, 13: 25420, 14: 27060, 15: 28730, 16: 33720, 17: 54140, 18: 68330, 19: 105510, 20: 123090, 21: 136680, 22: 146770 };
 export function BpsTool() {
   const [grade, setGrade] = useState('16'); const [basic, setBasic] = useState('80000'); const [hra, setHra] = useState('20000'); const [conv, setConv] = useState('5000'); const [med, setMed] = useState('3000'); const [adhoc, setAdhoc] = useState('10000');
   const minBasic = BPS_2026_MIN[parseInt(grade, 10)];

@@ -9,7 +9,7 @@ export function Rows({ rows }) {
 }
 export function StdToggle({ std, setStd }) {
   return (<ToggleButtonGroup value={std} exclusive fullWidth onChange={(_, nv) => nv && setStd(nv)} sx={{ mb: 2 }}>
-    <ToggleButton value="225">225 sq ft</ToggleButton><ToggleButton value="272.25">272.25 sq ft</ToggleButton><ToggleButton value="custom">Custom</ToggleButton></ToggleButtonGroup>);
+    <ToggleButton value="225">225 sq ft</ToggleButton><ToggleButton value="250">250 sq ft</ToggleButton><ToggleButton value="272.25">272.25 sq ft</ToggleButton><ToggleButton value="custom">Custom</ToggleButton></ToggleButtonGroup>);
 }
 export function KanalTool() {
   const [std, setStd] = useState('272.25'); const [custom, setCustom] = useState('225'); const [v, setV] = useState('1');
