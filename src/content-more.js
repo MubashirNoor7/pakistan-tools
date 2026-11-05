@@ -213,7 +213,7 @@ export const CONTENT_MORE = {
   ],
   htmltovideo: [
     { h: 'How HTML to video works', p: [
-      'Paste HTML and CSS, preview it live, then record from 3 to 60 seconds, a custom length, or the full animation. Pause or restart the preview with the buttons under it. Choose 10, 30 or 60 frames per second for smooth motion, and record from the beginning or from where the animation is now. The tool captures the preview at up to twice the preview size, so the video stays sharp. You can download the result as MP4 or WebM. Everything runs in your browser.',
+      'Paste HTML and CSS, preview it live, then record from 3 to 60 seconds, a custom length, or the full animation. Full measures a CSS animation; if your animation is driven by JavaScript, use Custom and enter the seconds yourself. Pause or restart the preview with the buttons under it. Choose 10, 30 or 60 frames per second for smooth motion, and record from the beginning or from where the animation is now. The tool captures the preview at up to twice the preview size, so the video stays sharp. You can download the result as MP4 or WebM. Everything runs in your browser.',
     ] },
     { h: 'Format and browser support', p: ['The video downloads as MP4 in Chrome, Edge and Safari, which plays almost everywhere including WhatsApp and TikTok. Smooth 30 and 60 fps recording needs a browser with VideoEncoder, such as a recent Chrome, Edge or Safari. If your browser cannot make MP4, the tool saves WebM instead, recorded in real time at 10 frames per second.'] },
   ],
