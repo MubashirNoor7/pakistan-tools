@@ -22,7 +22,7 @@ function MarlaTool() {
   const sqft = mode === 'marla' ? v * s : v; const marla = mode === 'marla' ? v : v / s;
   return (<Card elevation={2} sx={{ borderRadius: 3 }}><CardContent sx={{ p: 3 }}>
     <ToggleButtonGroup value={std} exclusive fullWidth onChange={(_, nv) => nv && setStd(nv)} sx={{ mb: 2 }}>
-      <ToggleButton value="225">225 sq ft</ToggleButton><ToggleButton value="272.25">272.25 sq ft</ToggleButton><ToggleButton value="custom">Custom</ToggleButton>
+      <ToggleButton value="225">225 sq ft</ToggleButton><ToggleButton value="250">250 sq ft</ToggleButton><ToggleButton value="272.25">272.25 sq ft</ToggleButton><ToggleButton value="custom">Custom</ToggleButton>
     </ToggleButtonGroup>
     {std === 'custom' && <TextField fullWidth label="Custom sq ft per Marla" type="number" value={custom} onChange={(e) => setCustom(e.target.value)} sx={{ mb: 2 }} />}
     <TextField fullWidth label={mode === 'marla' ? 'Marla' : 'Square Feet'} type="number" value={val} onChange={(e) => setVal(e.target.value)} inputProps={{ inputMode: 'decimal' }} InputProps={{ endAdornment: <InputAdornment position="end">{mode === 'marla' ? 'Marla' : 'Sq Ft'}</InputAdornment> }} sx={{ '& input': { fontSize: 26, fontWeight: 700 } }} />
