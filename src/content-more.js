@@ -184,6 +184,13 @@ export const CONTENT_MORE = {
     PRIV,
     { h: 'When to use JPG or PNG', p: ['JPG gives smaller files for photos. PNG keeps sharp edges and transparency, which is better for logos and screenshots.'] },
   ],
+  heic: [
+    { h: 'How to convert HEIC to JPG', p: [
+      'iPhone photos are often saved as HEIC, which many Windows and Android apps cannot open. Choose a HEIC file and the tool converts it to a JPG at 92% quality in your browser.',
+    ] },
+    PRIV,
+    { h: 'Large files', p: ['HEIC conversion can take a few seconds per photo, especially on a phone. Convert one photo at a time.'] },
+  ],
   webp: [
     { h: 'How to convert WebP to JPG', p: [
       'WebP images from websites often will not open in older programs. Choose a WebP file and the tool saves it as a JPG that works almost everywhere.',

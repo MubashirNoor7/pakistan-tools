@@ -5,7 +5,7 @@
 export const BASE_URL = 'https://kalkio.vercel.app';
 export const BRAND = 'Kalkio';
 export const HOME_TITLE = 'Kalkio - Free Pakistan Calculators & Converters';
-export const HOME_DESC = 'Kalkio: 39 free calculators and converters - Marla, salary tax, PTA tax, SIP, loan EMI, QR codes, BMI, file converters and more. No sign-up, everything runs in your browser.';
+export const HOME_DESC = 'Kalkio: 40 free calculators and converters - Marla, salary tax, PTA tax, SIP, loan EMI, QR codes, BMI, file converters and more. No sign-up, everything runs in your browser.';
 
 // Universal FAQ answers (true for every tool on this site).
 const FREE = ['Is this tool free?', 'Yes. It is free and no sign-up is needed.'];
@@ -24,6 +24,7 @@ export const SEO_BY_ID = {
   freelancer: { slug: 'freelancer-tax-calculator-pakistan-154a', desc: 'Estimate freelancer tax under Section 154A from annual export receipts, with PSEB-registered and filer options. The result is an estimate - confirm from FBR or your tax adviser.', faqs: [FREE, ESTIMATE, BROWSER] },
   zakat: { slug: 'zakat-calculator-pakistan-cash-gold', desc: 'Work out Zakat at 2.5% of zakatable wealth from cash, gold, silver, stocks and debts. For religious rulings, confirm with a scholar.', faqs: [FREE, ['What rate does this use?', 'Zakat is 2.5% of zakatable wealth held for a lunar year, above nisab.'], BROWSER] },
   fuel: { slug: 'fuel-trip-cost-calculator-pakistan-ogra', desc: 'Work out a trip’s fuel cost and litres needed from distance, mileage and the fuel rate, which you can edit. Fuel rates change often, so check today’s OGRA rate for an exact cost.', faqs: [FREE, ['Why can I edit the fuel rate?', 'Fuel rates change often. Editing the rate to today’s OGRA rate gives an exact trip cost.'], BROWSER] },
+  heic: { slug: 'heic-to-jpg-converter-online', desc: 'Convert HEIC photos to JPG in your browser. Your file is never uploaded to a server. Free, no sign-up.', faqs: [FREE, FILE_PRIVATE] },
   webp: { slug: 'webp-to-jpg-converter-online', desc: 'Convert WebP images to JPG in your browser. Your file is never uploaded to a server. Free, no sign-up.', faqs: [FREE, FILE_PRIVATE] },
   rentvsbuy: { slug: 'rent-vs-buy-calculator-pakistan', desc: 'Compare the cost of renting versus buying a home in Pakistan. An estimate only, to help you weigh the two options.', faqs: [FREE, ESTIMATE, BROWSER] },
   taxslab: { slug: 'pakistan-tax-slab-2026-27-which-slab-are-you-in', desc: 'Find which Pakistan salary tax slab for 2026-27 your annual salary falls in. An estimate tool - confirm from FBR before filing.', faqs: [FREE, ESTIMATE, BROWSER] },
