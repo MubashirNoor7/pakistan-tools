@@ -142,3 +142,8 @@ Zakat nisab and examples). Add more tools by adding an entry keyed by tool id. B
 - Guides added for Gold, Fuel Trip, Fuel Average (no stale rates; examples say "not today's rate").
 - WhatsApp share button + "More free tools" links on every tool page; pre-rendered HTML lists all tool links.
 - `public/og.png` (1200x630) + og:image/twitter tags in `index.html` so shared links show a preview card.
+
+## v4 (5 Nov 2026): guides for ALL 42 tools
+`src/content-more.js` (merged into `src/content.js`) now holds guide text for every tool, so every tool page has real written content.
+Bug fixes: Gold "10 gram" unit was 10x too low; Password generator had a small modulo bias and no length cap (now fixed, length 1 to 128).
+Sitemap lastmod set to 2026-11-05 for all URLs.
