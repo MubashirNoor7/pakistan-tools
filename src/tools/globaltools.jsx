@@ -116,7 +116,7 @@ export function PasswordTool() {
   const gen = () => {
     let pool = ''; if (upper) pool += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'; if (lower) pool += 'abcdefghijklmnopqrstuvwxyz'; if (nums) pool += '0123456789'; if (syms) pool += '!@#$%^&*()-_=+';
     if (!pool) { setPwd(''); return; }
-    const arr = new Uint32Array(parseInt(len, 10) || 16); crypto.getRandomValues(arr); setPwd(Array.from(arr, (n) => pool[n % pool.length]).join('')); setCopied(false);
+    const L = Math.min(Math.max(parseInt(len, 10) || 16, 1), 128); const lim = Math.floor(4294967296 / pool.length) * pool.length; const out = []; while (out.length < L) { const arr = new Uint32Array(L * 2); crypto.getRandomValues(arr); for (const n of arr) { if (out.length < L && n < lim) out.push(pool[n % pool.length]); } } setPwd(out.join('')); setCopied(false);
   };
   return (<Wrap note="Generated with your browser's secure random generator. It is never stored, never sent to a server, and never shown to anyone else. Use a password manager to save it - do not reuse it across sites.">
     <TextField fullWidth label="Length" type="number" value={len} onChange={(e) => setLen(e.target.value)} sx={{ mb: 2 }} />
