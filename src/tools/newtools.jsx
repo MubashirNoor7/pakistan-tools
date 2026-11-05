@@ -105,10 +105,10 @@ export function JpgToPdfTool() {
 
 // Fuel Average — km per litre, litres per 100 km, cost per km.
 export function FuelAverageTool() {
-  const [dist, setDist] = useState('100'); const [fuelUsed, setFuelUsed] = useState('8'); const [price, setPrice] = useState('369.06');
+  const [dist, setDist] = useState('100'); const [fuelUsed, setFuelUsed] = useState('8'); const [price, setPrice] = useState('362.00');
   const d = parseFloat(dist) || 0; const fu = parseFloat(fuelUsed) || 0; const pr = parseFloat(price) || 0;
   const kmpl = fu > 0 ? d / fu : 0; const l100 = d > 0 ? fu / d * 100 : 0; const costKm = d > 0 ? fu * pr / d : 0;
-  return (<Wrap note="Fill the tank, note the kilometres, fill again — the fuel you added is the fuel used. Default fuel price is 4 Nov 2026 OGRA petrol Rs 369.06, editable.">
+  return (<Wrap note="Fill the tank, note the kilometres, fill again — the fuel you added is the fuel used. Default fuel price is 5 Nov 2026 OGRA petrol Rs 362.00, editable.">
     <TextField fullWidth label="Distance travelled (km)" type="number" value={dist} onChange={(e) => setDist(e.target.value)} sx={{ mb: 2 }} />
     <TextField fullWidth label="Fuel used (litres)" type="number" value={fuelUsed} onChange={(e) => setFuelUsed(e.target.value)} sx={{ mb: 2 }} />
     <TextField fullWidth label="Fuel price (Rs per litre)" type="number" value={price} onChange={(e) => setPrice(e.target.value)} />
