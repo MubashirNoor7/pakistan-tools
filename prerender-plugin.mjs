@@ -33,8 +33,8 @@ function page(tpl, { title, desc, url, h1, body, jsonld }) {
 
 export async function prerender(root, dist) {
   const seo = await import(pathToFileURL(path.join(root, 'src/seo-data.js')).href);
-  const { SEO_BY_ID, BASE_URL, seoTitle, toolUrl, pageUrl } = seo;
-  const { CONTENT_BY_ID } = await import(pathToFileURL(path.join(root, 'src/content.js')).href);
+  const { SEO_BY_ID, BASE_URL, HOME_TITLE, HOME_DESC, seoTitle, toolUrl, pageUrl } = seo;
+  const { CONTENT_BY_ID, CONTENT_UPDATED } = await import(pathToFileURL(path.join(root, 'src/content.js')).href);
   const guide = (id) => (CONTENT_BY_ID[id] || []).map((s) => `<h2>${esc(s.h)}</h2>` + s.p.map((x) => `<p>${esc(x)}</p>`).join('') + (s.table ? `<table><tr>${s.table.head.map((c) => `<th>${esc(c)}</th>`).join('')}</tr>${s.table.rows.map((r) => `<tr>${r.map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</table>` : '')).join('');
   const tpl = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
   const titles = readTitles(fs.readFileSync(path.join(root, 'src/App.jsx'), 'utf8'));
@@ -45,7 +45,7 @@ export async function prerender(root, dist) {
     const t = titles[id];
     if (!t) continue; // never invent a title
     const faqs = s.faqs || [];
-    const body = `<p>${esc(s.desc)}</p>` + guide(id) + (faqs.length ? '<h2>Common questions</h2>' + faqs.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('') : '') + allLinks;
+    const body = `<p>${esc(s.desc)}</p><p>Guide last updated ${esc(CONTENT_UPDATED)}.</p>` + guide(id) + (faqs.length ? '<h2>Common questions</h2>' + faqs.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('') : '') + allLinks;
     const jsonld = faqs.length ? { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) } : null;
     write(`tools/${s.slug}`, page(tpl, { title: seoTitle(t), desc: s.desc, url: toolUrl(s.slug), h1: t, body, jsonld }));
     n++;
@@ -56,6 +56,12 @@ export async function prerender(root, dist) {
     ['privacy', 'Privacy Policy | Kalkio', 'Privacy Policy', 'Kalkio privacy: tools run in your browser, file converters do not upload your files to a server, and no account is needed.'],
   ];
   for (const [p, title, h1, desc] of statics) { write(p, page(tpl, { title, desc, url: pageUrl(`/${p}/`), h1, body: `<p>${esc(desc)}</p><p><a href="/">All Kalkio tools</a></p>` })); n++; }
+  // Home page: intro + FAQ + all 42 tool links in the raw HTML, so crawlers see it
+  // without JavaScript (same words as the live home page in src/App.jsx).
+  const homeFaqs = [['Are the tools free?', 'Yes. All 42 tools are free and no sign-up is needed.'], ['Does my data leave my device?', 'No. Every tool runs in your browser and does not ask you to create an account.'], ['Are tax results official?', 'No. Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.']];
+  const homeBody = `<p>${esc(HOME_DESC)}</p><p>Free Pakistan calculators (Marla, salary tax, PTA tax, BPS, Zakat, gold and fuel) plus file converters, QR codes, BMI and more. Everything runs in your browser.</p><h2>Common questions</h2>` + homeFaqs.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('') + allLinks;
+  write('', page(tpl, { title: HOME_TITLE, desc: HOME_DESC, url: pageUrl('/'), h1: 'What do you want to calculate?', body: homeBody, jsonld: null }));
+  n++;
   return n;
 }
 
