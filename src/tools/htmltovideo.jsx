@@ -215,6 +215,15 @@ export function HtmlToVideoTool() {
       const leftMs = avgMs * (totalFrames - framesDone);
       setProgress('Frame ' + framesDone + ' of ' + totalFrames + (leftMs > 5000 ? ' - about ' + Math.max(1, Math.round(leftMs / 1000)) + 's left' : ''));
     }
+    // One extra frame holding the last picture, so the file lasts exactly
+    // framesDone/fps seconds. Without it the last frame counts as 0 seconds
+    // and a "5 second" video plays as 4 seconds (the player shows whole
+    // seconds, so 4.98s looks like 4s).
+    if (framesDone > 0 && !encError) {
+      const lastFrame = new VideoFrame(canvas, { timestamp: Math.round(framesDone * frameDurUs) });
+      encoder.encode(lastFrame, { keyFrame: framesDone % fpsNum === 0 });
+      lastFrame.close();
+    }
     await encoder.flush();
     if (encError) throw encError;
     muxer.finalize();
@@ -296,7 +305,15 @@ export function HtmlToVideoTool() {
     let usedClassic = false;
     try {
       if (VIDEO_ENCODER_SUPPORTED && format === 'mp4') {
-        result = await recordSmooth(doc, html2canvas, total, fpsNum, offsets);
+        try {
+          result = await recordSmooth(doc, html2canvas, total, fpsNum, offsets);
+        } catch (e1) {
+          // One retry: a failed chunk load or a transient encoder error
+          // should not drop a smooth-capable browser to 10 fps.
+          if (stopRef.current) throw e1;
+          setProgress('Smooth recording hit a snag, trying once more...');
+          result = await recordSmooth(doc, html2canvas, total, fpsNum, offsets);
+        }
       } else {
         usedClassic = true;
         // Classic records in real time: "from start" restarts the animation live.
@@ -309,14 +326,15 @@ export function HtmlToVideoTool() {
       }
     } catch (e) {
       // Smooth engine failed (for example an old browser): fall back to classic.
-      if (!usedClassic && window.MediaRecorder) {
+      if (stopRef.current) { setError('Recording stopped.'); }
+      else if (!usedClassic && window.MediaRecorder) {
         try {
           if (startFrom === 'start') {
             anims.forEach((a) => { try { a.currentTime = 0; a.play(); } catch { /* ignore */ } });
           } else {
             anims.forEach((a) => { try { a.play(); } catch { /* ignore */ } });
           }
-          setProgress('Smooth recording did not work here, recording in real time instead.');
+          setProgress('Smooth recording did not work here (' + (e.message || 'browser error') + '), recording in real time instead.');
           result = await recordClassic(doc, html2canvas, total);
           usedClassic = true;
         } catch (e2) { setError(e2.message || 'Recording failed.'); }
@@ -349,7 +367,10 @@ export function HtmlToVideoTool() {
     const fpsNum = parseInt(fps, 10) || 30;
     const frames = Math.round(total * fpsNum);
     if (format === 'webm' || !VIDEO_ENCODER_SUPPORTED) return 'Records in real time, about ' + total + ' seconds, 10 fps.';
-    return frames + ' frames at ' + fpsNum + ' fps' + (frames > MAX_FRAMES ? ' - capped at ' + MAX_FRAMES + ' frames' : '') + '. Recording takes longer than the video itself.';
+    const effSeconds = Math.min(total, MAX_FRAMES / fpsNum);
+    if (duration === 'full' && fullAnimSeconds(doc) <= 0) return 'No CSS animation found in your HTML, so Full records 5 seconds. If your animation is driven by JavaScript, use Custom and enter the seconds yourself.';
+    let head = (duration === 'full' ? 'Full animation: ' : '') + effSeconds + ' seconds - ' + frames + ' frames at ' + fpsNum + ' fps';
+    return head + (frames > MAX_FRAMES ? ' - capped at ' + MAX_FRAMES + ' frames' : '') + '. Recording takes longer than the video itself.';
   })();
 
   return (<Wrap>
