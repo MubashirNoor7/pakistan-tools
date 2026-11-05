@@ -1,1 +1,1 @@
-{"rewrites":[{"destination":"/index.html","source":"/(.*)"}]}
+{"redirects":[{"source":"/tools/avif-to-png-converter-online","destination":"/","permanent":true},{"source":"/tools/avif-to-png-converter-online/","destination":"/","permanent":true},{"source":"/tools/font-converter-stylish-text-generator","destination":"/","permanent":true},{"source":"/tools/font-converter-stylish-text-generator/","destination":"/","permanent":true}],"rewrites":[{"destination":"/index.html","source":"/(.*)"}]}
