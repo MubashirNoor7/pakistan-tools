@@ -51,16 +51,6 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
-    <loc>https://kalkio.vercel.app/tools/heic-to-jpg-converter-online/</loc>
-    <lastmod>2026-11-05</lastmod>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
-    <loc>https://kalkio.vercel.app/tools/avif-to-png-converter-online/</loc>
-    <lastmod>2026-11-05</lastmod>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
     <loc>https://kalkio.vercel.app/tools/webp-to-jpg-converter-online/</loc>
     <lastmod>2026-11-05</lastmod>
     <changefreq>monthly</changefreq>
@@ -182,11 +172,6 @@
   </url>
   <url>
     <loc>https://kalkio.vercel.app/tools/unit-converter-length-weight-temperature/</loc>
-    <lastmod>2026-11-05</lastmod>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
-    <loc>https://kalkio.vercel.app/tools/font-converter-stylish-text-generator/</loc>
     <lastmod>2026-11-05</lastmod>
     <changefreq>monthly</changefreq>
   </url>
