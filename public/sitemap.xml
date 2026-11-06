@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://kalkio.vercel.app/</loc>
-    <lastmod>2026-11-05</lastmod>
+    <lastmod>2026-11-06</lastmod>
     <changefreq>weekly</changefreq>
   </url>
   <url>
@@ -47,8 +47,13 @@
   </url>
   <url>
     <loc>https://kalkio.vercel.app/tools/fuel-trip-cost-calculator-pakistan-ogra/</loc>
-    <lastmod>2026-11-05</lastmod>
+    <lastmod>2026-11-06</lastmod>
     <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://kalkio.vercel.app/tools/petrol-price-pakistan-today/</loc>
+    <lastmod>2026-11-06</lastmod>
+    <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://kalkio.vercel.app/tools/heic-to-jpg-converter-online/</loc>
@@ -72,7 +77,7 @@
   </url>
   <url>
     <loc>https://kalkio.vercel.app/tools/gold-price-pakistan-today-1-tola-calculator/</loc>
-    <lastmod>2026-11-05</lastmod>
+    <lastmod>2026-11-06</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -87,7 +92,7 @@
   </url>
   <url>
     <loc>https://kalkio.vercel.app/tools/fuel-average-calculator-pakistan-km-per-litre/</loc>
-    <lastmod>2026-11-05</lastmod>
+    <lastmod>2026-11-06</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>

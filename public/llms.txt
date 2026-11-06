@@ -1,6 +1,6 @@
 # Kalkio
 
-Kalkio is a free website with 40 calculators and converters. Every tool runs in the visitor's browser - no sign-up, no account, no backend. File converters run fully in the browser and files are never uploaded to a server. Tax, bill and fuel results are estimates; official rates are final.
+Kalkio is a free website with 41 calculators and converters. Every tool runs in the visitor's browser - no sign-up, no account, no backend. File converters run fully in the browser and files are never uploaded to a server. Tax, bill and fuel results are estimates; official rates are final.
 
 Contact: sammykhanmalng@gmail.com
 
@@ -15,6 +15,7 @@ Contact: sammykhanmalng@gmail.com
 - Freelancer Tax Calculator Pakistan (154A, PSEB 0.25%): https://kalkio.vercel.app/tools/freelancer-tax-calculator-pakistan-154a/
 - Zakat Calculator Pakistan 2026: Cash, Gold: https://kalkio.vercel.app/tools/zakat-calculator-pakistan-cash-gold/
 - Fuel Trip Cost Calculator Pakistan (OGRA): https://kalkio.vercel.app/tools/fuel-trip-cost-calculator-pakistan-ogra/
+- Petrol Price Pakistan Today: Petrol & Diesel Rates: https://kalkio.vercel.app/tools/petrol-price-pakistan-today/
 - HEIC to JPG Converter Online (Free, Private): https://kalkio.vercel.app/tools/heic-to-jpg-converter-online/
 - WebP to JPG Converter Online Free: https://kalkio.vercel.app/tools/webp-to-jpg-converter-online/
 - Rent vs Buy Calculator Pakistan: https://kalkio.vercel.app/tools/rent-vs-buy-calculator-pakistan/
