@@ -1,9 +1,11 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
-import { AppBar, Toolbar, Typography, Container, Card, CardContent, Box, TextField, Button, List, ListItem, ListItemText, ListItemButton, Accordion, AccordionSummary, AccordionDetails, Table, TableBody, TableRow, TableCell, CssBaseline, Link, CircularProgress } from '@mui/material';
+import { AppBar, Toolbar, Typography, Container, Card, CardContent, Box, TextField, Button, Accordion, AccordionSummary, AccordionDetails, Table, TableBody, TableRow, TableCell, CssBaseline, Link, CircularProgress, InputAdornment, IconButton } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import SearchIcon from '@mui/icons-material/Search';
+import CloseIcon from '@mui/icons-material/Close';
 import { fmt } from './tools/shared.jsx';
 // Tool components load on demand (one small chunk per module) so the home page
 // never downloads calculator code the visitor has not opened yet.
@@ -131,10 +133,6 @@ const ID_TO_CAT = {};
 CATEGORIES.forEach((c) => c.tools.forEach((t) => { ID_TO_CAT[t.id] = c.name; }));
 const POPULAR = ['jpgtopdf', 'loanemi', 'age', 'bmi', 'mortgage', 'marla', 'pta', 'currency'].map((id) => BY_ID[id]).filter(Boolean);
 
-function toolListItems(tools, go, selectedId) {
-  return tools.map((t, i) => (<ListItem key={t.id} disablePadding divider={i < tools.length - 1}><ListItemButton component="a" href={`/tools/${t.slug}/`} selected={selectedId === t.id} onClick={(e) => go(e, `/tools/${t.slug}/`)}><ListItemText primary={`${CAT_EMOJI[ID_TO_CAT[t.id]] || ''} ${t.title}`} secondary={ID_TO_CAT[t.id] || t.cat} /></ListItemButton></ListItem>));
-}
-
 // Tiny pathname router - no new dependency. Trailing slashes are ignored.
 function parseRoute(pathname) {
   const p = (pathname.replace(/\/+$/, '') || '/');
@@ -167,10 +165,27 @@ function setFaqJsonLd(faqs) {
   document.head.appendChild(script);
 }
 
+// A tool as a card (home grids, search results, related tools). Plain CSS grid
+// on purpose: the installed MUI Grid is legacy v1 and ignores the `size` prop.
+function ToolCard({ t, go }) {
+  const emoji = CAT_EMOJI[ID_TO_CAT[t.id]] || '🔧';
+  return (<Card elevation={0} sx={{ height: '100%', transition: 'box-shadow 0.15s ease, transform 0.15s ease', '&:hover': { boxShadow: '0 6px 24px rgba(0,0,0,0.10)', transform: 'translateY(-2px)' } }}>
+    <CardContent component="a" href={`/tools/${t.slug}/`} onClick={(e) => go(e, `/tools/${t.slug}/`)} sx={{ display: 'block', textDecoration: 'none', color: 'inherit', height: '100%' }}>
+      <Box sx={{ width: 44, height: 44, borderRadius: 3, bgcolor: '#E6F4F2', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, mb: 1.5 }}>{emoji}</Box>
+      <Typography fontWeight={700} sx={{ lineHeight: 1.35, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{t.title}</Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>{ID_TO_CAT[t.id] || t.cat}</Typography>
+    </CardContent>
+  </Card>);
+}
+
+function ToolGrid({ tools, go, mdCols = 3 }) {
+  return (<Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', md: `repeat(${mdCols}, minmax(0, 1fr))` } }}>{tools.map((t) => (<ToolCard key={t.id} t={t} go={go} />))}</Box>);
+}
+
 export default function App() {
   const [route, setRoute] = useState(() => parseRoute(window.location.pathname));
   const [q, setQ] = useState('');
-  const [openCat, setOpenCat] = useState(CATEGORIES[0].name);
+  const [openCat, setOpenCat] = useState(null);
   const navigate = (path) => { if (window.location.pathname !== path) { window.history.pushState(null, '', path); setRoute(parseRoute(path)); } window.scrollTo(0, 0); };
   const go = (e, path) => { e.preventDefault(); navigate(path); };
   const query = q.trim().toLowerCase();
@@ -185,7 +200,7 @@ export default function App() {
   const cur = route.kind === 'tool' ? TOOLS.find((t) => t.slug === route.slug) : null;
 
   // Guide text loads on demand: the 8 core guides come from content.js, the
-  // other 32 arrive as one small chunk the first time a tool page needs one.
+  // other 37 arrive as one small chunk the first time a tool page needs one.
   const [guide, setGuide] = useState(null);
   useEffect(() => {
     let alive = true;
@@ -205,43 +220,8 @@ export default function App() {
     else { document.title = 'Tool not found | Kalkio'; setMetaTag('description', 'That tool does not exist on Kalkio. Browse all 45 free tools on the home page.'); setCanonical(BASE_URL + '/'); setFaqJsonLd(null); }
   }, [route, cur]);
 
-  // Keep the sidebar on the open tool's category, so the user always sees where they are.
-  useEffect(() => {
-    if (cur) {
-      const c = CATEGORIES.find((cat) => cat.tools.some((t) => t.id === cur.id));
-      if (c) setOpenCat(c.name);
-    }
-  }, [cur]);
-
-  // Three-pane layout (desktop): left = tools of the selected category, center =
-  // the selected tool (or home), right = all category names + logo. Plain CSS grid
-  // on purpose: MUI's legacy Grid ignores the `size` prop, so the three panes
-  // sized by content and the center wrapped below the sidebar (tool opened below
-  // the fold). On phones the panes stack with the tool first, then categories,
-  // then the tools list. Sidebars stick while the center scrolls.
-  const listTools = query ? searchResults : openCat === '__popular' ? POPULAR : (CATEGORIES.find((c) => c.name === openCat) || CATEGORIES[0]).tools;
-  const listTitle = query ? `Results for "${q.trim()}"` : openCat === '__popular' ? '⭐ Most popular' : openCat;
-  const listEmoji = query ? '' : openCat === '__popular' ? '' : (CAT_EMOJI[openCat] || '');
-  const sidebarTools = (<Card elevation={1} sx={{ borderRadius: 3 }}>
-    <Box sx={{ p: 2, pb: 1 }}><TextField fullWidth size="small" placeholder="Search a tool... e.g. JPG to PDF" value={q} onChange={(e) => setQ(e.target.value)} /></Box>
-    <Typography variant="subtitle1" fontWeight={700} sx={{ px: 2, pt: 1 }}>{listEmoji}{listEmoji && ' '}{listTitle}{!query && ` (${listTools.length})`}</Typography>
-    {listTools.length === 0
-      ? (<Typography variant="body1" color="text.secondary" sx={{ px: 2, py: 2 }}>No tool found - try another word, e.g. PDF, loan or Marla.</Typography>)
-      : (<List>{toolListItems(listTools, go, cur ? cur.id : null)}</List>)}
-  </Card>);
-  const sidebarCats = (<Card elevation={1} sx={{ borderRadius: 3 }}>
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 2, pb: 1 }}>
-      <Box sx={{ bgcolor: 'primary.main', borderRadius: 2, p: 0.5, display: 'flex', color: 'white' }}><CalculateIcon /></Box>
-      <Box><Typography fontWeight={800} lineHeight={1}>Kalkio</Typography><Typography variant="caption" color="text.secondary">Free tools, no sign-up</Typography></Box>
-    </Box>
-    <List>
-      <ListItem disablePadding divider><ListItemButton selected={openCat === '__popular'} onClick={() => { setOpenCat('__popular'); setQ(''); }}><ListItemText primary="⭐ Most popular" secondary="Most searched tools" /></ListItemButton></ListItem>
-      {CATEGORIES.map((c, i) => (<ListItem key={c.name} disablePadding divider={i < CATEGORIES.length - 1}><ListItemButton selected={openCat === c.name} onClick={() => { setOpenCat(c.name); setQ(''); }}><ListItemText primary={`${CAT_EMOJI[c.name]} ${c.name}`} secondary={`${c.tools.length} tools`} /></ListItemButton></ListItem>))}
-    </List>
-  </Card>);
-
-  const footer = (<Box component="footer" sx={{ mt: 4, pt: 2, borderTop: '1px solid #e0e0e0', textAlign: 'center' }}>
-    <Typography variant="body2" color="text.secondary" gutterBottom sx={{ '& a': { color: '#0d47a1' } }}>
+  const footer = (<Box component="footer" sx={{ mt: 6, pt: 3, borderTop: '1px solid #E7E5E4', textAlign: 'center' }}>
+    <Typography variant="body2" color="text.secondary" gutterBottom sx={{ '& a': { color: 'primary.main' } }}>
       <Link href="/about/" onClick={(e) => go(e, '/about/')}>About</Link>{' · '}
       <Link href="/contact/" onClick={(e) => go(e, '/contact/')}>Contact</Link>{' · '}
       <Link href="/privacy/" onClick={(e) => go(e, '/privacy/')}>Privacy Policy</Link>
@@ -249,81 +229,124 @@ export default function App() {
     <Typography variant="caption" color="text.secondary">Kalkio - free tools, no sign-up.</Typography>
   </Box>);
 
-  const notFound = (<>
+  const notFound = (<Box sx={{ maxWidth: 720, mx: 'auto', py: 6 }}>
     <Typography variant="h4" component="h1" fontWeight={800} gutterBottom>Tool not found</Typography>
     <Typography variant="body1" color="text.secondary" gutterBottom>That tool does not exist on Kalkio.</Typography>
     <Button variant="contained" component="a" href="/" onClick={(e) => go(e, '/')} sx={{ mt: 2 }}>Browse all tools</Button>
-  </>);
+  </Box>);
 
-  const staticPage = (title, children) => (<>
+  const staticPage = (title, children) => (<Box sx={{ maxWidth: 720, mx: 'auto', py: 4 }}>
     <Button startIcon={<ArrowBackIcon />} component="a" href="/" onClick={(e) => go(e, '/')} sx={{ mb: 2 }}>All tools</Button>
     <Typography variant="h4" component="h1" fontWeight={800} gutterBottom>{title}</Typography>
     {children}
+  </Box>);
+
+  // Sticky white header: logo, search, nav. The search filters every tool;
+  // typing shows the matches as cards in the main content below.
+  const header = (<AppBar position="sticky" elevation={0} sx={{ bgcolor: '#fff', color: 'text.primary', borderBottom: '1px solid #E7E5E4' }}>
+    <Toolbar sx={{ gap: 2, flexWrap: 'wrap', py: 1 }}>
+      <Box component="a" href="/" onClick={(e) => go(e, '/')} sx={{ display: 'flex', alignItems: 'center', gap: 1, textDecoration: 'none', color: 'inherit' }}>
+        <Box sx={{ bgcolor: 'primary.main', borderRadius: 2, p: 0.5, display: 'flex', color: 'white' }}><CalculateIcon /></Box>
+        <Typography variant="h6" fontWeight={800}>Kalkio</Typography>
+      </Box>
+      <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', order: { xs: 3, md: 2 }, flexBasis: { xs: '100%', md: 'auto' } }}>
+        <TextField size="small" fullWidth sx={{ maxWidth: 520 }} placeholder="Search a tool... e.g. JPG to PDF" value={q} onChange={(e) => setQ(e.target.value)} InputProps={{ startAdornment: (<InputAdornment position="start"><SearchIcon color="action" /></InputAdornment>), endAdornment: q ? (<InputAdornment position="end"><IconButton size="small" onClick={() => setQ('')} aria-label="Clear search"><CloseIcon fontSize="small" /></IconButton></InputAdornment>) : null }} />
+      </Box>
+      <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 2.5, alignItems: 'center', order: 3 }}>
+        <Link href="/" onClick={(e) => go(e, '/')} underline="hover" color="text.primary" fontWeight={700}>All tools</Link>
+        <Link href="/about/" onClick={(e) => go(e, '/about/')} underline="hover" color="text.primary" fontWeight={700}>About</Link>
+        <Link href="/contact/" onClick={(e) => go(e, '/contact/')} underline="hover" color="text.primary" fontWeight={700}>Contact</Link>
+      </Box>
+    </Toolbar>
+  </AppBar>);
+
+  const searchView = (<Box sx={{ py: 4 }}>
+    <Typography variant="h4" component="h1" fontWeight={800} gutterBottom>Results for "{q.trim()}"</Typography>
+    {searchResults.length === 0 ? (<>
+      <Typography variant="body1" color="text.secondary" gutterBottom>No tool found - try another word, e.g. PDF, loan or Marla.</Typography>
+      <Button variant="contained" onClick={() => setQ('')} sx={{ mt: 1 }}>Browse all tools</Button>
+    </>) : (<ToolGrid tools={searchResults} go={go} />)}
+  </Box>);
+
+  const homeView = (<>
+    <Box sx={{ textAlign: 'center', py: { xs: 5, md: 7 }, px: 1 }}>
+      <Typography variant="h3" component="h1" fontWeight={800} gutterBottom sx={{ fontSize: { xs: '2rem', md: '2.75rem' } }}>45 free calculators and converters.</Typography>
+      <Typography variant="h6" color="text.secondary" fontWeight={400} sx={{ maxWidth: 640, mx: 'auto' }}>From Marla and salary tax to JPG to PDF and GTA 6 prices. Everything runs in your browser. No sign-up.</Typography>
+      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3 }}>Last updated 6 Nov 2026.</Typography>
+    </Box>
+    <Typography variant="h5" component="h2" fontWeight={800} gutterBottom>⭐ Most popular</Typography>
+    <ToolGrid tools={POPULAR} go={go} />
+    <Box sx={{ mt: 5 }}>
+      <Typography variant="h5" component="h2" fontWeight={800} gutterBottom>Browse all tools</Typography>
+      {CATEGORIES.map((c) => (<Accordion key={c.name} expanded={openCat === c.name} onChange={() => setOpenCat(openCat === c.name ? null : c.name)} sx={{ mb: 1 }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>{CAT_EMOJI[c.name]} {c.name} <Typography component="span" variant="body2" color="text.secondary" fontWeight={400}>({c.tools.length} tools)</Typography></Typography></AccordionSummary>
+        <AccordionDetails><ToolGrid tools={c.tools} go={go} /></AccordionDetails>
+      </Accordion>))}
+    </Box>
+    <Accordion sx={{ mt: 5 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>❓ Common questions</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary" paragraph><b>Are the tools free?</b> Yes. All 45 tools are free and no sign-up is needed.</Typography><Typography variant="body2" color="text.secondary" paragraph><b>Does my data leave my device?</b> No. Every tool runs in your browser and does not ask you to create an account.</Typography><Typography variant="body2" color="text.secondary"><b>Are tax results official?</b> No. Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.</Typography></AccordionDetails></Accordion>
+    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3, textAlign: 'center' }}>Tax, bill and fuel results are estimates - confirm official rates before a financial decision.</Typography>
   </>);
+
+  const toolView = cur && (<Box sx={{ maxWidth: 720, mx: 'auto', py: 4 }}>
+    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+      <Link href="/" onClick={(e) => go(e, '/')} underline="hover" color="inherit">Home</Link>{' / '}{ID_TO_CAT[cur.id] || cur.cat}
+    </Typography>
+    <Typography variant="h4" component="h1" fontWeight={800} gutterBottom>{cur.title}</Typography>
+    <Typography variant="body1" color="text.secondary" gutterBottom>{CAT_EMOJI[ID_TO_CAT[cur.id]] || ''} {ID_TO_CAT[cur.id] || cur.cat} · No sign-up.</Typography>
+    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>Guide last updated {CONTENT_UPDATED}.</Typography>
+    <Suspense fallback={<Box sx={{ py: 4, textAlign: 'center' }}><CircularProgress /><Typography color="text.secondary" sx={{ mt: 1 }}>Loading calculator...</Typography></Box>}><cur.Component /></Suspense>
+    {cur.id === 'marla' && (<>
+      <Box sx={{ bgcolor: '#fff8e1', borderRadius: 2, p: 2, mt: 2 }}><Typography variant="body2">225 sq ft is common in housing societies like DHA and Bahria Town. 250 sq ft is the CDA Islamabad standard. 272.25 sq ft is the revenue-record Marla. Confirm from your plot documents which one applies to you.</Typography></Box>
+      <Accordion sx={{ mt: 2 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>How it works</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary">Square feet = Marla × sq ft per Marla. Square yards = square feet ÷ 9. Square metres = square feet ÷ 10.7639. Kanal = Marla ÷ 20. Acre = Marla ÷ 160.</Typography></AccordionDetails></Accordion>
+      <Accordion><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>225 vs 250 vs 272.25 - quick table</Typography></AccordionSummary><AccordionDetails><Table size="small"><TableBody>{[[1, 225, 250, 272.25], [5, 1125, 1250, 1361.25], [10, 2250, 2500, 2722.5], [20, 4500, 5000, 5445]].map(([m, a, b, c]) => (<TableRow key={m}><TableCell>{m === 20 ? '20 = 1 Kanal' : `${m} Marla`}</TableCell><TableCell>{fmt(a)}</TableCell><TableCell>{fmt(b)}</TableCell><TableCell>{fmt(c)}</TableCell></TableRow>))}</TableBody></Table></AccordionDetails></Accordion>
+      <Accordion><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>❓ Common questions</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary" paragraph><b>How many Marla in 1 Kanal?</b> 20 Marla, under both standards.</Typography><Typography variant="body2" color="text.secondary"><b>Which standard should I use?</b> The one written in your plot documents.</Typography></AccordionDetails></Accordion>
+    </>)}
+    <Box sx={{ mt: 2 }}><Button variant="outlined" color="success" startIcon={<WhatsAppIcon />} component="a" href={`https://wa.me/?text=${encodeURIComponent(cur.title + ' - ' + toolUrl(cur.slug))}`} target="_blank" rel="noopener noreferrer">Share on WhatsApp</Button></Box>
+    {guide && (<Box component="section" sx={{ mt: 4 }}>{guide.map((s) => (<Box key={s.h} sx={{ mb: 3 }}>
+      <Typography variant="h5" component="h2" fontWeight={700} gutterBottom>{s.h}</Typography>
+      {s.p.map((para, i) => (<Typography key={i} variant="body1" color="text.secondary" paragraph>{para}</Typography>))}
+      {s.table && (<Box sx={{ overflowX: 'auto' }}><Table size="small"><TableBody><TableRow>{s.table.head.map((c) => (<TableCell key={c} sx={{ fontWeight: 700 }}>{c}</TableCell>))}</TableRow>{s.table.rows.map((r, ri) => (<TableRow key={ri}>{r.map((c, ci) => (<TableCell key={ci}>{c}</TableCell>))}</TableRow>))}</TableBody></Table></Box>)}
+    </Box>))}</Box>)}
+    {cur.id !== 'marla' && cur.faqs && cur.faqs.length > 0 && (<Accordion sx={{ mt: 2 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>❓ Common questions</Typography></AccordionSummary><AccordionDetails>{cur.faqs.map(([fq, fa]) => (<Typography key={fq} variant="body2" color="text.secondary" paragraph><b>{fq}</b> {fa}</Typography>))}</AccordionDetails></Accordion>)}
+    {(() => { const sib = (CATEGORIES.find((c) => c.name === ID_TO_CAT[cur.id]) || { tools: [] }).tools.filter((t) => t.id !== cur.id).slice(0, 4); return sib.length > 0 ? (<Box sx={{ mt: 5 }}><Typography variant="h6" component="h2" fontWeight={700} gutterBottom>🔗 More free tools</Typography><ToolGrid tools={sib} go={go} mdCols={2} /></Box>) : null; })()}
+  </Box>);
+
+  const aboutView = staticPage('About Kalkio', (<>
+    <Typography variant="body1" paragraph>Kalkio is a collection of 45 free calculators and converters, covering property, tax and salary, prices, finance, files and everyday calculations.</Typography>
+    <Typography variant="body1" paragraph>Every tool runs in the visitor’s browser - there is no backend, no database, no login and no sign-up. File converters also run fully in the browser.</Typography>
+    <Typography variant="body1" paragraph>Tax, bill and fuel results are estimates - confirm official rates before a financial decision.</Typography>
+  </>));
+  const contactView = staticPage('Contact Kalkio', (<>
+    <Typography variant="body1" paragraph>Questions about Kalkio? Email us at <Link href="mailto:sammykhanmalng@gmail.com">sammykhanmalng@gmail.com</Link>.</Typography>
+    <Typography variant="body1" paragraph>Tools run in your browser and no sign-up is needed, so there is no account to recover.</Typography>
+  </>));
+  const privacyView = staticPage('Privacy Policy', (<>
+    <Typography variant="body1" paragraph>The tools on Kalkio run in your browser. They do not ask you to create an account, and they do not send your calculator inputs to a server.</Typography>
+    <Typography variant="body1" paragraph>File converters (HEIC, AVIF, WebP, PNG, JPG and PDF) also run fully in the browser - your files are never uploaded to a server.</Typography>
+    <Typography variant="body1" paragraph>Passwords and QR codes are generated locally on your device and never sent anywhere.</Typography>
+    <Typography variant="body1" paragraph>Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.</Typography>
+    <Typography variant="body1" paragraph>Questions about this policy: <Link href="mailto:sammykhanmalng@gmail.com">sammykhanmalng@gmail.com</Link>.</Typography>
+  </>));
 
   return (<>
     <CssBaseline />
     <a href="#main-content" className="skip-link">Skip to main content</a>
-    <AppBar position="static" color="primary" elevation={0}><Toolbar><Box sx={{ bgcolor: 'rgba(255,255,255,0.2)', borderRadius: 2, p: 0.5, mr: 1.5, display: 'flex' }}><CalculateIcon /></Box><Typography variant="h6" fontWeight={700} component="a" href="/" onClick={(e) => go(e, '/')} sx={{ color: 'inherit', textDecoration: 'none' }}>Kalkio</Typography></Toolbar></AppBar>
-    <Box sx={{ bgcolor: '#f5f7fa', minHeight: '100vh', py: 4 }}>
-      <Container maxWidth="xl">
-      <Box sx={{ display: 'grid', gap: 3, alignItems: 'start', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: '300px minmax(0, 1fr) 280px' } }}>
-        <Box component="nav" aria-label="Tools in this category" sx={{ order: { xs: 3, md: 1 }, minWidth: 0, position: { md: 'sticky' }, top: { md: 24 } }}>{sidebarTools}</Box>
-        <Box component="main" id="main-content" sx={{ order: { xs: 1, md: 2 }, minWidth: 0 }}>
-        {route.kind === 'home' && (<>
-          <Typography variant="h4" component="h1" fontWeight={800} gutterBottom>What do you want to calculate?</Typography>
-          <Typography variant="body1" color="text.secondary" gutterBottom>{TOOLS.length} tools, one style. No sign-up. Pick a category on the right, or a tool on the left.</Typography>
-          <Typography variant="body1" color="text.secondary" gutterBottom>Free calculators and converters, including Pakistan tools (Marla, salary tax, PTA tax, BPS, Zakat, gold and fuel), plus file converters, QR codes, BMI and more. Everything runs in your browser.</Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>Last updated 6 Nov 2026.</Typography>
-          <Typography variant="h6" component="h2" fontWeight={700} gutterBottom>⭐ Most popular</Typography>
-          <Card elevation={1} sx={{ borderRadius: 3 }}><List>{toolListItems(POPULAR, go, null)}</List></Card>
-          <Accordion sx={{ mt: 2 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>❓ Common questions</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary" paragraph><b>Are the tools free?</b> Yes. All 45 tools are free and no sign-up is needed.</Typography><Typography variant="body2" color="text.secondary" paragraph><b>Does my data leave my device?</b> No. Every tool runs in your browser and does not ask you to create an account.</Typography><Typography variant="body2" color="text.secondary"><b>Are tax results official?</b> No. Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.</Typography></AccordionDetails></Accordion>
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3, textAlign: 'center' }}>Tax, bill and fuel results are estimates - confirm official rates before a financial decision.</Typography>
-        </>)}
-        {route.kind === 'tool' && !cur && notFound}
-        {route.kind === 'notfound' && notFound}
-        {route.kind === 'tool' && cur && (<>
-          <Button startIcon={<ArrowBackIcon />} component="a" href="/" onClick={(e) => go(e, '/')} sx={{ mb: 2 }}>All tools</Button>
-          <Typography variant="h4" component="h1" fontWeight={800} gutterBottom>{cur.title}</Typography>
-          <Typography variant="body1" color="text.secondary" gutterBottom>{CAT_EMOJI[ID_TO_CAT[cur.id]] || ''} {ID_TO_CAT[cur.id] || cur.cat} · No sign-up.</Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>Guide last updated {CONTENT_UPDATED}.</Typography>
-          {cur && (<Suspense fallback={<Box sx={{ py: 4, textAlign: 'center' }}><CircularProgress /><Typography color="text.secondary" sx={{ mt: 1 }}>Loading calculator...</Typography></Box>}><cur.Component /></Suspense>)}
-          {cur.id === 'marla' && (<>
-            <Box sx={{ bgcolor: '#fff8e1', borderRadius: 2, p: 2, mt: 2 }}><Typography variant="body2">225 sq ft is common in housing societies like DHA and Bahria Town. 250 sq ft is the CDA Islamabad standard. 272.25 sq ft is the revenue-record Marla. Confirm from your plot documents which one applies to you.</Typography></Box>
-            <Accordion sx={{ mt: 2 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>How it works</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary">Square feet = Marla × sq ft per Marla. Square yards = square feet ÷ 9. Square metres = square feet ÷ 10.7639. Kanal = Marla ÷ 20. Acre = Marla ÷ 160.</Typography></AccordionDetails></Accordion>
-            <Accordion><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>225 vs 250 vs 272.25 - quick table</Typography></AccordionSummary><AccordionDetails><Table size="small"><TableBody>{[[1, 225, 250, 272.25], [5, 1125, 1250, 1361.25], [10, 2250, 2500, 2722.5], [20, 4500, 5000, 5445]].map(([m, a, b, c]) => (<TableRow key={m}><TableCell>{m === 20 ? '20 = 1 Kanal' : `${m} Marla`}</TableCell><TableCell>{fmt(a)}</TableCell><TableCell>{fmt(b)}</TableCell><TableCell>{fmt(c)}</TableCell></TableRow>))}</TableBody></Table></AccordionDetails></Accordion>
-            <Accordion><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>❓ Common questions</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary" paragraph><b>How many Marla in 1 Kanal?</b> 20 Marla, under both standards.</Typography><Typography variant="body2" color="text.secondary"><b>Which standard should I use?</b> The one written in your plot documents.</Typography></AccordionDetails></Accordion>
-          </>)}
-        </>)}
-        {route.kind === 'tool' && cur && (<Box sx={{ mt: 2 }}><Button variant="outlined" color="success" startIcon={<WhatsAppIcon />} component="a" href={`https://wa.me/?text=${encodeURIComponent(cur.title + ' - ' + toolUrl(cur.slug))}`} target="_blank" rel="noopener noreferrer">Share on WhatsApp</Button></Box>)}
-        {route.kind === 'tool' && cur && guide && (<Box component="section" sx={{ mt: 4 }}>{guide.map((s) => (<Box key={s.h} sx={{ mb: 3 }}>
-          <Typography variant="h5" component="h2" fontWeight={700} gutterBottom>{s.h}</Typography>
-          {s.p.map((para, i) => (<Typography key={i} variant="body1" color="text.secondary" paragraph>{para}</Typography>))}
-          {s.table && (<Box sx={{ overflowX: 'auto' }}><Table size="small"><TableBody><TableRow>{s.table.head.map((c) => (<TableCell key={c} sx={{ fontWeight: 700 }}>{c}</TableCell>))}</TableRow>{s.table.rows.map((r, ri) => (<TableRow key={ri}>{r.map((c, ci) => (<TableCell key={ci}>{c}</TableCell>))}</TableRow>))}</TableBody></Table></Box>)}
-        </Box>))}</Box>)}
-        {route.kind === 'tool' && cur && cur.id !== 'marla' && cur.faqs && cur.faqs.length > 0 && (<Accordion sx={{ mt: 2 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>❓ Common questions</Typography></AccordionSummary><AccordionDetails>{cur.faqs.map(([fq, fa]) => (<Typography key={fq} variant="body2" color="text.secondary" paragraph><b>{fq}</b> {fa}</Typography>))}</AccordionDetails></Accordion>)}
-        {route.kind === 'tool' && cur && (() => { const sib = (CATEGORIES.find((c) => c.name === ID_TO_CAT[cur.id]) || { tools: [] }).tools.filter((t) => t.id !== cur.id).slice(0, 5); return sib.length > 0 ? (<Box sx={{ mt: 4 }}><Typography variant="h6" component="h2" fontWeight={700} gutterBottom>🔗 More free tools</Typography><Card elevation={1} sx={{ borderRadius: 3 }}><List>{toolListItems(sib, go, null)}</List></Card></Box>) : null; })()}
-        {route.kind === 'about' && staticPage('About Kalkio', (<>
-          <Typography variant="body1" paragraph>Kalkio is a collection of 45 free calculators and converters, covering property, tax and salary, prices, finance, files and everyday calculations.</Typography>
-          <Typography variant="body1" paragraph>Every tool runs in the visitor’s browser - there is no backend, no database, no login and no sign-up. File converters also run fully in the browser.</Typography>
-          <Typography variant="body1" paragraph>Tax, bill and fuel results are estimates - confirm official rates before a financial decision.</Typography>
-        </>))}
-        {route.kind === 'contact' && staticPage('Contact Kalkio', (<>
-          <Typography variant="body1" paragraph>Questions about Kalkio? Email us at <Link href="mailto:sammykhanmalng@gmail.com">sammykhanmalng@gmail.com</Link>.</Typography>
-          <Typography variant="body1" paragraph>Tools run in your browser and no sign-up is needed, so there is no account to recover.</Typography>
-        </>))}
-        {route.kind === 'privacy' && staticPage('Privacy Policy', (<>
-          <Typography variant="body1" paragraph>The tools on Kalkio run in your browser. They do not ask you to create an account, and they do not send your calculator inputs to a server.</Typography>
-          <Typography variant="body1" paragraph>File converters (HEIC, AVIF, WebP, PNG, JPG and PDF) also run fully in your browser - your files are never uploaded to a server.</Typography>
-          <Typography variant="body1" paragraph>Passwords and QR codes are generated locally on your device and never sent anywhere.</Typography>
-          <Typography variant="body1" paragraph>Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.</Typography>
-          <Typography variant="body1" paragraph>Questions about this policy: <Link href="mailto:sammykhanmalng@gmail.com">sammykhanmalng@gmail.com</Link>.</Typography>
-        </>))}
-        {footer}
+    {header}
+    <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', pb: 4 }}>
+      <Container maxWidth="lg">
+        <Box component="main" id="main-content">
+          {query ? searchView
+            : route.kind === 'home' ? homeView
+            : route.kind === 'tool' && cur ? toolView
+            : route.kind === 'tool' && !cur ? notFound
+            : route.kind === 'notfound' ? notFound
+            : route.kind === 'about' ? aboutView
+            : route.kind === 'contact' ? contactView
+            : route.kind === 'privacy' ? privacyView
+            : notFound}
+          {footer}
         </Box>
-        <Box component="nav" aria-label="Tool categories" sx={{ order: { xs: 2, md: 3 }, minWidth: 0, position: { md: 'sticky' }, top: { md: 24 } }}>{sidebarCats}</Box>
-      </Box>
-    </Container>
+      </Container>
     </Box>
   </>);
 }
