@@ -21,13 +21,19 @@ function Wrap({ children, note }) {
 // - JavaScript story (a script, or a Play/Start button): LIVE engine. JS runs
 //   in real time and cannot be rewound, so the tool records it live while it
 //   plays, at the frame rate picked on the main screen (10, 30 or 60 fps in
-//   the file; the picture updates as fast as the page allows). On "From the
-//   beginning" it reloads the preview and presses Play for the user, so the
-//   story starts by itself, in sync with the recording.
+//   the file; the picture updates as fast as the page allows). If the story
+//   makes sound with WebAudio, the sound is recorded too (MP4 with AAC,
+//   WebM with Opus). On "From the beginning" it reloads the preview and
+//   presses Play for the user, so the story starts by itself, in sync with
+//   the recording.
 // - Static page (nothing moves): short live recording.
 // The old real-time MediaRecorder path is the LIVE engine above; it is also
 // the fallback when the smooth engine fails, and the only engine for WebM
 // (WebM is always live; for smooth 30/60 fps choose MP4).
+// While any recording runs, the preview is slowed to at most 20 frames per
+// second so the snapshots land steadily instead of freezing; the story's own
+// clock (its sound) is not affected, and the preview goes back to full speed
+// afterwards.
 //
 // Quality rules (fixed 5 Nov 2026 - the old version recorded at preview size with
 // the browser's default bitrate, so the video looked soft, and a tall page was
@@ -62,6 +68,10 @@ p { font-size: 16px; opacity: 0.9; }
 
 const MIME_CANDIDATES = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
 const MP4_CANDIDATES = ['video/mp4;codecs="avc1.640028"', 'video/mp4;codecs="avc1.42E01E"', 'video/mp4'];
+// With sound: the same containers, plus an audio codec (AAC for MP4, Opus for
+// WebM), so a story that makes sound records with sound.
+const MP4_AUDIO_CANDIDATES = ['video/mp4;codecs="avc1.640028,mp4a.40.2"', 'video/mp4;codecs="avc1.42E01E,mp4a.40.2"', 'video/mp4'];
+const WEBM_AUDIO_CANDIDATES = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
 // Chrome, Edge and Safari can record real MP4 (H.264) straight from the canvas -
 // tested 5 Nov 2026: a 2s MP4 recording came out as a valid file (ftypisom).
 // Firefox cannot, so it falls back to WebM.
@@ -119,17 +129,51 @@ function detectContent(doc, code) {
   return { kind, cssSeconds, playButton };
 }
 
-// 3D/WebGL scenes (for example a Three.js story) draw on a <canvas> whose
-// picture the browser throws away after each frame. The recorder draws that
-// canvas into the video, so without this patch the whole 3D scene comes out
-// black. The patch runs before the pasted code and asks the browser to keep
-// the last frame, so the recorder can see it. It changes nothing the user sees.
-const WEBGL_PATCH = `<script>(function(){try{var o=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(t,a){if(t==='webgl'||t==='webgl2'||t==='experimental-webgl'){a=Object.assign({},a,{preserveDrawingBuffer:true});}return o.call(this,t,a);};}catch(e){}})();<\/script>`;
+// Runs inside the preview before the pasted code. Three small fixes:
+// 1. 3D/WebGL scenes (for example a Three.js story) draw on a <canvas> whose
+//    picture the browser throws away after each frame. The recorder draws that
+//    canvas into the video, so without this the whole 3D scene comes out
+//    black. This asks the browser to keep the last frame, so the recorder can
+//    see it. It changes nothing the user sees.
+// 2. Sound: every AudioContext the code makes also sends its sound to a
+//    stream the recorder can use, so a story that makes sound with WebAudio
+//    records with sound. The sound still plays from the speakers too.
+// 3. Smoothness: while recording, the preview runs at up to 20 frames per
+//    second (the tool turns this on and off), so the recorder has time to
+//    take steady snapshots instead of freezing. The story's own clock (its
+//    sound) is not affected.
+const PREVIEW_PATCH = `<script>(function(){
+try{var ogc=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(t,a){if(t==='webgl'||t==='webgl2'||t==='experimental-webgl'){a=Object.assign({},a,{preserveDrawingBuffer:true});}return ogc.call(this,t,a);};}catch(e){}
+try{
+window.__kalkioAudioStreams=[];
+var AC=window.AudioContext||window.webkitAudioContext;
+if(AC){
+var OrigAC=AC,destByCtx=new WeakMap(),streamConnected=new WeakSet();
+var Ctx=function(){var ctx=new OrigAC();try{var d=ctx.createMediaStreamDestination();destByCtx.set(ctx,d);window.__kalkioAudioStreams.push(d.stream);}catch(e){}return ctx;};
+Ctx.prototype=OrigAC.prototype;
+window.AudioContext=Ctx;if(window.webkitAudioContext)window.webkitAudioContext=Ctx;
+var origConnect=AudioNode.prototype.connect;
+AudioNode.prototype.connect=function(target){
+var r=origConnect.apply(this,arguments);
+try{var ctx=this.context;if(ctx&&target===ctx.destination){var d=destByCtx.get(ctx);if(d&&!streamConnected.has(this)){streamConnected.add(this);origConnect.call(this,d);}}}catch(e){}
+return r;};
+}
+}catch(e){}
+try{
+var raf=window.requestAnimationFrame.bind(window),lastRaf=0;
+window.requestAnimationFrame=function(cb){
+var throttle=window.__kalkioRafThrottle||0;
+if(!throttle)return raf(cb);
+var now=performance.now(),wait=Math.max(0,throttle-(now-lastRaf));
+return window.setTimeout(function(){lastRaf=performance.now();raf(cb);},wait);
+};
+}catch(e){}
+})();<\/script>`;
 function injectPatch(code) {
   if (!/<script[\s>]/i.test(code)) return code;
-  if (/<head[^>]*>/i.test(code)) return code.replace(/<head[^>]*>/i, (m) => m + WEBGL_PATCH);
-  if (/<html[^>]*>/i.test(code)) return code.replace(/<html[^>]*>/i, (m) => m + WEBGL_PATCH);
-  return WEBGL_PATCH + code;
+  if (/<head[^>]*>/i.test(code)) return code.replace(/<head[^>]*>/i, (m) => m + PREVIEW_PATCH);
+  if (/<html[^>]*>/i.test(code)) return code.replace(/<html[^>]*>/i, (m) => m + PREVIEW_PATCH);
+  return PREVIEW_PATCH + code;
 }
 
 // Is the content a vertical story (for example a 9:16 phone story)? The
@@ -380,12 +424,35 @@ export function HtmlToVideoTool() {
     if (!prep) throw new Error('snapshot failed');
     const { canvas, ctx, cw, ch, shotOpts } = prep;
     if (playButton) { try { playButton.click(); } catch { /* ignore */ } }
-    const candidates = format === 'mp4' ? MP4_CANDIDATES : MIME_CANDIDATES;
+    // Sound: the preview patch sends every AudioContext's sound to a stream.
+    // Take the latest one (the story makes its context when Play is pressed).
+    let audioStream = null;
+    try {
+      const win = iframeRef.current && iframeRef.current.contentWindow;
+      const list = win && win.__kalkioAudioStreams;
+      if (list && list.length) audioStream = list[list.length - 1];
+    } catch { /* ignore */ }
+    const videoStream = canvas.captureStream(fpsNum);
+    let stream = videoStream;
+    if (audioStream) {
+      const tracks = [...videoStream.getVideoTracks(), ...audioStream.getAudioTracks()];
+      if (tracks.length > 1) stream = new MediaStream(tracks);
+    }
+    const candidates = format === 'mp4'
+      ? (audioStream ? MP4_AUDIO_CANDIDATES : MP4_CANDIDATES)
+      : (audioStream ? WEBM_AUDIO_CANDIDATES : MIME_CANDIDATES);
     let mime = '';
     for (const m of candidates) { if (window.MediaRecorder.isTypeSupported(m)) { mime = m; break; } }
+    // No type that carries sound: try the picture-only types, and record
+    // without sound instead of failing.
+    if (audioStream && !mime) {
+      const plain = format === 'mp4' ? MP4_CANDIDATES : MIME_CANDIDATES;
+      for (const m of plain) { if (window.MediaRecorder.isTypeSupported(m)) { mime = m; break; } }
+      if (mime) { stream = videoStream; audioStream = null; }
+    }
     if (format === 'mp4' && !mime) throw new Error('Your browser cannot make MP4. Try WebM instead.');
     let rec;
-    try { rec = new MediaRecorder(canvas.captureStream(fpsNum), mime ? { mimeType: mime, videoBitsPerSecond: VIDEO_BITRATE } : { videoBitsPerSecond: VIDEO_BITRATE }); }
+    try { rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: VIDEO_BITRATE } : { videoBitsPerSecond: VIDEO_BITRATE }); }
     catch { throw new Error('Recording is not supported in this browser. Try Chrome or Edge.'); }
     const chunks = [];
     rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
@@ -423,8 +490,17 @@ export function HtmlToVideoTool() {
     if (blob.size === 0) throw new Error('Recording failed. The preview may use something this recorder cannot capture.');
     return {
       blob,
-      info: cw + ' x ' + ch + ' - about ' + total + ' seconds - ' + fpsNum + ' fps - ' + fmtSize(blob.size),
+      info: cw + ' x ' + ch + ' - about ' + total + ' seconds - ' + fpsNum + ' fps' + (audioStream ? ' - with sound' : '') + ' - ' + fmtSize(blob.size),
     };
+  };
+
+  // Slows the preview to at most 20 frames per second while recording, so
+  // the recorder has time to take steady snapshots. Turned off afterwards.
+  const setRafThrottle = (ms) => {
+    try {
+      const win = iframeRef.current && iframeRef.current.contentWindow;
+      if (win) win.__kalkioRafThrottle = ms;
+    } catch { /* ignore */ }
   };
 
   const startRecording = async () => {
@@ -471,6 +547,7 @@ export function HtmlToVideoTool() {
     }
     stopRef.current = false; snapFailedRef.current = false;
     setRecording(true);
+    setRafThrottle(50);
     let result = null;
     let usedClassic = false;
     try {
@@ -501,6 +578,7 @@ export function HtmlToVideoTool() {
         setError(e.message || 'Recording failed.');
       }
     } finally {
+      setRafThrottle(0);
       // Put the preview back how it was before recording.
       saved.forEach(({ a, t, state }) => {
         try {
@@ -533,6 +611,7 @@ export function HtmlToVideoTool() {
     if (det.kind === 'css') return 'Your video: ' + total + ' seconds, recorded live at ' + fps + ' fps. Recording takes ' + total + ' seconds.';
     if (det.kind === 'js') {
       return 'Your story plays live: ' + total + ' seconds at ' + fps + ' fps. Recording takes ' + total + ' seconds.'
+        + (/AudioContext/i.test(code) ? ' With sound.' : '')
         + (det.playButton && startFrom === 'start' ? ' It presses Play for you.' : '')
         + (det.playButton && startFrom === 'current' ? ' Press Play in the preview first if the story has not started.' : '');
     }
