@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { Card, CardContent, Typography, TextField, Box, ToggleButton, ToggleButtonGroup, Alert, Button } from '@mui/material';
 
 function Wrap({ children, note }) {
@@ -20,21 +20,29 @@ function Wrap({ children, note }) {
 //   Edge, Safari 16.4+, Firefox 130+).
 // - JavaScript story (a script, or a Play/Start button): LIVE engine. JS runs
 //   in real time and cannot be rewound, so the tool records it live while it
-//   plays (about 10 fps). On "From the beginning" it reloads the preview and
-//   presses Play for the user, so the story starts by itself.
+//   plays, at the frame rate picked on the main screen (10, 30 or 60 fps in
+//   the file; the picture updates as fast as the page allows). On "From the
+//   beginning" it reloads the preview and presses Play for the user, so the
+//   story starts by itself, in sync with the recording.
 // - Static page (nothing moves): short live recording.
 // The old real-time MediaRecorder path is the LIVE engine above; it is also
 // the fallback when the smooth engine fails, and the only engine for WebM
-// (WebM is always live at 10 fps; for smooth 30/60 fps choose MP4).
+// (WebM is always live; for smooth 30/60 fps choose MP4).
 //
 // Quality rules (fixed 5 Nov 2026 - the old version recorded at preview size with
 // the browser's default bitrate, so the video looked soft, and a tall page was
 // squashed into the short preview frame):
 // - Snapshots are taken at 2x the preview size (1.5x on heavy pages, measured from
 //   the first snapshot), so the video stays sharp. The long side is capped at 1920.
+//   A live recording starts at 1.5x (1x when slow) so the picture keeps up with
+//   the story instead of freezing.
 // - A tall fixed stage (for example a vertical 9:16 scene up to 1200px tall) is
 //   captured whole, so it comes out as a vertical video instead of being squashed.
 //   A long scrolling page is captured as the visible window instead.
+// - A vertical story is shown in a vertical preview (the stage fills the frame),
+//   so the video comes out vertical instead of a narrow strip with black bars.
+// - A 3D/WebGL scene (for example Three.js) is captured too: the preview asks
+//   the browser to keep the last frame, otherwise the whole scene comes out black.
 // - Video bitrate is 5 Mbps so compression does not soften the picture.
 const SAMPLE = `<!DOCTYPE html>
 <html>
@@ -111,6 +119,60 @@ function detectContent(doc, code) {
   return { kind, cssSeconds, playButton };
 }
 
+// 3D/WebGL scenes (for example a Three.js story) draw on a <canvas> whose
+// picture the browser throws away after each frame. The recorder draws that
+// canvas into the video, so without this patch the whole 3D scene comes out
+// black. The patch runs before the pasted code and asks the browser to keep
+// the last frame, so the recorder can see it. It changes nothing the user sees.
+const WEBGL_PATCH = `<script>(function(){try{var o=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(t,a){if(t==='webgl'||t==='webgl2'||t==='experimental-webgl'){a=Object.assign({},a,{preserveDrawingBuffer:true});}return o.call(this,t,a);};}catch(e){}})();<\/script>`;
+function injectPatch(code) {
+  if (!/<script[\s>]/i.test(code)) return code;
+  if (/<head[^>]*>/i.test(code)) return code.replace(/<head[^>]*>/i, (m) => m + WEBGL_PATCH);
+  if (/<html[^>]*>/i.test(code)) return code.replace(/<html[^>]*>/i, (m) => m + WEBGL_PATCH);
+  return WEBGL_PATCH + code;
+}
+
+// Is the content a vertical story (for example a 9:16 phone story)? The
+// preview is a wide box, so a vertical stage sits in the middle with black
+// bars on the sides, and the video comes out wide and unprofessional. When the
+// content is vertical, the preview is resized to match it, so the video comes
+// out vertical. Returns the stage aspect (width/height), or 0 when not vertical.
+function detectPortrait(doc, iw, ih) {
+  if (!doc || !doc.body) return 0;
+  const bodyH = (doc.body && doc.body.scrollHeight) || ih;
+  if (bodyH > ih + 50) return 0; // a tall scrolling page is handled separately
+  let els = [];
+  try { els = doc.querySelectorAll('body *'); } catch { return 0; }
+  let best = null;
+  const n = Math.min(els.length, 1500);
+  for (let i = 0; i < n; i++) {
+    const el = els[i];
+    let r;
+    try { r = el.getBoundingClientRect(); } catch { continue; }
+    if (r.width < 30 || r.height < 30) continue;
+    if (r.height < ih * 0.8) continue; // must fill most of the height
+    const area = r.width * r.height;
+    // By design: the element declares a portrait aspect ratio (a 9:16 stage).
+    let ar = 0;
+    try {
+      const cs = doc.defaultView ? doc.defaultView.getComputedStyle(el) : null;
+      const v = cs ? cs.aspectRatio : '';
+      const m = v && v !== 'auto' ? String(v).match(/([\d.]+)\s*\/\s*([\d.]+)/) : null;
+      if (m) ar = parseFloat(m[1]) / parseFloat(m[2]);
+    } catch { /* ignore */ }
+    if (ar > 0 && ar < 0.95) {
+      if (!best || area > best.area) best = { aspect: ar, area };
+      continue;
+    }
+    // By shape: a tall narrow box (a fixed-size stage) in a wide preview.
+    const shape = r.width / r.height;
+    if (shape < 0.95 && r.width >= iw * 0.25 && r.width <= iw * 0.95) {
+      if (!best || area > best.area) best = { aspect: shape, area };
+    }
+  }
+  return best ? best.aspect : 0;
+}
+
 export function HtmlToVideoTool() {
   const [code, setCode] = useState(SAMPLE);
   const [duration, setDuration] = useState('5');
@@ -127,10 +189,14 @@ export function HtmlToVideoTool() {
   const [paused, setPaused] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [previewTick, setPreviewTick] = useState(0);
+  const [previewSize, setPreviewSize] = useState(null); // {w, h} when the content is vertical, null for wide
   const iframeRef = useRef(null);
   const canvasRef = useRef(null);
   const stopRef = useRef(false);
   const snapFailedRef = useRef(false);
+  // The preview runs the pasted code plus the WebGL patch (see injectPatch).
+  // The code the user sees and edits is never changed.
+  const previewCode = useMemo(() => injectPatch(code), [code]);
 
   const previewDoc = () => {
     const iframe = iframeRef.current;
@@ -153,8 +219,26 @@ export function HtmlToVideoTool() {
   };
   const restartPreview = () => {
     const iframe = iframeRef.current;
-    if (iframe) iframe.srcdoc = code;
+    if (iframe) iframe.srcdoc = previewCode;
     setPaused(false);
+  };
+  // Runs when the preview loads: refresh the detection and resize the
+  // preview when the content is a vertical story.
+  const onPreviewLoad = () => {
+    setPreviewTick((t) => t + 1);
+    const iframe = iframeRef.current;
+    const doc = previewDoc();
+    if (!iframe || !doc) return;
+    try {
+      const ar = detectPortrait(doc, iframe.clientWidth, iframe.clientHeight);
+      if (ar > 0) {
+        const w = 360;
+        const h = Math.min(720, Math.max(360, Math.round(w / ar)));
+        setPreviewSize((prev) => (prev && prev.w === w && prev.h === h ? prev : { w, h }));
+      } else {
+        setPreviewSize((prev) => (prev === null ? prev : null));
+      }
+    } catch { /* ignore */ }
   };
   // Reload the preview and resolve when it has loaded (never hang).
   const reloadPreview = () => new Promise((resolve) => {
@@ -163,7 +247,7 @@ export function HtmlToVideoTool() {
     let done = false;
     const finish = () => { if (!done) { done = true; resolve(); } };
     try { iframe.addEventListener('load', finish, { once: true }); } catch { /* ignore */ }
-    iframe.srcdoc = code;
+    iframe.srcdoc = previewCode;
     setTimeout(finish, 2000);
   });
 
@@ -184,21 +268,23 @@ export function HtmlToVideoTool() {
   const effectiveDuration = (doc) => (showAdvanced ? resolveDuration(doc) : autoSeconds(det));
 
   // Shared first step for both engines: load html2canvas, take a timed first
-  // snapshot, size the hidden canvas. Returns null on failure.
-  const prepareCanvas = async (doc, html2canvas) => {
+  // snapshot, size the hidden canvas. Returns null on failure. A live
+  // recording snapshots while the story plays, so it starts at a smaller
+  // size (1.5x) to keep up; a smooth recording is offline, so it starts at 2x.
+  const prepareCanvas = async (doc, html2canvas, live) => {
     const iframe = iframeRef.current;
     const w = (iframe && iframe.clientWidth) || 640;
     const h = (iframe && iframe.clientHeight) || 360;
     const bodyH = (doc.body && doc.body.scrollHeight) || h;
     const fullBody = bodyH > h + 50 && bodyH <= 1200;
-    const shotOpts = { backgroundColor: '#ffffff', logging: false, useCORS: true, scale: 2 };
+    const shotOpts = { backgroundColor: '#ffffff', logging: false, useCORS: true, scale: live ? 1.5 : 2 };
     if (!fullBody) { shotOpts.width = w; shotOpts.height = h; }
     let first;
     try {
       const t0 = Date.now();
       first = await html2canvas(doc.body, shotOpts);
       if (Date.now() - t0 > 400) {
-        shotOpts.scale = 1.5;
+        shotOpts.scale = live ? 1 : 1.5;
         first = await html2canvas(doc.body, shotOpts);
       }
     } catch { snapFailedRef.current = true; }
@@ -217,7 +303,7 @@ export function HtmlToVideoTool() {
   // SMOOTH engine: offline frame-by-frame MP4 at the chosen fps.
   // Returns the video info, or throws so the caller can fall back to live.
   const recordSmooth = async (doc, html2canvas, total, fpsNum, offsets) => {
-    const prep = await prepareCanvas(doc, html2canvas);
+    const prep = await prepareCanvas(doc, html2canvas, false);
     if (!prep) throw new Error('snapshot failed');
     const { canvas, ctx, cw, ch, shotOpts } = prep;
     const { Muxer, ArrayBufferTarget } = await import('mp4-muxer');
@@ -282,18 +368,24 @@ export function HtmlToVideoTool() {
     };
   };
 
-  // LIVE engine: real-time MediaRecorder, about 10 fps. Used for JavaScript
-  // stories and static pages, for WebM, and as the fallback.
-  const recordClassic = async (doc, html2canvas, total) => {
-    const prep = await prepareCanvas(doc, html2canvas);
+  // LIVE engine: real-time MediaRecorder at the chosen fps. Used for
+  // JavaScript stories and static pages, for WebM, and as the fallback.
+  // The first snapshot is taken before Play is pressed, then Play is pressed
+  // and recording starts at once, so the story clock and the recording start
+  // together. Before, the story had already been playing for a second by the
+  // time recording started, so the start was cut off and the end showed the
+  // title screen again.
+  const recordClassic = async (doc, html2canvas, total, fpsNum, playButton) => {
+    const prep = await prepareCanvas(doc, html2canvas, true);
     if (!prep) throw new Error('snapshot failed');
     const { canvas, ctx, cw, ch, shotOpts } = prep;
+    if (playButton) { try { playButton.click(); } catch { /* ignore */ } }
     const candidates = format === 'mp4' ? MP4_CANDIDATES : MIME_CANDIDATES;
     let mime = '';
     for (const m of candidates) { if (window.MediaRecorder.isTypeSupported(m)) { mime = m; break; } }
     if (format === 'mp4' && !mime) throw new Error('Your browser cannot make MP4. Try WebM instead.');
     let rec;
-    try { rec = new MediaRecorder(canvas.captureStream(10), mime ? { mimeType: mime, videoBitsPerSecond: VIDEO_BITRATE } : { videoBitsPerSecond: VIDEO_BITRATE }); }
+    try { rec = new MediaRecorder(canvas.captureStream(fpsNum), mime ? { mimeType: mime, videoBitsPerSecond: VIDEO_BITRATE } : { videoBitsPerSecond: VIDEO_BITRATE }); }
     catch { throw new Error('Recording is not supported in this browser. Try Chrome or Edge.'); }
     const chunks = [];
     rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
@@ -303,16 +395,27 @@ export function HtmlToVideoTool() {
     rec.start(200);
     const start = Date.now();
     let busy = false;
+    let snapMs = 0, snapCount = 0;
     const timer = setInterval(async () => {
       const elapsed = (Date.now() - start) / 1000;
       setSecondsLeft(Math.max(0, Math.ceil(total - elapsed)));
       if (elapsed >= total || stopRef.current) { clearInterval(timer); if (rec.state !== 'inactive') rec.stop(); return; }
       if (busy) return;
       busy = true;
+      const snapStart = Date.now();
       try { const shot = await html2canvas(doc.body, shotOpts); ctx.drawImage(shot, 0, 0, cw, ch); }
       catch { snapFailedRef.current = true; }
+      const snapDt = Date.now() - snapStart;
+      snapMs += snapDt; snapCount++;
+      // A slow snapshot freezes the picture. If snapshots average over about
+      // 120ms, shrink them so the picture keeps moving instead of hanging.
+      // The video stays the same size; the picture just gets a little softer.
+      if (snapCount >= 3 && snapMs / snapCount > 120 && shotOpts.scale > 1) {
+        shotOpts.scale = shotOpts.scale > 1.25 ? 1.25 : 1;
+        snapMs = 0; snapCount = 0;
+      }
       busy = false;
-    }, 100);
+    }, Math.max(33, Math.round(1000 / fpsNum)));
     await done;
     clearInterval(timer);
     setRecording(false);
@@ -320,7 +423,7 @@ export function HtmlToVideoTool() {
     if (blob.size === 0) throw new Error('Recording failed. The preview may use something this recorder cannot capture.');
     return {
       blob,
-      info: cw + ' x ' + ch + ' - about ' + total + ' seconds - 10 fps - ' + fmtSize(blob.size),
+      info: cw + ' x ' + ch + ' - about ' + total + ' seconds - ' + fpsNum + ' fps - ' + fmtSize(blob.size),
     };
   };
 
@@ -339,16 +442,19 @@ export function HtmlToVideoTool() {
     const d = detectContent(doc, code);
     const total = showAdvanced ? resolveDuration(doc) : autoSeconds(d);
     const useSmooth = d.kind === 'css' && VIDEO_ENCODER_SUPPORTED && format === 'mp4';
-    const fpsNum = d.kind === 'css' ? (parseInt(fps, 10) || 30) : 10;
-    // Fresh start: reload the preview so everything begins at 0, then press
-    // Play if the content has one, so a story starts by itself.
+    const fpsNum = parseInt(fps, 10) || 30;
+    // Fresh start: reload the preview so everything begins at 0. For a live
+    // story the Play button is pressed inside the live recorder, right after
+    // the first snapshot, so the story and the recording start together.
+    let playButton = null;
     if (startFrom === 'start') {
       await reloadPreview();
       doc = previewDoc();
       if (doc && doc.body) {
         const d2 = detectContent(doc, code);
-        if (d2.playButton) {
-          try { d2.playButton.click(); } catch { /* ignore */ }
+        playButton = d2.playButton;
+        if (useSmooth && playButton) {
+          try { playButton.click(); } catch { /* ignore */ }
           await new Promise((r) => setTimeout(r, 200));
         }
       }
@@ -380,7 +486,7 @@ export function HtmlToVideoTool() {
         }
       } else {
         usedClassic = true;
-        result = await recordClassic(doc, html2canvas, total);
+        result = await recordClassic(doc, html2canvas, total, fpsNum, startFrom === 'start' ? playButton : null);
       }
     } catch (e) {
       // Smooth engine failed (for example an old browser): fall back to live.
@@ -388,7 +494,7 @@ export function HtmlToVideoTool() {
       else if (!usedClassic && window.MediaRecorder) {
         try {
           setProgress('Smooth recording did not work here (' + (e.message || 'browser error') + '), recording in real time instead.');
-          result = await recordClassic(doc, html2canvas, total);
+          result = await recordClassic(doc, html2canvas, total, fpsNum, null);
           usedClassic = true;
         } catch (e2) { setError(e2.message || 'Recording failed.'); }
       } else {
@@ -410,7 +516,7 @@ export function HtmlToVideoTool() {
     setVideoUrl(URL.createObjectURL(result.blob));
     setResultInfo(result.info);
     if (snapFailedRef.current) setError('Some frames could not be captured. External images and fonts may not appear in the video.');
-    else if (usedClassic && d.kind === 'css' && VIDEO_ENCODER_SUPPORTED && format === 'mp4') setError('Smooth recording did not work here, so this video was recorded in real time at 10 fps. Try Chrome or Edge for 30/60 fps.');
+    else if (usedClassic && d.kind === 'css' && VIDEO_ENCODER_SUPPORTED && format === 'mp4') setError('Smooth recording did not work here, so this video was recorded in real time at ' + fpsNum + ' fps. Try Chrome or Edge for smooth recording.');
   };
 
   // One plain line saying what will happen when Record is pressed. No jargon.
@@ -424,9 +530,9 @@ export function HtmlToVideoTool() {
       const est = frames * 0.12;
       return 'Your video: about ' + total + ' seconds, smooth ' + fps + ' fps. Recording takes about ' + (est >= 60 ? Math.round(est / 60) + ' minutes' : Math.max(5, Math.round(est)) + ' seconds') + '.';
     }
-    if (det.kind === 'css') return 'Your video: ' + total + ' seconds, recorded live at 10 fps. Recording takes ' + total + ' seconds.';
+    if (det.kind === 'css') return 'Your video: ' + total + ' seconds, recorded live at ' + fps + ' fps. Recording takes ' + total + ' seconds.';
     if (det.kind === 'js') {
-      return 'Your story plays live: ' + total + ' seconds. Recording takes ' + total + ' seconds.'
+      return 'Your story plays live: ' + total + ' seconds at ' + fps + ' fps. Recording takes ' + total + ' seconds.'
         + (det.playButton && startFrom === 'start' ? ' It presses Play for you.' : '')
         + (det.playButton && startFrom === 'current' ? ' Press Play in the preview first if the story has not started.' : '');
     }
@@ -438,7 +544,7 @@ export function HtmlToVideoTool() {
     <TextField fullWidth multiline rows={10} label="Your HTML code (inline CSS allowed)" value={code} onChange={(e) => setCode(e.target.value)} sx={{ mb: 2, '& textarea': { fontFamily: 'monospace', fontSize: 13 } }} />
     <Typography variant="subtitle1" fontWeight={700} gutterBottom>Live preview</Typography>
     <Box sx={{ mb: 1, border: '1px solid #e0e0e0', borderRadius: 2, overflow: 'hidden' }}>
-      <iframe ref={iframeRef} title="HTML preview" sandbox="allow-scripts allow-same-origin" srcDoc={code} onLoad={() => setPreviewTick((t) => t + 1)} style={{ width: '100%', height: 360, border: 0, display: 'block', background: '#fff' }} />
+      <iframe ref={iframeRef} title="HTML preview" sandbox="allow-scripts allow-same-origin" srcDoc={previewCode} onLoad={onPreviewLoad} style={{ width: previewSize ? previewSize.w : '100%', height: previewSize ? previewSize.h : 360, border: 0, display: 'block', background: '#fff', margin: previewSize ? '0 auto' : undefined }} />
     </Box>
     <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
       {paused
@@ -447,6 +553,10 @@ export function HtmlToVideoTool() {
       <Button size="small" variant="outlined" onClick={restartPreview}>Restart from beginning</Button>
     </Box>
     {summary && <Typography variant="body1" sx={{ mb: 2 }}>{summary}</Typography>}
+    <Typography variant="body2" color="text.secondary" gutterBottom>Video smoothness (frames per second)</Typography>
+    <ToggleButtonGroup value={fps} exclusive fullWidth onChange={(_, nv) => nv && setFps(nv)} sx={{ mb: 2 }}>
+      <ToggleButton value="10">10 fps</ToggleButton><ToggleButton value="30">30 fps - smooth</ToggleButton><ToggleButton value="60">60 fps - smoothest</ToggleButton>
+    </ToggleButtonGroup>
     <Button size="small" variant="outlined" sx={{ mb: 2 }} onClick={() => setShowAdvanced((v) => !v)}>{showAdvanced ? 'Fewer options' : 'More options'}</Button>
     {showAdvanced && (<>
       <Typography variant="body2" color="text.secondary" gutterBottom>Video length</Typography>
@@ -457,13 +567,6 @@ export function HtmlToVideoTool() {
       {duration === 'custom' && (<TextField label="Seconds (1 to 120)" type="number" value={customSeconds} onChange={(e) => setCustomSeconds(e.target.value)} inputProps={{ min: 1, max: 120 }} size="small" sx={{ mb: 1, width: 220 }} />)}
       {duration === 'full' && det.kind === 'css' && <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Full animation records one full run of your animation. For a looping animation, that is one loop.</Typography>}
       {det.kind !== 'css' && <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Full needs a CSS animation. Your content plays with JavaScript, so pick a length above.</Typography>}
-      {det.kind === 'css' && (<>
-        <Typography variant="body2" color="text.secondary" gutterBottom>Video smoothness (frames per second)</Typography>
-        <ToggleButtonGroup value={fps} exclusive fullWidth onChange={(_, nv) => nv && setFps(nv)} sx={{ mb: 1 }}>
-          <ToggleButton value="10">10 fps</ToggleButton><ToggleButton value="30">30 fps - smooth</ToggleButton><ToggleButton value="60">60 fps - smoothest</ToggleButton>
-        </ToggleButtonGroup>
-      </>)}
-      {det.kind !== 'css' && <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Your story plays live, so it records at 10 frames per second.</Typography>}
       <Typography variant="body2" color="text.secondary" gutterBottom>Start recording</Typography>
       <ToggleButtonGroup value={startFrom} exclusive fullWidth onChange={(_, nv) => nv && setStartFrom(nv)} sx={{ mb: 1 }}>
         <ToggleButton value="start">From the beginning</ToggleButton><ToggleButton value="current">From where it is now</ToggleButton>
