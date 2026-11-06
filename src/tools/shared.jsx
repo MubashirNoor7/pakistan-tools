@@ -4,8 +4,8 @@ import React from 'react';
 import { Box, Typography, List, ListItem, ListItemText } from '@mui/material';
 export const fmt = (n) => n.toLocaleString('en-US', { maximumFractionDigits: 2 });
 export function Hero({ value, unit, eq }) {
-  return (<Box textAlign="center" sx={{ py: 2 }}><Typography variant="h3" fontWeight={800}>{value}</Typography><Typography color="text.secondary">{unit}</Typography>{eq && <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>{eq}</Typography>}</Box>);
+  return (<Box textAlign="center" sx={{ py: 3, px: 2, mb: 2, borderRadius: 3, bgcolor: '#E6F4F2' }}><Typography variant="h3" fontWeight={800} color="primary.main">{value}</Typography><Typography color="text.secondary">{unit}</Typography>{eq && <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>{eq}</Typography>}</Box>);
 }
 export function Rows({ rows }) {
-  return (<List disablePadding>{rows.map(([k, v], i) => (<ListItem key={k} disableGutters divider={i < rows.length - 1}><ListItemText primary={k} /><Typography fontWeight={700}>{v}</Typography></ListItem>))}</List>);
+  return (<List disablePadding>{rows.map(([k, v], i) => (<ListItem key={k} disableGutters divider={i < rows.length - 1}><ListItemText primary={k} primaryTypographyProps={{ color: 'text.secondary' }} /><Typography fontWeight={700}>{v}</Typography></ListItem>))}</List>);
 }
