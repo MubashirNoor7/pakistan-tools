@@ -17,6 +17,10 @@ const FreelancerTool = lazy(() => import('./tools/tax.jsx').then((m) => ({ defau
 const ZakatTool = lazy(() => import('./tools/tax.jsx').then((m) => ({ default: m.ZakatTool })));
 const FuelTool = lazy(() => import('./tools/utility.jsx').then((m) => ({ default: m.FuelTool })));
 const PetrolPriceTool = lazy(() => import('./tools/utility.jsx').then((m) => ({ default: m.PetrolPriceTool })));
+const Gta6PriceTool = lazy(() => import('./tools/gta.jsx').then((m) => ({ default: m.Gta6PriceTool })));
+const Gta6DownloadTool = lazy(() => import('./tools/gta.jsx').then((m) => ({ default: m.Gta6DownloadTool })));
+const Gta6CountdownTool = lazy(() => import('./tools/gta.jsx').then((m) => ({ default: m.Gta6CountdownTool })));
+const Gta6PcCheckTool = lazy(() => import('./tools/gta.jsx').then((m) => ({ default: m.Gta6PcCheckTool })));
 const HeicTool = lazy(() => import('./tools/utility.jsx').then((m) => ({ default: m.HeicTool })));
 const WebpTool = lazy(() => import('./tools/utility.jsx').then((m) => ({ default: m.WebpTool })));
 const RentVsBuyTool = lazy(() => import('./tools/newtools.jsx').then((m) => ({ default: m.RentVsBuyTool })));
@@ -62,6 +66,10 @@ const TOOLS = [
   { id: 'zakat', title: 'Zakat Calculator Pakistan 2026: Cash, Gold', cat: 'Tax & salary', Component: ZakatTool },
   { id: 'fuel', title: 'Fuel Trip Cost Calculator Pakistan (OGRA)', cat: 'Utility', Component: FuelTool },
   { id: 'petrolprice', title: 'Petrol Price Pakistan Today: Petrol & Diesel Rates', cat: 'Prices', Component: PetrolPriceTool },
+  { id: 'gta6price', title: 'GTA 6 Price in Pakistan (PKR): Standard & Ultimate', cat: 'Gaming', Component: Gta6PriceTool },
+  { id: 'gta6download', title: 'GTA 6 Download Time Calculator (210 GB)', cat: 'Gaming', Component: Gta6DownloadTool },
+  { id: 'gta6countdown', title: 'GTA 6 Countdown: Release Date in Pakistan', cat: 'Gaming', Component: Gta6CountdownTool },
+  { id: 'gta6pccheck', title: 'Can My PC Run GTA 6? System Requirements Checker', cat: 'Gaming', Component: Gta6PcCheckTool },
   { id: 'heic', title: 'HEIC to JPG Converter Online (Free, Private)', cat: 'Files - private', Component: HeicTool },
   { id: 'webp', title: 'WebP to JPG Converter Online Free', cat: 'Files - private', Component: WebpTool },
   { id: 'rentvsbuy', title: 'Rent vs Buy Calculator Pakistan', cat: 'Property', Component: RentVsBuyTool },
@@ -100,7 +108,7 @@ TOOLS.forEach((t) => { const s = SEO_BY_ID[t.id]; if (s) { t.slug = s.slug; t.de
 
 // Home-page grouping: every tool sits in exactly one category; Most Popular is a
 // Home page FAQs, shown in the accordion and as FAQ schema (same three answers).
-const HOME_FAQS = [['Are the tools free?', 'Yes. All 41 tools are free and no sign-up is needed.'], ['Does my data leave my device?', 'No. Every tool runs in your browser and does not ask you to create an account.'], ['Are tax results official?', 'No. Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.']];
+const HOME_FAQS = [['Are the tools free?', 'Yes. All 45 tools are free and no sign-up is needed.'], ['Does my data leave my device?', 'No. Every tool runs in your browser and does not ask you to create an account.'], ['Are tax results official?', 'No. Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.']];
 
 // shortcut list (Trends evidence: JPG to PDF, loan, age, BMI, mortgage strongest
 // worldwide; Marla/PTA/currency strongest in Pakistan). Category names are generic
@@ -114,10 +122,11 @@ const CATEGORIES = [
   { name: 'Files & converters', ids: ['jpgtopdf', 'pdftojpg', 'pngtojpg', 'heic', 'webp', 'qr', 'unitconv', 'htmltovideo'] },
   { name: 'Everyday tools', ids: ['age', 'bmi', 'percentage', 'wordcounter', 'datecalc', 'password', 'cgpa', 'attendance', 'whatsmyip'] },
   { name: 'Fun & Entertainment', ids: ['love'] },
+  { name: 'Gaming', ids: ['gta6price', 'gta6download', 'gta6countdown', 'gta6pccheck'] },
 ].map((c) => ({ name: c.name, tools: c.ids.map((id) => BY_ID[id]).filter(Boolean) }));
 // One emoji per category - used as a visual anchor in sidebars, lists and headings
 // so the page is easier to scan. Emojis never go in page titles or H1s.
-const CAT_EMOJI = { 'Home & Property': '🏠', 'Money & Tax': '💰', 'Prices & Fuel': '⛽', 'Files & converters': '📁', 'Everyday tools': '🧮', 'Fun & Entertainment': '🎉' };
+const CAT_EMOJI = { 'Home & Property': '🏠', 'Money & Tax': '💰', 'Prices & Fuel': '⛽', 'Files & converters': '📁', 'Everyday tools': '🧮', 'Fun & Entertainment': '🎉', 'Gaming': '🎮' };
 const ID_TO_CAT = {};
 CATEGORIES.forEach((c) => c.tools.forEach((t) => { ID_TO_CAT[t.id] = c.name; }));
 const POPULAR = ['jpgtopdf', 'loanemi', 'age', 'bmi', 'mortgage', 'marla', 'pta', 'currency'].map((id) => BY_ID[id]).filter(Boolean);
@@ -190,10 +199,10 @@ export default function App() {
     setMetaTag('robots', (route.kind === 'notfound' || (route.kind === 'tool' && !cur)) ? 'noindex' : 'index, follow');
     if (route.kind === 'home') { document.title = HOME_TITLE; setMetaTag('description', HOME_DESC); setCanonical(BASE_URL + '/'); setFaqJsonLd(HOME_FAQS); }
     else if (route.kind === 'tool' && cur) { document.title = seoTitle(cur.title); setMetaTag('description', cur.desc); setCanonical(toolUrl(cur.slug)); setFaqJsonLd(cur.faqs); }
-    else if (route.kind === 'about') { document.title = 'About | Kalkio'; setMetaTag('description', 'About Kalkio: 41 free calculators and converters that run in your browser. No sign-up, no accounts.'); setCanonical(pageUrl('/about/')); setFaqJsonLd(null); }
+    else if (route.kind === 'about') { document.title = 'About | Kalkio'; setMetaTag('description', 'About Kalkio: 45 free calculators and converters that run in your browser. No sign-up, no accounts.'); setCanonical(pageUrl('/about/')); setFaqJsonLd(null); }
     else if (route.kind === 'contact') { document.title = 'Contact | Kalkio'; setMetaTag('description', 'Contact Kalkio by email. Tools run in your browser and no sign-up is needed.'); setCanonical(pageUrl('/contact/')); setFaqJsonLd(null); }
     else if (route.kind === 'privacy') { document.title = 'Privacy Policy | Kalkio'; setMetaTag('description', 'Kalkio privacy: tools run in your browser, file converters do not upload your files to a server, and no account is needed.'); setCanonical(pageUrl('/privacy/')); setFaqJsonLd(null); }
-    else { document.title = 'Tool not found | Kalkio'; setMetaTag('description', 'That tool does not exist on Kalkio. Browse all 41 free tools on the home page.'); setCanonical(BASE_URL + '/'); setFaqJsonLd(null); }
+    else { document.title = 'Tool not found | Kalkio'; setMetaTag('description', 'That tool does not exist on Kalkio. Browse all 45 free tools on the home page.'); setCanonical(BASE_URL + '/'); setFaqJsonLd(null); }
   }, [route, cur]);
 
   // Keep the sidebar on the open tool's category, so the user always sees where they are.
@@ -268,7 +277,7 @@ export default function App() {
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>Last updated 6 Nov 2026.</Typography>
           <Typography variant="h6" component="h2" fontWeight={700} gutterBottom>⭐ Most popular</Typography>
           <Card elevation={1} sx={{ borderRadius: 3 }}><List>{toolListItems(POPULAR, go, null)}</List></Card>
-          <Accordion sx={{ mt: 2 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>❓ Common questions</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary" paragraph><b>Are the tools free?</b> Yes. All 41 tools are free and no sign-up is needed.</Typography><Typography variant="body2" color="text.secondary" paragraph><b>Does my data leave my device?</b> No. Every tool runs in your browser and does not ask you to create an account.</Typography><Typography variant="body2" color="text.secondary"><b>Are tax results official?</b> No. Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.</Typography></AccordionDetails></Accordion>
+          <Accordion sx={{ mt: 2 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>❓ Common questions</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary" paragraph><b>Are the tools free?</b> Yes. All 45 tools are free and no sign-up is needed.</Typography><Typography variant="body2" color="text.secondary" paragraph><b>Does my data leave my device?</b> No. Every tool runs in your browser and does not ask you to create an account.</Typography><Typography variant="body2" color="text.secondary"><b>Are tax results official?</b> No. Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.</Typography></AccordionDetails></Accordion>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3, textAlign: 'center' }}>Tax, bill and fuel results are estimates - confirm official rates before a financial decision.</Typography>
         </>)}
         {route.kind === 'tool' && !cur && notFound}
@@ -295,7 +304,7 @@ export default function App() {
         {route.kind === 'tool' && cur && cur.id !== 'marla' && cur.faqs && cur.faqs.length > 0 && (<Accordion sx={{ mt: 2 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>❓ Common questions</Typography></AccordionSummary><AccordionDetails>{cur.faqs.map(([fq, fa]) => (<Typography key={fq} variant="body2" color="text.secondary" paragraph><b>{fq}</b> {fa}</Typography>))}</AccordionDetails></Accordion>)}
         {route.kind === 'tool' && cur && (() => { const sib = (CATEGORIES.find((c) => c.name === ID_TO_CAT[cur.id]) || { tools: [] }).tools.filter((t) => t.id !== cur.id).slice(0, 5); return sib.length > 0 ? (<Box sx={{ mt: 4 }}><Typography variant="h6" component="h2" fontWeight={700} gutterBottom>🔗 More free tools</Typography><Card elevation={1} sx={{ borderRadius: 3 }}><List>{toolListItems(sib, go, null)}</List></Card></Box>) : null; })()}
         {route.kind === 'about' && staticPage('About Kalkio', (<>
-          <Typography variant="body1" paragraph>Kalkio is a collection of 41 free calculators and converters, covering property, tax and salary, prices, finance, files and everyday calculations.</Typography>
+          <Typography variant="body1" paragraph>Kalkio is a collection of 45 free calculators and converters, covering property, tax and salary, prices, finance, files and everyday calculations.</Typography>
           <Typography variant="body1" paragraph>Every tool runs in the visitor’s browser - there is no backend, no database, no login and no sign-up. File converters also run fully in the browser.</Typography>
           <Typography variant="body1" paragraph>Tax, bill and fuel results are estimates - confirm official rates before a financial decision.</Typography>
         </>))}

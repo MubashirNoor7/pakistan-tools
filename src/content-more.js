@@ -224,6 +224,37 @@ export const CONTENT_MORE = {
     ] },
     { h: 'Work out a trip cost', p: ['Use the Fuel Trip Cost tool on this site to work out how much a trip costs at today’s rate. Enter the distance and your vehicle’s mileage.'] },
   ],
+  gta6price: [
+    { h: 'How the GTA 6 price in Pakistan is worked out', p: [
+      'GTA 6 costs $79.99 for the Standard Edition and $99.99 for the Ultimate Edition on the PlayStation Store. There is no official price in rupees, because Pakistan has no PlayStation Store - most players here use a UAE or US account and pay in dollars.',
+      'This tool converts the dollar price at the USD to PKR rate you enter. At Rs 277 to the dollar, the Standard Edition is Rs 22,157 and the Ultimate Edition is Rs 27,697. Banks add about 5% in charges on international card payments, so the total with charges is about Rs 23,265 and Rs 29,082.',
+      'Local game stores in Pakistan list the Standard Edition around Rs 22,999 to Rs 28,499. Those are shop prices, not an official price.',
+    ] },
+    { h: 'GTA 6 price and your salary', p: ['Enter your monthly salary and the tool shows how many days of salary the game costs. At a salary of Rs 75,000 a month, the Standard Edition is about 9 days of salary.'] },
+    { h: 'When GTA 6 comes out', p: ['GTA 6 launches 19 November 2026 on PS5 and Xbox Series X|S. There is no disc in the box - the box holds a download code. A PC version has not been announced.'] },
+  ],
+  gta6download: [
+    { h: 'How long the GTA 6 download takes', p: [
+      'The GTA 6 download is about 210 GB (up to 212 GB reported). Download time depends on your internet speed: at 50 Mbps it takes about 9 hours 20 minutes, at 100 Mbps about 4 hours 40 minutes, and at 20 Mbps about 23 hours 20 minutes.',
+      'The tool works it out as: time = size in GB × 8,000 ÷ speed in Mbps, in seconds. Pre-load starts 10 November 2026, so you can download the game before it unlocks on 19 November.',
+    ] },
+    { h: 'What affects the download time', p: ['Your real speed is often lower than the package speed, and the store servers are busy at launch. Start the pre-load early if you can.'] },
+  ],
+  gta6countdown: [
+    { h: 'When GTA 6 launches in Pakistan', p: [
+      'GTA 6 launches 19 November 2026 on PS5 and Xbox Series X|S. The countdown on this page counts down to midnight Pakistan time (PKT) on 19 November.',
+      'Pakistan has no PlayStation Store, so most players use a UAE or US account. The game unlocks at local midnight in each store region - on a UAE account that is 1:00 AM PKT on 19 November, on a US (Eastern) account 10:00 AM PKT. Pre-load starts 10 November.',
+    ] },
+    { h: 'What is in the box', p: ['There is no disc in the GTA 6 box. The box holds a download code you redeem on your PlayStation 5 or Xbox Series X|S account. A PC version has not been announced.'] },
+  ],
+  gta6pccheck: [
+    { h: 'Can my PC run GTA 6?', p: [
+      'Rockstar has not announced a PC version of GTA 6 and has not published official system specs. The specs in this checker are predicted specs from experts and the community - they are estimates, not official requirements. This page will be updated when Rockstar publishes official specs.',
+      'The predicted minimum (1080p, 30 fps, Low) is an RTX 2060 or RX 5700 graphics card, an i5-12400 or Ryzen 5 5600 processor, 16 GB RAM and a 150 GB SSD. The predicted recommended (1440p, 60 fps, High) is an RTX 4070 or RX 7800 XT, an i7-12700K or Ryzen 7 5800X, 32 GB RAM and an NVMe SSD. An SSD is required - a hard drive will not run the game well.',
+    ] },
+    { h: 'How the checker decides', p: ['Pick your graphics card, processor, RAM and storage. The result is set by your weakest part - if one part is below minimum, the whole result is below minimum.'] },
+    { h: 'When is the PC version coming?', p: ['There is no announced date. The PC version is expected about a year after the console launch on 19 November 2026.'] },
+  ],
   age: [
     { h: 'How age is calculated', p: [
       'The calculator counts full years, then months, then days from your date of birth to today, or to any date you choose. It also shows total days lived and days until your next birthday.',
