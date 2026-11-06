@@ -140,20 +140,15 @@ const POPULAR = ['jpgtopdf', 'loanemi', 'age', 'bmi', 'mortgage', 'marla', 'pta'
 const PK_TOOL_IDS = new Set(['marla', 'kanal', 'plotsize', 'salarytax', 'bps', 'pta', 'freelancer', 'zakat', 'fuel', 'petrolprice', 'rentvsbuy', 'taxslab', 'gold', 'prizebond', 'fuelavg', 'currency']);
 const POPULAR_GLOBAL = ['jpgtopdf', 'loanemi', 'age', 'bmi', 'mortgage', 'qr', 'percentage', 'gta6price'].map((id) => BY_ID[id]).filter(Boolean);
 const CATEGORIES_USA = CATEGORIES.map((c) => ({ name: c.name, tools: c.tools.filter((t) => !PK_TOOL_IDS.has(t.id)) })).filter((c) => c.tools.length > 0);
-// Region detection: browser timezone + language only - no IP lookup, no
-// tracking. Asia/Karachi (or Urdu / en-PK language) means Pakistan-first;
-// the Americas mean the USA/global view; everyone else also gets the
-// global view by default. A manual choice in the header always wins and is
-// saved in localStorage, so the visitor's own choice is never overridden.
+// Region default: USA for everyone (Sammy's decision, 6 Nov 2026) - no
+// timezone/language detection, no IP lookup, no tracking. A manual choice
+// in the header always wins and is saved in localStorage, so a visitor who
+// taps Pakistan keeps Pakistan on later visits.
 function detectRegion() {
   try {
     const saved = window.localStorage.getItem('kalkio-region');
     if (saved === 'pk' || saved === 'usa') return saved;
-    const lang = (navigator.language || '').toLowerCase();
-    if (lang === 'ur' || lang.startsWith('ur-') || lang === 'en-pk') return 'pk';
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
-    if (tz === 'Asia/Karachi') return 'pk';
-  } catch (e) { /* no storage/timezone available - fall through to global */ }
+  } catch (e) { /* no storage available - fall through to USA default */ }
   return 'usa';
 }
 
