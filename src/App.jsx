@@ -59,16 +59,16 @@ import { CONTENT_UPDATED, loadGuide } from './content.js';
 import { SEO_BY_ID, BASE_URL, HOME_TITLE, HOME_DESC, seoTitle, toolUrl, pageUrl } from './seo-data.js';
 
 const TOOLS = [
-  { id: 'marla', title: 'Marla to Sq Ft Converter Pakistan (2026)', cat: 'Property', Component: MarlaTool },
-  { id: 'kanal', title: 'Kanal to Marla Converter Pakistan', cat: 'Property', Component: KanalTool },
+  { id: 'marla', title: 'Marla to Sq Ft Converter Pakistan (2026)', display: 'Marla to Sq Ft Converter (2026)', cat: 'Property', Component: MarlaTool },
+  { id: 'kanal', title: 'Kanal to Marla Converter Pakistan', display: 'Kanal to Marla Converter', cat: 'Property', Component: KanalTool },
   { id: 'plotsize', title: 'Plot Size Calculator: Length × Width to Marla', cat: 'Property', Component: PlotSizeTool },
-  { id: 'salarytax', title: 'Pakistan Salary Tax Calculator 2026-27', cat: 'Tax & salary', Component: SalaryTaxTool },
-  { id: 'bps', title: 'BPS Salary Calculator Pakistan 2026-27', cat: 'Tax & salary', Component: BpsTool },
-  { id: 'pta', title: 'PTA Tax Calculator Pakistan by Phone Model', cat: 'Tax & salary', Component: PtaTool },
-  { id: 'freelancer', title: 'Freelancer Tax Calculator Pakistan (154A, PSEB 0.25%)', cat: 'Tax & salary', Component: FreelancerTool },
-  { id: 'zakat', title: 'Zakat Calculator Pakistan 2026: Cash, Gold', cat: 'Tax & salary', Component: ZakatTool },
-  { id: 'fuel', title: 'Fuel Trip Cost Calculator Pakistan (OGRA)', cat: 'Utility', Component: FuelTool },
-  { id: 'petrolprice', title: 'Petrol Price Pakistan Today: Petrol & Diesel Rates', cat: 'Prices', Component: PetrolPriceTool },
+  { id: 'salarytax', title: 'Pakistan Salary Tax Calculator 2026-27', display: 'Salary Tax Calculator 2026-27', cat: 'Tax & salary', Component: SalaryTaxTool },
+  { id: 'bps', title: 'BPS Salary Calculator Pakistan 2026-27', display: 'BPS Salary Calculator 2026-27', cat: 'Tax & salary', Component: BpsTool },
+  { id: 'pta', title: 'PTA Tax Calculator Pakistan by Phone Model', display: 'PTA Tax Calculator by Phone Model', cat: 'Tax & salary', Component: PtaTool },
+  { id: 'freelancer', title: 'Freelancer Tax Calculator Pakistan (154A, PSEB 0.25%)', display: 'Freelancer Tax Calculator (154A, PSEB 0.25%)', cat: 'Tax & salary', Component: FreelancerTool },
+  { id: 'zakat', title: 'Zakat Calculator Pakistan 2026: Cash, Gold', display: 'Zakat Calculator 2026: Cash, Gold', cat: 'Tax & salary', Component: ZakatTool },
+  { id: 'fuel', title: 'Fuel Trip Cost Calculator Pakistan (OGRA)', display: 'Fuel Trip Cost Calculator (OGRA)', cat: 'Utility', Component: FuelTool },
+  { id: 'petrolprice', title: 'Petrol Price Pakistan Today: Petrol & Diesel Rates', display: 'Petrol Price Today: Petrol & Diesel Rates', cat: 'Prices', Component: PetrolPriceTool },
   { id: 'gta6price', title: 'How Much Is GTA 6? Price in USA & Canada', cat: 'Gaming', Component: Gta6PriceTool },
   { id: 'gta6download', title: 'GTA 6 Download Time Calculator (212 GB)', cat: 'Gaming', Component: Gta6DownloadTool },
   { id: 'gta6countdown', title: 'GTA 6 Countdown: Release Date & Unlock Time', cat: 'Gaming', Component: Gta6CountdownTool },
@@ -76,12 +76,12 @@ const TOOLS = [
   { id: 'gta6totalcost', title: 'GTA 6 Total Cost: Console + Game Price', cat: 'Gaming', Component: Gta6TotalCostTool },
   { id: 'heic', title: 'HEIC to JPG Converter Online (Free, Private)', cat: 'Files - private', Component: HeicTool },
   { id: 'webp', title: 'WebP to JPG Converter Online Free', cat: 'Files - private', Component: WebpTool },
-  { id: 'rentvsbuy', title: 'Rent vs Buy Calculator Pakistan', cat: 'Property', Component: RentVsBuyTool },
-  { id: 'taxslab', title: 'FBR Pakistan Tax Slab 2026-27: Which Slab Are You In?', cat: 'Tax & salary', Component: TaxSlabTool },
-  { id: 'gold', title: 'Gold Price Pakistan Today: 1 Tola Calculator', cat: 'Prices', Component: GoldTool },
-  { id: 'prizebond', title: 'Prize Bond Pakistan: Prize After Tax Calculator', cat: 'Prices', Component: PrizeBondTool },
+  { id: 'rentvsbuy', title: 'Rent vs Buy Calculator Pakistan', display: 'Rent vs Buy Calculator', cat: 'Property', Component: RentVsBuyTool },
+  { id: 'taxslab', title: 'FBR Pakistan Tax Slab 2026-27: Which Slab Are You In?', display: 'FBR Tax Slab 2026-27: Which Slab Are You In?', cat: 'Tax & salary', Component: TaxSlabTool },
+  { id: 'gold', title: 'Gold Price Pakistan Today: 1 Tola Calculator', display: 'Gold Price Today: 1 Tola Calculator', cat: 'Prices', Component: GoldTool },
+  { id: 'prizebond', title: 'Prize Bond Pakistan: Prize After Tax Calculator', display: 'Prize Bond: Prize After Tax Calculator', cat: 'Prices', Component: PrizeBondTool },
   { id: 'jpgtopdf', title: 'JPG to PDF Converter Online (Free, Private)', cat: 'Files - private', Component: JpgToPdfTool },
-  { id: 'fuelavg', title: 'Fuel Average Calculator Pakistan (km per litre)', cat: 'Utility', Component: FuelAverageTool },
+  { id: 'fuelavg', title: 'Fuel Average Calculator Pakistan (km per litre)', display: 'Fuel Average Calculator (km per litre)', cat: 'Utility', Component: FuelAverageTool },
   { id: 'currency', title: 'Currency Converter: USD to PKR & More', cat: 'Prices', Component: CurrencyTool },
   { id: 'loanemi', title: 'Loan EMI Calculator', cat: 'Finance - global', Component: LoanEmiTool },
   { id: 'mortgage', title: 'Mortgage Calculator: How Much House Can I Afford?', cat: 'Finance - global', Component: MortgageTool },
@@ -134,24 +134,6 @@ const CAT_EMOJI = { 'Home & Property': '🏠', 'Money & Tax': '💰', 'Prices & 
 const ID_TO_CAT = {};
 CATEGORIES.forEach((c) => c.tools.forEach((t) => { ID_TO_CAT[t.id] = c.name; }));
 const POPULAR = ['jpgtopdf', 'loanemi', 'age', 'bmi', 'mortgage', 'marla', 'pta', 'currency'].map((id) => BY_ID[id]).filter(Boolean);
-// Pakistan-only tools (shown in the main list only for Pakistan visitors).
-// A USA/Canada visitor sees them only inside the collapsed "Pakistan tools"
-// section at the bottom of the home page, never in the main list.
-const PK_TOOL_IDS = new Set(['marla', 'kanal', 'plotsize', 'salarytax', 'bps', 'pta', 'freelancer', 'zakat', 'fuel', 'petrolprice', 'rentvsbuy', 'taxslab', 'gold', 'prizebond', 'fuelavg', 'currency']);
-const POPULAR_GLOBAL = ['jpgtopdf', 'loanemi', 'age', 'bmi', 'mortgage', 'qr', 'percentage', 'gta6price'].map((id) => BY_ID[id]).filter(Boolean);
-const CATEGORIES_USA = CATEGORIES.map((c) => ({ name: c.name, tools: c.tools.filter((t) => !PK_TOOL_IDS.has(t.id)) })).filter((c) => c.tools.length > 0);
-// Region default: USA for everyone (Sammy's decision, 6 Nov 2026) - no
-// timezone/language detection, no IP lookup, no tracking. A manual choice
-// in the header always wins and is saved in localStorage, so a visitor who
-// taps Pakistan keeps Pakistan on later visits.
-function detectRegion() {
-  try {
-    const saved = window.localStorage.getItem('kalkio-region');
-    if (saved === 'pk' || saved === 'usa') return saved;
-  } catch (e) { /* no storage available - fall through to USA default */ }
-  return 'usa';
-}
-
 // Tiny pathname router - no new dependency. Trailing slashes are ignored.
 function parseRoute(pathname) {
   const p = (pathname.replace(/\/+$/, '') || '/');
@@ -184,6 +166,11 @@ function setFaqJsonLd(faqs) {
   document.head.appendChild(script);
 }
 
+// Visible title shown on the site (cards, H1, search). The full `title` (with a
+// country word) is kept only for the SEO <title> tag, so Google still finds the
+// tool for that country's searches. No country name shows on the website itself.
+const showTitle = (t) => (t && t.display) || (t && t.title) || '';
+
 // A tool as a card (home grids, search results, related tools). Plain CSS grid
 // on purpose: the installed MUI Grid is legacy v1 and ignores the `size` prop.
 function ToolCard({ t, go }) {
@@ -191,7 +178,7 @@ function ToolCard({ t, go }) {
   return (<Card elevation={0} sx={{ height: '100%', transition: 'box-shadow 0.15s ease, transform 0.15s ease', '&:hover': { boxShadow: '0 6px 24px rgba(0,0,0,0.10)', transform: 'translateY(-2px)' } }}>
     <CardContent component="a" href={`/tools/${t.slug}/`} onClick={(e) => go(e, `/tools/${t.slug}/`)} sx={{ display: 'block', textDecoration: 'none', color: 'inherit', height: '100%' }}>
       <Box sx={{ width: 44, height: 44, borderRadius: 3, bgcolor: '#E6F4F2', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, mb: 1.5 }}>{emoji}</Box>
-      <Typography fontWeight={700} sx={{ lineHeight: 1.35, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{t.title}</Typography>
+      <Typography fontWeight={700} sx={{ lineHeight: 1.35, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{showTitle(t)}</Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>{ID_TO_CAT[t.id] || t.cat}</Typography>
     </CardContent>
   </Card>);
@@ -205,9 +192,6 @@ export default function App() {
   const [route, setRoute] = useState(() => parseRoute(window.location.pathname));
   const [q, setQ] = useState('');
   const [openCat, setOpenCat] = useState(null);
-  const [region, setRegion] = useState(() => detectRegion());
-  const setRegionAndSave = (r) => { setRegion(r); try { window.localStorage.setItem('kalkio-region', r); } catch (e) { /* storage unavailable - choice still applies for this visit */ } };
-  const isPk = region === 'pk';
   const navigate = (path) => { if (window.location.pathname !== path) { window.history.pushState(null, '', path); setRoute(parseRoute(path)); } window.scrollTo(0, 0); };
   const go = (e, path) => { e.preventDefault(); navigate(path); };
   const query = q.trim().toLowerCase();
@@ -279,10 +263,6 @@ export default function App() {
         <Link href="/about/" onClick={(e) => go(e, '/about/')} underline="hover" color="text.primary" fontWeight={700}>About</Link>
         <Link href="/contact/" onClick={(e) => go(e, '/contact/')} underline="hover" color="text.primary" fontWeight={700}>Contact</Link>
       </Box>
-      <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', order: 4 }}>
-        <Button size="small" variant={isPk ? 'outlined' : 'contained'} onClick={() => setRegionAndSave('usa')}>🇺🇸 USA</Button>
-        <Button size="small" variant={isPk ? 'contained' : 'outlined'} onClick={() => setRegionAndSave('pk')}>🇵🇰 Pakistan</Button>
-      </Box>
     </Toolbar>
   </AppBar>);
 
@@ -297,18 +277,21 @@ export default function App() {
   const homeView = (<>
     <Box sx={{ textAlign: 'center', py: { xs: 5, md: 7 }, px: 1 }}>
       <Typography variant="h3" component="h1" fontWeight={800} gutterBottom sx={{ fontSize: { xs: '2rem', md: '2.75rem' } }}>46 free calculators and converters.</Typography>
-      <Typography variant="h6" color="text.secondary" fontWeight={400} sx={{ maxWidth: 640, mx: 'auto' }}>{isPk ? 'From Marla and salary tax to JPG to PDF and GTA 6 prices. Everything runs in your browser. No sign-up.' : 'From loan EMI and age to JPG to PDF and GTA 6 prices. Everything runs in your browser. No sign-up.'}</Typography>
+      <Typography variant="h6" color="text.secondary" fontWeight={400} sx={{ maxWidth: 640, mx: 'auto' }}>From loan EMI and age to JPG to PDF and GTA 6 prices. Everything runs in your browser. No sign-up.</Typography>
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3 }}>Last updated 6 Nov 2026.</Typography>
     </Box>
+    <Typography variant="body2" color="text.secondary" fontWeight={700} sx={{ mb: 1, textAlign: 'center' }}>Categories</Typography>
+    <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 1, mb: 1, justifyContent: { xs: 'flex-start', md: 'center' } }}>
+      {CATEGORIES.map((c) => (<Button key={c.name} variant={openCat === c.name ? 'contained' : 'outlined'} sx={{ borderRadius: 10, whiteSpace: 'nowrap', textTransform: 'none', fontWeight: 700 }} onClick={() => { setOpenCat(openCat === c.name ? null : c.name); document.getElementById('categories')?.scrollIntoView({ behavior: 'smooth' }); }}>{CAT_EMOJI[c.name]} {c.name}</Button>))}
+    </Box>
     <Typography variant="h5" component="h2" fontWeight={800} gutterBottom>⭐ Most popular</Typography>
-    <ToolGrid tools={isPk ? POPULAR : POPULAR_GLOBAL} go={go} />
-    <Box sx={{ mt: 5 }}>
+    <ToolGrid tools={POPULAR} go={go} />
+    <Box id="categories" sx={{ mt: 5 }}>
       <Typography variant="h5" component="h2" fontWeight={800} gutterBottom>Browse all tools</Typography>
-      {(isPk ? CATEGORIES : CATEGORIES_USA).map((c) => (<Accordion key={c.name} expanded={openCat === c.name} onChange={() => setOpenCat(openCat === c.name ? null : c.name)} sx={{ mb: 1 }}>
+      {CATEGORIES.map((c) => (<Accordion key={c.name} expanded={openCat === c.name} onChange={() => setOpenCat(openCat === c.name ? null : c.name)} sx={{ mb: 1 }}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>{CAT_EMOJI[c.name]} {c.name} <Typography component="span" variant="body2" color="text.secondary" fontWeight={400}>({c.tools.length} tools)</Typography></Typography></AccordionSummary>
         <AccordionDetails><ToolGrid tools={c.tools} go={go} /></AccordionDetails>
       </Accordion>))}
-      {!isPk && (<Accordion sx={{ mb: 1 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>🇵🇰 Pakistan tools <Typography component="span" variant="body2" color="text.secondary" fontWeight={400}>({TOOLS.filter((t) => PK_TOOL_IDS.has(t.id)).length} tools)</Typography></Typography></AccordionSummary><AccordionDetails><ToolGrid tools={TOOLS.filter((t) => PK_TOOL_IDS.has(t.id))} go={go} /></AccordionDetails></Accordion>)}
     </Box>
     <Accordion sx={{ mt: 5 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>❓ Common questions</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary" paragraph><b>Are the tools free?</b> Yes. All 46 tools are free and no sign-up is needed.</Typography><Typography variant="body2" color="text.secondary" paragraph><b>Does my data leave my device?</b> No. Every tool runs in your browser and does not ask you to create an account.</Typography><Typography variant="body2" color="text.secondary"><b>Are tax results official?</b> No. Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.</Typography></AccordionDetails></Accordion>
     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3, textAlign: 'center' }}>Tax, bill and fuel results are estimates - confirm official rates before a financial decision.</Typography>
@@ -318,17 +301,17 @@ export default function App() {
     <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
       <Link href="/" onClick={(e) => go(e, '/')} underline="hover" color="inherit">Home</Link>{' / '}{ID_TO_CAT[cur.id] || cur.cat}
     </Typography>
-    <Typography variant="h4" component="h1" fontWeight={800} gutterBottom>{cur.title}</Typography>
+    <Typography variant="h4" component="h1" fontWeight={800} gutterBottom>{showTitle(cur)}</Typography>
     <Typography variant="body1" color="text.secondary" gutterBottom>{CAT_EMOJI[ID_TO_CAT[cur.id]] || ''} {ID_TO_CAT[cur.id] || cur.cat} · No sign-up.</Typography>
     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>Guide last updated {CONTENT_UPDATED}.</Typography>
-    <Suspense fallback={<Box sx={{ py: 4, textAlign: 'center' }}><CircularProgress /><Typography color="text.secondary" sx={{ mt: 1 }}>Loading calculator...</Typography></Box>}><cur.Component key={cur.id.startsWith('gta6') ? cur.id + '-' + region : cur.id} {...(cur.id.startsWith('gta6') ? { defaultCountry: isPk ? 'pakistan' : 'usa' } : {})} /></Suspense>
+    <Suspense fallback={<Box sx={{ py: 4, textAlign: 'center' }}><CircularProgress /><Typography color="text.secondary" sx={{ mt: 1 }}>Loading calculator...</Typography></Box>}><cur.Component key={cur.id} /></Suspense>
     {cur.id === 'marla' && (<>
       <Box sx={{ bgcolor: '#fff8e1', borderRadius: 2, p: 2, mt: 2 }}><Typography variant="body2">225 sq ft is common in housing societies like DHA and Bahria Town. 250 sq ft is the CDA Islamabad standard. 272.25 sq ft is the revenue-record Marla. Confirm from your plot documents which one applies to you.</Typography></Box>
       <Accordion sx={{ mt: 2 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>How it works</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary">Square feet = Marla × sq ft per Marla. Square yards = square feet ÷ 9. Square metres = square feet ÷ 10.7639. Kanal = Marla ÷ 20. Acre = Marla ÷ 160.</Typography></AccordionDetails></Accordion>
       <Accordion><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>225 vs 250 vs 272.25 - quick table</Typography></AccordionSummary><AccordionDetails><Table size="small"><TableBody>{[[1, 225, 250, 272.25], [5, 1125, 1250, 1361.25], [10, 2250, 2500, 2722.5], [20, 4500, 5000, 5445]].map(([m, a, b, c]) => (<TableRow key={m}><TableCell>{m === 20 ? '20 = 1 Kanal' : `${m} Marla`}</TableCell><TableCell>{fmt(a)}</TableCell><TableCell>{fmt(b)}</TableCell><TableCell>{fmt(c)}</TableCell></TableRow>))}</TableBody></Table></AccordionDetails></Accordion>
       <Accordion><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>❓ Common questions</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary" paragraph><b>How many Marla in 1 Kanal?</b> 20 Marla, under both standards.</Typography><Typography variant="body2" color="text.secondary"><b>Which standard should I use?</b> The one written in your plot documents.</Typography></AccordionDetails></Accordion>
     </>)}
-    <Box sx={{ mt: 2 }}><Button variant="outlined" color="success" startIcon={<WhatsAppIcon />} component="a" href={`https://wa.me/?text=${encodeURIComponent(cur.title + ' - ' + toolUrl(cur.slug))}`} target="_blank" rel="noopener noreferrer">Share on WhatsApp</Button></Box>
+    <Box sx={{ mt: 2 }}><Button variant="outlined" color="success" startIcon={<WhatsAppIcon />} component="a" href={`https://wa.me/?text=${encodeURIComponent(showTitle(cur) + ' - ' + toolUrl(cur.slug))}`} target="_blank" rel="noopener noreferrer">Share on WhatsApp</Button></Box>
     {guide && (<Box component="section" sx={{ mt: 4 }}>{guide.map((s) => (<Box key={s.h} sx={{ mb: 3 }}>
       <Typography variant="h5" component="h2" fontWeight={700} gutterBottom>{s.h}</Typography>
       {s.p.map((para, i) => (<Typography key={i} variant="body1" color="text.secondary" paragraph>{para}</Typography>))}
