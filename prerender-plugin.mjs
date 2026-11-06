@@ -12,9 +12,13 @@ const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 
 function readTitles(appSrc) {
   const out = {};
-  const re = /\{ id: '([a-z0-9]+)', title: (?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)")/g;
+  const re = /\{ id: '([a-z0-9]+)', title: (?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)")(?:, display: (?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"))?/g;
   let m;
-  while ((m = re.exec(appSrc))) out[m[1]] = m[2] !== undefined ? m[2].replace(/\\'/g, "'") : m[3].replace(/\\"/g, '"');
+  while ((m = re.exec(appSrc))) {
+    const title = m[2] !== undefined ? m[2].replace(/\\'/g, "'") : m[3].replace(/\\"/g, '"');
+    const display = m[4] !== undefined ? m[4].replace(/\\'/g, "'") : (m[5] !== undefined ? m[5].replace(/\\"/g, '"') : null);
+    out[m[1]] = { title, display: display || title };
+  }
   return out;
 }
 
@@ -41,20 +45,18 @@ export async function prerender(root, dist) {
   const tpl = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
   const titles = readTitles(fs.readFileSync(path.join(root, 'src/App.jsx'), 'utf8'));
   const write = (rel, html) => { const f = path.join(dist, rel, 'index.html'); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, html); };
-  // Pakistan-only tool ids. A GTA page's static "More free tools" list must
-  // not name them, so a USA/Canada visitor (or crawler) sees zero Pakistan
-  // tool names on a GTA page. The home page keeps the full list.
-  const PK_IDS = new Set(['marla', 'kanal', 'plotsize', 'salarytax', 'bps', 'pta', 'freelancer', 'zakat', 'fuel', 'petrolprice', 'rentvsbuy', 'taxslab', 'gold', 'prizebond', 'fuelavg', 'currency']);
-  const linksFor = (id) => '<h2>More free tools</h2><ul>' + Object.entries(SEO_BY_ID).filter(([i]) => titles[i] && !(id && id.startsWith('gta6') && PK_IDS.has(i))).map(([i, x]) => `<li><a href="/tools/${x.slug}/">${esc(titles[i])}</a></li>`).join('') + '</ul><p><a href="/">All Kalkio tools</a></p>';
+  // "More free tools" links use the display title (no country name), so the
+  // static HTML shows the same clean titles the visitor sees in the app.
+  const linksFor = (id) => '<h2>More free tools</h2><ul>' + Object.entries(SEO_BY_ID).filter(([i]) => titles[i]).map(([i, x]) => `<li><a href="/tools/${x.slug}/">${esc(titles[i].display)}</a></li>`).join('') + '</ul><p><a href="/">All Kalkio tools</a></p>';
   const allLinks = linksFor(null);
   let n = 0;
   for (const [id, s] of Object.entries(SEO_BY_ID)) {
     const t = titles[id];
-    if (!t) continue; // never invent a title
+    if (!t || !t.title) continue; // never invent a title
     const faqs = s.faqs || [];
     const body = `<p>${esc(s.desc)}</p><p>Guide last updated ${esc(CONTENT_UPDATED)}.</p>` + guide(id) + (faqs.length ? '<h2>Common questions</h2>' + faqs.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('') : '') + linksFor(id);
     const jsonld = faqs.length ? { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) } : null;
-    write(`tools/${s.slug}`, page(tpl, { title: seoTitle(t), desc: s.desc, url: toolUrl(s.slug), h1: t, body, jsonld }));
+    write(`tools/${s.slug}`, page(tpl, { title: seoTitle(t.title), desc: s.desc, url: toolUrl(s.slug), h1: t.display, body, jsonld }));
     n++;
   }
   const statics = [
@@ -66,7 +68,7 @@ export async function prerender(root, dist) {
   // Home page: intro + FAQ + all 46 tool links in the raw HTML, so crawlers see it
   // without JavaScript (same words as the live home page in src/App.jsx).
   const homeFaqs = [['Are the tools free?', 'Yes. All 46 tools are free and no sign-up is needed.'], ['Does my data leave my device?', 'No. Every tool runs in your browser and does not ask you to create an account.'], ['Are tax results official?', 'No. Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.']];
-  const homeBody = `<p>${esc(HOME_DESC)}</p><p>Free calculators and converters, including loan EMI, QR codes, BMI, GTA 6 price and file converters, plus tools for Pakistan (Marla, salary tax, PTA tax, BPS, Zakat, gold and fuel). Everything runs in your browser.</p><p>Last updated 6 Nov 2026.</p><h2>Common questions</h2>` + homeFaqs.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('') + allLinks;
+  const homeBody = `<p>${esc(HOME_DESC)}</p><p>Free calculators and converters, including loan EMI, QR codes, BMI, GTA 6 price and file converters, plus Marla, salary tax, PTA tax, BPS, Zakat, gold and fuel tools. Everything runs in your browser.</p><p>Last updated 6 Nov 2026.</p><h2>Common questions</h2>` + homeFaqs.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('') + allLinks;
   const homeJsonld = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: homeFaqs.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) };
   write('', page(tpl, { title: HOME_TITLE, desc: HOME_DESC, url: pageUrl('/'), h1: '46 free calculators and converters.', body: homeBody, jsonld: homeJsonld }));
   n++;
