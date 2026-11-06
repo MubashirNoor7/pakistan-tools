@@ -225,27 +225,41 @@ export const CONTENT_MORE = {
     { h: 'Work out a trip cost', p: ['Use the Fuel Trip Cost tool on this site to work out how much a trip costs at today’s rate. Enter the distance and your vehicle’s mileage.'] },
   ],
   gta6price: [
-    { h: 'How the GTA 6 price in Pakistan is worked out', p: [
-      'GTA 6 costs $79.99 for the Standard Edition and $99.99 for the Ultimate Edition on the PlayStation Store. There is no official price in rupees, because Pakistan has no PlayStation Store - most players here use a UAE or US account and pay in dollars.',
-      'This tool converts the dollar price at the USD to PKR rate you enter. At Rs 277 to the dollar, the Standard Edition is Rs 22,157 and the Ultimate Edition is Rs 27,697. Banks add about 5% in charges on international card payments, so the total with charges is about Rs 23,265 and Rs 29,082.',
-      'Local game stores in Pakistan list the Standard Edition around Rs 22,999 to Rs 28,499. Those are shop prices, not an official price.',
+    { h: 'How much is GTA 6?', p: [
+      'GTA 6 costs $79.99 for the Standard Edition and $99.99 for the Ultimate Edition in the USA, before tax. In Canada it is C$109.99 and C$139.99, before tax. These are store prices, not currency conversions - each store sets its own price, and tax is added at checkout.',
+      'Pick your country in the tool above to see the price in your currency.',
     ] },
-    { h: 'GTA 6 price and your salary', p: ['Enter your monthly salary and the tool shows how many days of salary the game costs. At a salary of Rs 75,000 a month, the Standard Edition is about 9 days of salary.'] },
+    { h: 'Standard vs Ultimate - what is different?', p: [
+      'The $20 difference buys only the Ultimate Edition Upgrade content. The story, map and missions are the same in both editions, and there is no early access in either one.',
+      'Standard owners can buy the Ultimate Edition Upgrade separately later for $20 in the USA, so there is no need to pay for Ultimate now if you are unsure.',
+    ], table: { head: ['What you get', 'Standard ($79.99)', 'Ultimate ($99.99)'], rows: [
+      ['Full game, story, map and missions', 'Yes', 'Yes'],
+      ['Vintage Vice City Pack (buy before 20 Nov)', 'Yes', 'Yes'],
+      ['1 month of GTA+ (digital pre-order)', 'Yes', 'Yes'],
+      ['6 exclusive vehicles', 'No', 'Yes'],
+      ['4 exclusive weapons', 'No', 'Yes'],
+      ['5 exclusive shops and businesses', 'No', 'Yes'],
+      ['Exclusive mission, car restoration, second garage', 'No', 'Yes'],
+      ['Cosmetic sets for Jason and Lucia', 'No', 'Yes'],
+      ['Early access', 'No', 'No'],
+    ] } },
+    { h: 'Pre-order bonuses', p: ['Buy before 20 November 2026 and you get the Vintage Vice City Pack on either edition - a 1955 Vapid Stanier sedan with a garage, 80s-style outfits and hairstyles, and an exclusive weapon pattern. A digital pre-order also includes 1 month of GTA+. On PlayStation it must be claimed by 31 March 2027; on Xbox, within 180 days of the pre-order. After the free month, GTA+ renews at its regular price unless you cancel it. There is no early access and no pre-order discount.'] },
+    { h: 'Is GTA 6 on Game Pass or PS Plus?', p: ['No. GTA 6 is not on Xbox Game Pass or PlayStation Plus at launch, and no subscription release has been announced. You do not need Game Pass or PS Plus to play the story, because it is single-player at launch. Take-Two has said day-one subscription releases for big new games do not make economic sense, so do not wait for a subscription version.'] },
     { h: 'When GTA 6 comes out', p: ['GTA 6 launches 19 November 2026 on PS5 and Xbox Series X|S. There is no disc in the box - the box holds a download code. A PC version has not been announced.'] },
   ],
   gta6download: [
     { h: 'How long the GTA 6 download takes', p: [
-      'The GTA 6 download is about 210 GB (up to 212 GB reported). Download time depends on your internet speed: at 50 Mbps it takes about 9 hours 20 minutes, at 100 Mbps about 4 hours 40 minutes, and at 20 Mbps about 23 hours 20 minutes.',
+      'The GTA 6 download is up to 212 GB, confirmed by Rockstar on 3 November 2026. Download time depends on your internet speed: at 50 Mbps it takes about 9 hours 25 minutes, at 100 Mbps about 4 hours 43 minutes, and at 20 Mbps about 23 hours 33 minutes.',
       'The tool works it out as: time = size in GB × 8,000 ÷ speed in Mbps, in seconds. Pre-load starts 10 November 2026, so you can download the game before it unlocks on 19 November.',
     ] },
     { h: 'What affects the download time', p: ['Your real speed is often lower than the package speed, and the store servers are busy at launch. Start the pre-load early if you can.'] },
   ],
   gta6countdown: [
-    { h: 'When GTA 6 launches in Pakistan', p: [
-      'GTA 6 launches 19 November 2026 on PS5 and Xbox Series X|S. The countdown on this page counts down to midnight Pakistan time (PKT) on 19 November.',
-      'Pakistan has no PlayStation Store, so most players use a UAE or US account. The game unlocks at local midnight in each store region - on a UAE account that is 1:00 AM PKT on 19 November, on a US (Eastern) account 10:00 AM PKT. Pre-load starts 10 November.',
+    { h: 'When GTA 6 launches', p: [
+      'GTA 6 launches 19 November 2026 on PS5 and Xbox Series X|S. The countdown on this page counts down to midnight Eastern Time (New York / Toronto) on 19 November.',
+      'The game unlocks at local midnight on 19 November in each store region - midnight Eastern in the USA and Canada. Pre-load starts 10 November: at midnight local time on PS5, and at 12:00 AM GMT (7:00 PM Eastern, 9 November) on Xbox.',
     ] },
-    { h: 'What is in the box', p: ['There is no disc in the GTA 6 box. The box holds a download code you redeem on your PlayStation 5 or Xbox Series X|S account. A PC version has not been announced.'] },
+    { h: 'What is in the box', p: ['There is no disc in the GTA 6 box. The box holds a download code you redeem on your PlayStation 5 or Xbox Series X|S account. Boxed copies reach shops from 12 November. A PC version has not been announced.'] },
   ],
   gta6pccheck: [
     { h: 'Can my PC run GTA 6?', p: [
@@ -257,11 +271,11 @@ export const CONTENT_MORE = {
   ],
   gta6totalcost: [
     { h: 'What the total cost includes', p: [
-      'The total is your console plus the game plus about 5% bank charges on the dollar payment for the game. The game is bought in dollars because Pakistan has no PlayStation Store - most players use a UAE or US account.',
-      'Example: a PS5 Slim (Disc) at Rs 247,000 plus the Standard Edition at Rs 22,157 plus Rs 1,108 bank charges is Rs 270,265. An Xbox Series S at Rs 158,000 plus the same game and charges is Rs 181,265.',
+      'The total is your console plus the game plus any extras you tick. In the USA and Canada the game is the local store price, so there are no bank charges - but tax is added at checkout.',
+      'Examples, before tax: in the USA, a PS5 Slim (Disc) at $649.99 plus the Standard Edition at $79.99 is $729.98, and an Xbox Series S at $499.99 plus the same game is $579.98. In Canada, a PS5 Slim (Disc) at C$819.99 plus the Standard Edition at C$109.99 is C$929.98.',
     ] },
-    { h: 'Console prices are shop estimates', p: ['Console prices are what shops in Pakistan charge, and they change. The tool lets you type the price your shop charges - the defaults are starting points from local game stores. The PS5 Slim (Disc) is about Rs 247,000 and the PS5 Pro about Rs 380,000.'] },
-    { h: 'Extras you can add', p: ['Tick the extras to add an extra controller, a headset or an extra 1TB SSD. Their prices are estimates too - type the price you would actually pay.'] },
+    { h: 'Console prices', p: ['USA list prices (before tax): PS5 Slim (Disc) $649.99, PS5 Pro $899.99, Xbox Series S $499.99, Xbox Series X $799.99. Canada list prices (before tax): PS5 Slim (Disc) C$819.99, PS5 Pro C$1,099.99, Xbox Series S C$649.99, Xbox Series X C$999.99. Prices change, so the tool lets you type the price your store charges.'] },
+    { h: 'Extras you can add', p: ['Tick the extras to add an extra controller, a headset or an extra 1TB SSD. In the USA the controller ($74.99) and the PlayStation Pulse headset ($99.99) are list prices; the 1TB SSD price is an estimate. In Canada the controller (C$109.99) is a list price; the headset and SSD prices are estimates. Type the price you would actually pay.'] },
     { h: 'When GTA 6 comes out', p: ['GTA 6 launches 19 November 2026 on PS5 and Xbox Series X|S. Pre-load starts 10 November. There is no disc in the box - the box holds a download code.'] },
   ],
   age: [
