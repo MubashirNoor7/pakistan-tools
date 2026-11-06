@@ -1,6 +1,6 @@
 # Kalkio
 
-Kalkio is a free website with 45 calculators and converters. Every tool runs in the visitor's browser - no sign-up, no account, no backend. File converters run fully in the browser and files are never uploaded to a server. Tax, bill and fuel results are estimates; official rates are final.
+Kalkio is a free website with 46 calculators and converters. Every tool runs in the visitor's browser - no sign-up, no account, no backend. File converters run fully in the browser and files are never uploaded to a server. Tax, bill and fuel results are estimates; official rates are final.
 
 Contact: sammykhanmalng@gmail.com
 
@@ -20,6 +20,7 @@ Contact: sammykhanmalng@gmail.com
 - GTA 6 Download Time Calculator (210 GB): https://kalkio.vercel.app/tools/gta-6-download-time-calculator/
 - GTA 6 Countdown: Release Date in Pakistan: https://kalkio.vercel.app/tools/gta-6-release-date-countdown-pakistan/
 - Can My PC Run GTA 6? System Requirements Checker: https://kalkio.vercel.app/tools/can-my-pc-run-gta-6/
+- GTA 6 Total Cost in Pakistan: Console + Game: https://kalkio.vercel.app/tools/gta-6-total-cost-in-pakistan/
 - HEIC to JPG Converter Online (Free, Private): https://kalkio.vercel.app/tools/heic-to-jpg-converter-online/
 - WebP to JPG Converter Online Free: https://kalkio.vercel.app/tools/webp-to-jpg-converter-online/
 - Rent vs Buy Calculator Pakistan: https://kalkio.vercel.app/tools/rent-vs-buy-calculator-pakistan/
