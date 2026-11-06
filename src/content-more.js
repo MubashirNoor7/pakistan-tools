@@ -217,6 +217,13 @@ export const CONTENT_MORE = {
     ] },
     { h: 'Format and browser support', p: ['The video downloads as MP4 in Chrome, Edge and Safari, which plays almost everywhere including WhatsApp and TikTok. Smooth 30 and 60 fps recording is for CSS animations and needs a browser with VideoEncoder, such as a recent Chrome, Edge or Safari. A story that plays with JavaScript records live at the frame rate you pick, with sound when the story makes sound with WebAudio; the picture updates as fast as the page allows. A CSS animation records picture only, with no sound. If your browser cannot make MP4, the tool saves WebM instead.'] },
   ],
+  petrolprice: [
+    { h: 'How petrol prices work in Pakistan', p: [
+      'OGRA announces petrol and diesel rates on weekdays. Friday’s rates stay in force on Saturday and Sunday, so the price does not change over the weekend. This page shows today’s rates and the full week, so you can see whether prices went up or down.',
+      'The rates on this page are the OGRA notified rates, checked daily. If OGRA changes them, the page updates from the saved rates file.',
+    ] },
+    { h: 'Work out a trip cost', p: ['Use the Fuel Trip Cost tool on this site to work out how much a trip costs at today’s rate. Enter the distance and your vehicle’s mileage.'] },
+  ],
   age: [
     { h: 'How age is calculated', p: [
       'The calculator counts full years, then months, then days from your date of birth to today, or to any date you choose. It also shows total days lived and days until your next birthday.',
