@@ -255,6 +255,15 @@ export const CONTENT_MORE = {
     { h: 'How the checker decides', p: ['Pick your graphics card, processor, RAM and storage. The result is set by your weakest part - if one part is below minimum, the whole result is below minimum.'] },
     { h: 'When is the PC version coming?', p: ['There is no announced date. The PC version is expected about a year after the console launch on 19 November 2026.'] },
   ],
+  gta6totalcost: [
+    { h: 'What the total cost includes', p: [
+      'The total is your console plus the game plus about 5% bank charges on the dollar payment for the game. The game is bought in dollars because Pakistan has no PlayStation Store - most players use a UAE or US account.',
+      'Example: a PS5 Slim (Disc) at Rs 247,000 plus the Standard Edition at Rs 22,157 plus Rs 1,108 bank charges is Rs 270,265. An Xbox Series S at Rs 158,000 plus the same game and charges is Rs 181,265.',
+    ] },
+    { h: 'Console prices are shop estimates', p: ['Console prices are what shops in Pakistan charge, and they change. The tool lets you type the price your shop charges - the defaults are starting points from local game stores. The PS5 Slim (Disc) is about Rs 247,000 and the PS5 Pro about Rs 380,000.'] },
+    { h: 'Extras you can add', p: ['Tick the extras to add an extra controller, a headset or an extra 1TB SSD. Their prices are estimates too - type the price you would actually pay.'] },
+    { h: 'When GTA 6 comes out', p: ['GTA 6 launches 19 November 2026 on PS5 and Xbox Series X|S. Pre-load starts 10 November. There is no disc in the box - the box holds a download code.'] },
+  ],
   age: [
     { h: 'How age is calculated', p: [
       'The calculator counts full years, then months, then days from your date of birth to today, or to any date you choose. It also shows total days lived and days until your next birthday.',
