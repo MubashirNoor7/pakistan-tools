@@ -16,8 +16,18 @@
 // Xbox Series S C$649.99, Xbox Series X C$999.99 (Microsoft Store Canada,
 // Oct 2026). Pakistan console prices are shop estimates (unchanged).
 // USD to PKR default 277 matches the site's Currency tool default.
+// Two more tools (Nov 2026): pre-order planner (edition comparison +
+// price in your country + pre-load/launch dates) and storage checker
+// (console usable storage vs the 212 GB game). Ultimate contents are
+// Rockstar's official list (howtovideogame.com / gta6.how, Nov 2026):
+// 6 vehicles, 4 weapons, 5 shops, Paradise Garage, a raid and a car
+// commission, and cosmetic sets. No early access in either edition.
+// Usable storage is the reported storage per model (playingvi.com /
+// gametechreport.com, Nov 2026): PS5 825 GB about 667 GB, PS5 Slim 1 TB
+// about 848 GB, PS5 Pro 2 TB about 1,860 GB, Xbox Series X 1 TB about
+// 802 GB, Xbox Series S 512 GB about 364 GB.
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, Typography, TextField, Box, MenuItem, ToggleButton, ToggleButtonGroup, Alert, Button, Checkbox, FormControlLabel } from '@mui/material';
+import { Card, CardContent, Typography, TextField, Box, MenuItem, ToggleButton, ToggleButtonGroup, Alert, Button, Checkbox, FormControlLabel, Table, TableBody, TableRow, TableCell } from '@mui/material';
 import { fmt, Hero, Rows } from './shared.jsx';
 
 function Wrap({ children, note }) {
@@ -253,5 +263,79 @@ export function Gta6TotalCostTool({ defaultCountry }) {
     {extraDefs.map((e) => (<Box key={e.key} sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 1 }}><FormControlLabel control={<Checkbox checked={extras[e.key]} onChange={(ev) => setExtras({ ...extras, [e.key]: ev.target.checked })} />} label={e.label + (e.est ? ' (estimate)' : '')} sx={{ flexGrow: 1 }} /><TextField label={isPk ? 'Rs' : c.sym} type="number" size="small" value={extraPrices[e.key]} onChange={(ev) => setExtraPrices({ ...extraPrices, [e.key]: ev.target.value })} sx={{ width: 130 }} disabled={!extras[e.key]} /></Box>))}
     {cp > 0 && (isPk ? r > 0 : true) && (<><Hero value={money(c.sym, total, dec)} unit={'Total cost to play GTA 6 in ' + c.label + ' (' + consoles[consoleIdx].label + ' + ' + EDITIONS[edition].label + ')'} eq={'Console ' + money(c.sym, cp, dec) + ' + Game ' + money(c.sym, gamePrice, dec) + (gameCharges > 0 ? ' + charges ' + money(c.sym, gameCharges, dec) : '') + (extrasTotal > 0 ? ' + extras ' + money(c.sym, extrasTotal, dec) : '') + ' (before tax)'} /><Rows rows={[['Console', consoles[consoleIdx].label + ' - ' + money(c.sym, cp, dec)], ['Game (' + EDITIONS[edition].label + ')', money(c.sym, gamePrice, dec)], ['Bank charges on game', gameCharges > 0 ? money(c.sym, gameCharges, dec) + ' (about 5%)' : 'None - bought in the local store'], ['Extras', extrasTotal > 0 ? money(c.sym, extrasTotal, dec) : 'None'], ['Total (before tax)', money(c.sym, total, dec)]]} /></>)}
     <Box sx={{ mt: 2 }}><Button variant="outlined" component="a" href="/tools/gta-6-price/">How much is GTA 6?</Button></Box>
+  </Wrap>);
+}
+
+// Pre-order planner: edition comparison first, then the price in your
+// country, pre-load 10 Nov 2026 and launch 19 Nov 2026. Ultimate contents
+// are Rockstar's official list: 6 vehicles, 4 weapons, 5 shops, Paradise
+// Garage, a raid and a car commission, and cosmetic sets. No early access
+// in either edition. Ultimate is digital only; the Standard box holds a
+// download code, not a disc.
+const EDITION_COMPARE = [
+  ['Full game, story, map and missions', 'Yes', 'Yes'],
+  ['6 exclusive vehicles', 'No', 'Yes'],
+  ['4 exclusive weapons', 'No', 'Yes'],
+  ['5 exclusive shops and businesses', 'No', 'Yes'],
+  ['Paradise Garage (second garage)', 'No', 'Yes'],
+  ['Exclusive raid and car commission', 'No', 'Yes'],
+  ['Cosmetic sets (outfits, tattoos, Goodtime Gear)', 'No', 'Yes'],
+  ['Early access', 'No', 'No'],
+];
+export function Gta6PreorderTool({ defaultCountry }) {
+  const [country, setCountry] = useState(defaultCountry || 'usa');
+  const [edition, setEdition] = useState('standard');
+  const [rate, setRate] = useState(String(USD_RATE));
+  const c = COUNTRIES[country];
+  const isPk = country === 'pakistan';
+  const usd = edition === 'standard' ? 79.99 : 99.99;
+  const r = parseFloat(rate) || 0;
+  const pkr = usd * r;
+  const withCharges = pkr * 1.05;
+  const price = isPk ? 'Rs ' + fmt(Math.round(pkr)) : money(c.sym, c.game[edition], true);
+  const note = isPk
+    ? 'No official price in rupees - Pakistan has no PlayStation Store, so most players use a UAE or US account and pay in dollars. The rupee figure is an estimate at the rate you enter, plus about 5% bank charges. Ultimate is digital only. The Standard box holds a download code, not a disc.'
+    : 'Prices are the official store prices before tax - tax is added at checkout and varies by state (USA) or province (Canada). Ultimate is digital only. The Standard box holds a download code, not a disc.';
+  return (<Wrap note={note}>
+    <CountryPicker value={country} onChange={setCountry} />
+    <ToggleButtonGroup value={edition} exclusive fullWidth onChange={(_, nv) => nv && setEdition(nv)} sx={{ mb: 2 }}><ToggleButton value="standard">Standard - {isPk ? '$79.99' : money(c.sym, c.game.standard, true)}</ToggleButton><ToggleButton value="ultimate">Ultimate - {isPk ? '$99.99' : money(c.sym, c.game.ultimate, true)}</ToggleButton></ToggleButtonGroup>
+    {isPk && (<TextField fullWidth label="USD to PKR rate (Rs per $1)" type="number" value={rate} onChange={(e) => setRate(e.target.value)} sx={{ mb: 2 }} />)}
+    {(!isPk || r > 0) && (<><Hero value={price} unit={'GTA 6 ' + EDITIONS[edition].label + ' Edition in ' + c.label + (isPk ? '' : ' (before tax)')} eq={'Pre-load opens 10 November 2026 - launch 19 November 2026'} /><Rows rows={[['Edition', EDITIONS[edition].label + ' - ' + price], ['Price' + (isPk ? ' in rupees' : ' before tax'), price], ...(isPk ? [['With bank charges (about 5%)', 'Rs ' + fmt(Math.round(withCharges))]] : []), ['Pre-load opens', '10 November 2026'], ['Launch date', '19 November 2026'], ['In the box', edition === 'ultimate' ? 'Digital only - no box' : 'Download code only - no disc'], ['Pre-order bonus', 'Vintage Vice City Pack if you buy before 20 Nov 2026' + (isPk ? '' : '; digital pre-order also gets 1 month of GTA+')]]} /></>)}
+    <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>What each edition includes</Typography>
+    <Box sx={{ overflowX: 'auto' }}><Table size="small" sx={{ minWidth: 480 }}><TableBody><TableRow><TableCell sx={{ fontWeight: 700 }}>What you get</TableCell><TableCell sx={{ fontWeight: 700 }}>Standard</TableCell><TableCell sx={{ fontWeight: 700 }}>Ultimate</TableCell></TableRow>{EDITION_COMPARE.map(([item, s, u]) => (<TableRow key={item}><TableCell>{item}</TableCell><TableCell>{s}</TableCell><TableCell>{u}</TableCell></TableRow>))}</TableBody></Table></Box>
+    <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>The $20 difference buys only the Ultimate Edition Upgrade content. The story, map and missions are the same in both editions. Standard owners can buy the upgrade separately later for $20 in the USA.</Typography>
+    <Box sx={{ mt: 2 }}><Button variant="outlined" component="a" href="/tools/gta-6-price/">How much is GTA 6?</Button></Box>
+  </Wrap>);
+}
+
+// Storage checker: GTA 6 needs up to 212 GB (Rockstar, 3 November 2026).
+// Usable storage is what the console actually lets you use - less than the
+// number on the box because the system software takes a chunk. Usable
+// figures are the reported storage per model (Nov 2026): PS5 825 GB
+// about 667 GB, PS5 Slim 1 TB about 848 GB, PS5 Pro 2 TB about 1,860 GB,
+// Xbox Series X 1 TB about 802 GB, Xbox Series S 512 GB about 364 GB.
+const GTA_SIZE_GB = 212;
+const CONSOLE_STORAGE = [
+  { label: 'PS5 (original)', advertised: '825 GB', usable: 667 },
+  { label: 'PS5 Slim', advertised: '1 TB', usable: 848 },
+  { label: 'PS5 Pro', advertised: '2 TB', usable: 1860 },
+  { label: 'Xbox Series X', advertised: '1 TB', usable: 802 },
+  { label: 'Xbox Series S', advertised: '512 GB', usable: 364 },
+];
+export function Gta6StorageTool() {
+  const [consoleIdx, setConsoleIdx] = useState(0);
+  const [free, setFree] = useState(String(CONSOLE_STORAGE[0].usable));
+  const con = CONSOLE_STORAGE[consoleIdx];
+  const freeGb = parseFloat(free) || 0;
+  const left = freeGb - GTA_SIZE_GB;
+  const fits = left >= 0;
+  const share = freeGb > 0 ? Math.round((GTA_SIZE_GB / freeGb) * 100) : 0;
+  const changeConsole = (i) => { setConsoleIdx(i); setFree(String(CONSOLE_STORAGE[i].usable)); };
+  return (<Wrap note="GTA 6 needs up to 212 GB (Rockstar, 3 November 2026). Usable storage is less than the advertised size because the system software takes a chunk. A day-one patch could add more, so leave some room on top of 212 GB. If it does not fit, delete a game or add storage: an M.2 SSD on PS5, a storage expansion card on Xbox Series X|S.">
+    <TextField select fullWidth label="Your console" value={consoleIdx} onChange={(e) => changeConsole(parseInt(e.target.value, 10))} sx={{ mb: 2 }}>{CONSOLE_STORAGE.map((co, i) => (<MenuItem key={i} value={i}>{co.label} ({co.advertised})</MenuItem>))}</TextField>
+    <TextField fullWidth label="Free space on your console (GB)" type="number" value={free} onChange={(e) => setFree(e.target.value)} sx={{ mb: 2 }} />
+    {freeGb > 0 && (<><Hero value={fits ? fmt(left) + ' GB left' : fmt(-left) + ' GB short'} unit={fits ? 'free space after installing GTA 6' : 'more space needed for GTA 6'} eq={'GTA 6 needs 212 GB of your ' + fmt(freeGb) + ' GB free - ' + (fits ? 'it fits' : 'it does not fit')} /><Rows rows={[['Console', con.label + ' (' + con.advertised + ')'], ['Usable storage', 'about ' + fmt(con.usable) + ' GB'], ['Your free space', fmt(freeGb) + ' GB'], ['GTA 6 size', 'up to 212 GB'], [fits ? 'Space left after installing' : 'Shortfall', fmt(Math.abs(left)) + ' GB'], ['Share of your free space', share + '%']]} /></>)}
+    {freeGb <= 0 && (<Typography variant="body2" color="text.secondary">Enter how much free space your console has, in GB.</Typography>)}
+    <Box sx={{ mt: 2 }}><Button variant="outlined" component="a" href="/tools/gta-6-download-time-calculator/">How long will the 212 GB download take?</Button></Box>
   </Wrap>);
 }
