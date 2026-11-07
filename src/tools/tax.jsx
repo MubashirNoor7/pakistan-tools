@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardContent, Typography, TextField, Box, List, ListItem, ListItemText, Divider, MenuItem, ToggleButton, ToggleButtonGroup, Alert, FormControlLabel, Checkbox, Button } from '@mui/material';
-import { fmt, Hero, Rows } from './shared.jsx';
+import { fmt, Hero, Rows, CommaInput } from './shared.jsx';
 
 // FBR salaried slabs 2026-27 (Finance Act 2026), verified from multiple published tables:
 // 0 to 600k, 1% to 1.2M, 11% to 2.2M (6,000+), 20% to 3.2M (116,000+), 25% to 4.1M (316,000+),
@@ -94,7 +94,7 @@ export function FreelancerTool() {
   return (<Wrap note="Section 154A, Finance Act 2026 - 0.25% rate for PSEB-registered IT/ITeS exporters extended through Tax Year 2029. Income must come through a bank and a return must be filed for the rate to be final. Confirm from FBR / your tax adviser.">
     <ToggleButtonGroup value={pseb} exclusive fullWidth onChange={(_, nv) => nv && setPseb(nv)} sx={{ mb: 2 }}><ToggleButton value="yes">PSEB registered</ToggleButton><ToggleButton value="no">Not registered</ToggleButton></ToggleButtonGroup>
     <ToggleButtonGroup value={filer} exclusive fullWidth onChange={(_, nv) => nv && setFiler(nv)} sx={{ mb: 2 }}><ToggleButton value="filer">Filer</ToggleButton><ToggleButton value="nonfiler">Non-filer</ToggleButton></ToggleButtonGroup>
-    <TextField fullWidth label="Annual freelance export receipts (Rs)" type="number" value={rec} onChange={(e) => setRec(e.target.value)} />
+    <CommaInput label="Annual freelance export receipts (Rs)" value={rec} onChange={setRec} />
     {receipts > 0 && (<><Hero value={'Rs ' + fmt(tax)} unit="Tax (final, estimate)" /><Rows rows={[['Receipts', 'Rs ' + fmt(receipts)], ['Rate used', fmt(rate) + '%'], ['Take-home', 'Rs ' + fmt(receipts - tax)]]} /></>)}
     <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>Rates: Filer+PSEB 0.25% · Filer, no PSEB 1% · Non-filer+PSEB 0.50% · Non-filer, no PSEB 2%.</Typography>
   </Wrap>);
