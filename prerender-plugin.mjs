@@ -41,7 +41,7 @@ export async function prerender(root, dist) {
   const { CONTENT_BY_ID, CONTENT_UPDATED } = await import(pathToFileURL(path.join(root, 'src/content.js')).href);
   const { CONTENT_MORE } = await import(pathToFileURL(path.join(root, 'src/content-more.js')).href);
   const ALL_GUIDES = { ...CONTENT_BY_ID, ...CONTENT_MORE };
-  const guide = (id) => (ALL_GUIDES[id] || []).map((s) => `<h2>${esc(s.h)}</h2>` + s.p.map((x) => `<p>${esc(x)}</p>`).join('') + (s.table ? `<table><tr>${s.table.head.map((c) => `<th>${esc(c)}</th>`).join('')}</tr>${s.table.rows.map((r) => `<tr>${r.map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</table>` : '')).join('');
+  const guide = (id) => (ALL_GUIDES[id] || []).map((s) => `<h2>${esc(s.h)}</h2>` + s.p.map((x) => `<p>${esc(x)}</p>`).join('') + (s.table ? `<div style="overflow-x:auto"><table><tr>${s.table.head.map((c) => `<th>${esc(c)}</th>`).join('')}</tr>${s.table.rows.map((r) => `<tr>${r.map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</table></div>` : '')).join('');
   const tpl = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
   const titles = readTitles(fs.readFileSync(path.join(root, 'src/App.jsx'), 'utf8'));
   const write = (rel, html) => { const f = path.join(dist, rel, 'index.html'); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, html); };
