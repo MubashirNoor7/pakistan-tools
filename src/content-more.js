@@ -278,6 +278,42 @@ export const CONTENT_MORE = {
     { h: 'Extras you can add', p: ['Tick the extras to add an extra controller, a headset or an extra 1TB SSD. In the USA the controller ($74.99) and the PlayStation Pulse headset ($99.99) are list prices; the 1TB SSD price is an estimate. In Canada the controller (C$109.99) is a list price; the headset and SSD prices are estimates. Type the price you would actually pay.'] },
     { h: 'When GTA 6 comes out', p: ['GTA 6 launches 19 November 2026 on PS5 and Xbox Series X|S. Pre-load starts 10 November. There is no disc in the box - the box holds a download code.'] },
   ],
+  gta6preorder: [
+    { h: 'Pre-order dates', p: [
+      'Pre-load opens 10 November 2026: at midnight local time on PS5, and at 12:00 AM GMT (7:00 PM Eastern, 9 November) on Xbox. The game launches 19 November 2026 on PS5 and Xbox Series X|S, and unlocks at local midnight in each store region.',
+      'Boxed copies reach shops from 12 November, but there is no disc in the box - it holds a download code. A PC version has not been announced.',
+    ] },
+    { h: 'Standard vs Ultimate - what the $20 buys', p: [
+      'The Ultimate Edition is the full game plus the Ultimate Edition Upgrade. The story, map and missions are the same in both editions, and there is no early access in either one.',
+      'Ultimate adds 6 exclusive vehicles, 4 exclusive weapons, 5 exclusive shops and businesses, the Paradise Garage, an exclusive raid and a car commission, and cosmetic sets for Jason and Lucia. The bonuses unlock across the story, chapter by chapter, not all at once.',
+    ], table: { head: ['What you get', 'Standard ($79.99)', 'Ultimate ($99.99)'], rows: [
+      ['Full game, story, map and missions', 'Yes', 'Yes'],
+      ['6 exclusive vehicles', 'No', 'Yes'],
+      ['4 exclusive weapons', 'No', 'Yes'],
+      ['5 exclusive shops and businesses', 'No', 'Yes'],
+      ['Paradise Garage (second garage)', 'No', 'Yes'],
+      ['Exclusive raid and car commission', 'No', 'Yes'],
+      ['Cosmetic sets', 'No', 'Yes'],
+      ['Early access', 'No', 'No'],
+    ] } },
+    { h: 'Pre-order bonuses', p: ['Buy before 20 November 2026 and you get the Vintage Vice City Pack on either edition - a 1955 Vapid Stanier sedan with a garage, 80s-style outfits and hairstyles, and an exclusive weapon pattern. A digital pre-order also includes 1 month of GTA+. On PlayStation it must be claimed by 31 March 2027; on Xbox, within 180 days of the pre-order. After the free month, GTA+ renews at its regular price unless you cancel it. There is no early access and no pre-order discount.'] },
+    { h: 'Should you buy Ultimate now?', p: ['Standard owners can buy the Ultimate Edition Upgrade separately later for $20 in the USA, so there is no need to pay for Ultimate now if you are unsure. Ultimate is digital only - only Standard has a boxed copy, and the box holds a download code, not a disc.'] },
+  ],
+  gta6storage: [
+    { h: 'How big is GTA 6?', p: [
+      'GTA 6 needs up to 212 GB of free space, confirmed by Rockstar on 3 November 2026. The earlier 210 GB figure was a store leak and is out of date. The size may differ slightly by console, and a day-one patch could add more, so leave some room on top of 212 GB.',
+    ] },
+    { h: 'Usable storage by console', p: ['Consoles never give you their full advertised storage, because the system software takes a chunk. These are the reported usable figures:'], table: {
+      head: ['Console', 'Advertised', 'Usable (about)', 'GTA 6 share'],
+      rows: [
+        ['PS5 (original)', '825 GB', '667 GB', 'about 32%'],
+        ['PS5 Slim', '1 TB', '848 GB', 'about 25%'],
+        ['PS5 Pro', '2 TB', '1,860 GB', 'about 11%'],
+        ['Xbox Series X', '1 TB', '802 GB', 'about 26%'],
+        ['Xbox Series S', '512 GB', '364 GB', 'about 58%'],
+      ] } },
+    { h: 'If GTA 6 does not fit', p: ['Delete a game you have finished. On PS5 you can add an M.2 SSD (Gen 4, 250 GB to 8 TB, 5,500 MB/s or faster recommended). On Xbox Series X|S you can add a storage expansion card.'] },
+  ],
   age: [
     { h: 'How age is calculated', p: [
       'The calculator counts full years, then months, then days from your date of birth to today, or to any date you choose. It also shows total days lived and days until your next birthday.',

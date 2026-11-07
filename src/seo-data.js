@@ -5,7 +5,7 @@
 export const BASE_URL = 'https://kalkio.vercel.app';
 export const BRAND = 'Kalkio';
 export const HOME_TITLE = 'Kalkio - Free Calculators & Converters';
-export const HOME_DESC = 'Kalkio: 46 free calculators and converters - loan EMI, QR codes, BMI, GTA 6 price, file converters and more, plus Marla, salary tax and PTA tax for Pakistan. No sign-up, everything runs in your browser.';
+export const HOME_DESC = 'Kalkio: 48 free calculators and converters - loan EMI, QR codes, BMI, GTA 6 price, file converters and more, plus Marla, salary tax and PTA tax for Pakistan. No sign-up, everything runs in your browser.';
 
 // Universal FAQ answers (true for every tool on this site).
 const FREE = ['Is this tool free?', 'Yes. It is free and no sign-up is needed.'];
@@ -30,6 +30,8 @@ export const SEO_BY_ID = {
   gta6countdown: { slug: 'gta-6-release-date-countdown', desc: 'GTA 6 countdown to the release date, 19 November 2026 - with pre-load on 10 November and unlock times for the USA and Canada. Free, no sign-up, and it runs in your browser.', faqs: [FREE, BROWSER] },
   gta6pccheck: { slug: 'can-my-pc-run-gta-6', desc: 'Can my PC run GTA 6? Check your graphics card, processor, RAM and storage against the predicted system requirements. Rockstar has not announced a PC version or official specs. Free, no sign-up.', faqs: [FREE, BROWSER] },
   gta6totalcost: { slug: 'gta-6-total-cost', desc: 'How much does GTA 6 cost in total? Console + game: from $579.98 in the USA (Xbox Series S + Standard) or C$759.98 in Canada. Pick your country, console and edition and see the total. Free, no sign-up, and it runs in your browser.', faqs: [FREE, ['What console do I need for GTA 6?', 'A PS5 or Xbox Series X|S. GTA 6 does not run on PS4 or Xbox One, and no PC version has been announced.'], BROWSER] },
+  gta6preorder: { slug: 'gta-6-pre-order', desc: 'GTA 6 pre-order: compare Standard ($79.99) and Ultimate ($99.99), see the price in your country, pre-load on 10 November 2026 and launch on 19 November 2026. Free, no sign-up, and it runs in your browser.', faqs: [FREE, ['What do I get if I pre-order?', 'Buy before 20 November 2026 and you get the Vintage Vice City Pack on either edition, and a digital pre-order also includes 1 month of GTA+. There is no early access and no pre-order discount.'], BROWSER] },
+  gta6storage: { slug: 'gta-6-storage-space-checker', desc: 'Will GTA 6 fit on your console? GTA 6 needs up to 212 GB - pick your console or enter your free space and see if it fits and how much is left. Free, no sign-up, and it runs in your browser.', faqs: [FREE, ['How big is GTA 6?', 'Up to 212 GB, confirmed by Rockstar on 3 November 2026. A day-one patch could add more, so leave some room on top of 212 GB.'], BROWSER] },
   heic: { slug: 'heic-to-jpg-converter-online', desc: 'Convert HEIC photos to JPG in your browser. Your file is never uploaded to a server. Free, no sign-up.', faqs: [FREE, FILE_PRIVATE] },
   webp: { slug: 'webp-to-jpg-converter-online', desc: 'Convert WebP images to JPG in your browser. Your file is never uploaded to a server. Free, no sign-up.', faqs: [FREE, FILE_PRIVATE] },
   rentvsbuy: { slug: 'rent-vs-buy-calculator-pakistan', desc: 'Compare the cost of renting versus buying a home in Pakistan. An estimate only, to help you weigh the two options.', faqs: [FREE, ESTIMATE, BROWSER] },
