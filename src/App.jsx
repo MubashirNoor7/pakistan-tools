@@ -55,6 +55,37 @@ const AttendanceTool = lazy(() => import('./tools/countrytools.jsx').then((m) =>
 const CarLoanTool = lazy(() => import('./tools/countrytools.jsx').then((m) => ({ default: m.CarLoanTool })));
 const HtmlToVideoTool = lazy(() => import('./tools/htmltovideo.jsx').then((m) => ({ default: m.HtmlToVideoTool })));
 const WhatsMyIpTool = lazy(() => import('./tools/iptool.jsx').then((m) => ({ default: m.WhatsMyIpTool })));
+// Preload a tool's chunk on hover/focus so the tool opens without the
+// "Loading calculator..." wait. The import is cached, so React.lazy reuses
+// the same chunk - the home page still downloads nothing up front.
+const MODULE_LOADERS = {
+  property: () => import('./tools/property.jsx'),
+  tax: () => import('./tools/tax.jsx'),
+  utility: () => import('./tools/utility.jsx'),
+  gta: () => import('./tools/gta.jsx'),
+  newtools: () => import('./tools/newtools.jsx'),
+  globaltools: () => import('./tools/globaltools.jsx'),
+  countrytools: () => import('./tools/countrytools.jsx'),
+  htmltovideo: () => import('./tools/htmltovideo.jsx'),
+  iptool: () => import('./tools/iptool.jsx'),
+};
+const TOOL_MODULE = {
+  marla: 'property', kanal: 'property', plotsize: 'property',
+  salarytax: 'tax', bps: 'tax', pta: 'tax', freelancer: 'tax', zakat: 'tax',
+  fuel: 'utility', petrolprice: 'utility', heic: 'utility', webp: 'utility',
+  gta6price: 'gta', gta6download: 'gta', gta6countdown: 'gta', gta6pccheck: 'gta', gta6totalcost: 'gta',
+  rentvsbuy: 'newtools', taxslab: 'newtools', gold: 'newtools', prizebond: 'newtools', jpgtopdf: 'newtools', fuelavg: 'newtools', currency: 'newtools',
+  loanemi: 'globaltools', mortgage: 'globaltools', qr: 'globaltools', bmi: 'globaltools', age: 'globaltools', percentage: 'globaltools', wordcounter: 'globaltools', password: 'globaltools', cgpa: 'globaltools', pngtojpg: 'globaltools', pdftojpg: 'globaltools',
+  salarycalc: 'countrytools', sip: 'countrytools', datecalc: 'countrytools', areacalc: 'countrytools', homeloan: 'countrytools', unitconv: 'countrytools', love: 'countrytools', attendance: 'countrytools', carloan: 'countrytools',
+  htmltovideo: 'htmltovideo', whatsmyip: 'iptool',
+};
+const preloadedModules = new Set();
+function preloadTool(id) {
+  const mod = TOOL_MODULE[id];
+  if (!mod || preloadedModules.has(mod)) return;
+  preloadedModules.add(mod);
+  MODULE_LOADERS[mod]().catch(() => {});
+}
 import { CONTENT_UPDATED, loadGuide } from './content.js';
 import { SEO_BY_ID, BASE_URL, HOME_TITLE, HOME_DESC, seoTitle, toolUrl, pageUrl } from './seo-data.js';
 
@@ -65,15 +96,15 @@ const TOOLS = [
   { id: 'salarytax', title: 'Pakistan Salary Tax Calculator 2026-27', display: 'Salary Tax Calculator 2026-27', cat: 'Tax & salary', Component: SalaryTaxTool },
   { id: 'bps', title: 'BPS Salary Calculator Pakistan 2026-27', display: 'BPS Salary Calculator 2026-27', cat: 'Tax & salary', Component: BpsTool },
   { id: 'pta', title: 'PTA Tax Calculator Pakistan by Phone Model', display: 'PTA Tax Calculator by Phone Model', cat: 'Tax & salary', Component: PtaTool },
-  { id: 'freelancer', title: 'Freelancer Tax Calculator Pakistan (154A, PSEB 0.25%)', display: 'Freelancer Tax Calculator (154A, PSEB 0.25%)', cat: 'Tax & salary', Component: FreelancerTool },
+  { id: 'freelancer', title: 'Freelancer Tax Calculator Pakistan (154A, PSEB 0.25%)', display: 'Freelancer Tax Calculator (154A)', cat: 'Tax & salary', Component: FreelancerTool },
   { id: 'zakat', title: 'Zakat Calculator Pakistan 2026: Cash, Gold', display: 'Zakat Calculator 2026: Cash, Gold', cat: 'Tax & salary', Component: ZakatTool },
   { id: 'fuel', title: 'Fuel Trip Cost Calculator Pakistan (OGRA)', display: 'Fuel Trip Cost Calculator (OGRA)', cat: 'Utility', Component: FuelTool },
   { id: 'petrolprice', title: 'Petrol Price Pakistan Today: Petrol & Diesel Rates', display: 'Petrol Price Today: Petrol & Diesel Rates', cat: 'Prices', Component: PetrolPriceTool },
-  { id: 'gta6price', title: 'How Much Is GTA 6? Price in USA & Canada', cat: 'Gaming', Component: Gta6PriceTool },
-  { id: 'gta6download', title: 'GTA 6 Download Time Calculator (212 GB)', cat: 'Gaming', Component: Gta6DownloadTool },
-  { id: 'gta6countdown', title: 'GTA 6 Countdown: Release Date & Unlock Time', cat: 'Gaming', Component: Gta6CountdownTool },
-  { id: 'gta6pccheck', title: 'Can My PC Run GTA 6? System Requirements Checker', cat: 'Gaming', Component: Gta6PcCheckTool },
-  { id: 'gta6totalcost', title: 'GTA 6 Total Cost: Console + Game Price', cat: 'Gaming', Component: Gta6TotalCostTool },
+  { id: 'gta6price', title: 'How Much Is GTA 6? Price in USA & Canada', display: 'How Much Is GTA 6?', cat: 'Gaming', Component: Gta6PriceTool },
+  { id: 'gta6download', title: 'GTA 6 Download Time Calculator (212 GB)', display: 'GTA 6 Download Time Calculator', cat: 'Gaming', Component: Gta6DownloadTool },
+  { id: 'gta6countdown', title: 'GTA 6 Countdown: Release Date & Unlock Time', display: 'GTA 6 Countdown', cat: 'Gaming', Component: Gta6CountdownTool },
+  { id: 'gta6pccheck', title: 'Can My PC Run GTA 6? System Requirements Checker', display: 'Can My PC Run GTA 6?', cat: 'Gaming', Component: Gta6PcCheckTool },
+  { id: 'gta6totalcost', title: 'GTA 6 Total Cost: Console + Game Price', display: 'GTA 6 Total Cost', cat: 'Gaming', Component: Gta6TotalCostTool },
   { id: 'heic', title: 'HEIC to JPG Converter Online (Free, Private)', cat: 'Files - private', Component: HeicTool },
   { id: 'webp', title: 'WebP to JPG Converter Online Free', cat: 'Files - private', Component: WebpTool },
   { id: 'rentvsbuy', title: 'Rent vs Buy Calculator Pakistan', display: 'Rent vs Buy Calculator', cat: 'Property', Component: RentVsBuyTool },
@@ -176,9 +207,9 @@ const showTitle = (t) => (t && t.display) || (t && t.title) || '';
 function ToolCard({ t, go }) {
   const emoji = CAT_EMOJI[ID_TO_CAT[t.id]] || '🔧';
   return (<Card elevation={0} sx={{ height: '100%', transition: 'box-shadow 0.15s ease, transform 0.15s ease', '&:hover': { boxShadow: '0 6px 24px rgba(0,0,0,0.10)', transform: 'translateY(-2px)' } }}>
-    <CardContent component="a" href={`/tools/${t.slug}/`} onClick={(e) => go(e, `/tools/${t.slug}/`)} sx={{ display: 'block', textDecoration: 'none', color: 'inherit', height: '100%' }}>
+    <CardContent component="a" href={`/tools/${t.slug}/`} onClick={(e) => go(e, `/tools/${t.slug}/`)} onMouseEnter={() => preloadTool(t.id)} onFocus={() => preloadTool(t.id)} sx={{ display: 'block', textDecoration: 'none', color: 'inherit', height: '100%' }}>
       <Box sx={{ width: 44, height: 44, borderRadius: 3, bgcolor: '#E6F4F2', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, mb: 1.5 }}>{emoji}</Box>
-      <Typography fontWeight={700} sx={{ lineHeight: 1.35, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{showTitle(t)}</Typography>
+      <Typography fontWeight={700} sx={{ lineHeight: 1.35, minHeight: '2.7em', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{showTitle(t)}</Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>{ID_TO_CAT[t.id] || t.cat}</Typography>
     </CardContent>
   </Card>);
@@ -202,6 +233,20 @@ export default function App() {
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, []);
+
+  // Once the home page is idle, preload the Most Popular tools' chunks so
+  // the first tool a visitor opens appears instantly. Only on the home page,
+  // and only after the browser is idle, so the first paint is untouched.
+  useEffect(() => {
+    if (route.kind !== 'home') return;
+    const preloadPopular = () => POPULAR.forEach((t) => preloadTool(t.id));
+    if ('requestIdleCallback' in window) {
+      const id = window.requestIdleCallback(preloadPopular, { timeout: 3000 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const timer = setTimeout(preloadPopular, 2000);
+    return () => clearTimeout(timer);
+  }, [route.kind]);
 
   const cur = route.kind === 'tool' ? TOOLS.find((t) => t.slug === route.slug) : null;
 
@@ -270,7 +315,8 @@ export default function App() {
     <Typography variant="h4" component="h1" fontWeight={800} gutterBottom>Results for "{q.trim()}"</Typography>
     {searchResults.length === 0 ? (<>
       <Typography variant="body1" color="text.secondary" gutterBottom>No tool found - try another word, e.g. PDF, loan or Marla.</Typography>
-      <Button variant="contained" onClick={() => setQ('')} sx={{ mt: 1 }}>Browse all tools</Button>
+      <Typography variant="h6" component="h2" fontWeight={700} sx={{ mt: 3, mb: 2 }}>Try these popular tools</Typography>
+      <ToolGrid tools={POPULAR} go={go} />
     </>) : (<ToolGrid tools={searchResults} go={go} />)}
   </Box>);
 
@@ -289,11 +335,12 @@ export default function App() {
     <Box id="categories" sx={{ mt: 5 }}>
       <Typography variant="h5" component="h2" fontWeight={800} gutterBottom>Browse all tools</Typography>
       {CATEGORIES.map((c) => (<Accordion key={c.name} expanded={openCat === c.name} onChange={() => setOpenCat(openCat === c.name ? null : c.name)} sx={{ mb: 1 }}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>{CAT_EMOJI[c.name]} {c.name} <Typography component="span" variant="body2" color="text.secondary" fontWeight={400}>({c.tools.length} tools)</Typography></Typography></AccordionSummary>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>{CAT_EMOJI[c.name]} {c.name} <Typography component="span" variant="body2" color="text.secondary" fontWeight={400}>({c.tools.length} tool{c.tools.length === 1 ? '' : 's'})</Typography></Typography></AccordionSummary>
         <AccordionDetails><ToolGrid tools={c.tools} go={go} /></AccordionDetails>
       </Accordion>))}
     </Box>
-    <Accordion sx={{ mt: 5 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>❓ Common questions</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary" paragraph><b>Are the tools free?</b> Yes. All 46 tools are free and no sign-up is needed.</Typography><Typography variant="body2" color="text.secondary" paragraph><b>Does my data leave my device?</b> No. Every tool runs in your browser and does not ask you to create an account.</Typography><Typography variant="body2" color="text.secondary"><b>Are tax results official?</b> No. Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.</Typography></AccordionDetails></Accordion>
+    <Typography variant="h5" component="h2" fontWeight={800} sx={{ mt: 5 }} gutterBottom>❓ Common questions</Typography>
+    {HOME_FAQS.map(([q, a]) => (<Accordion key={q} sx={{ mb: 1 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>{q}</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary">{a}</Typography></AccordionDetails></Accordion>))}
     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3, textAlign: 'center' }}>Tax, bill and fuel results are estimates - confirm official rates before a financial decision.</Typography>
   </>);
 
@@ -302,20 +349,20 @@ export default function App() {
       <Link href="/" onClick={(e) => go(e, '/')} underline="hover" color="inherit">Home</Link>{' / '}{ID_TO_CAT[cur.id] || cur.cat}
     </Typography>
     <Typography variant="h4" component="h1" fontWeight={800} gutterBottom>{showTitle(cur)}</Typography>
-    <Typography variant="body1" color="text.secondary" gutterBottom>{CAT_EMOJI[ID_TO_CAT[cur.id]] || ''} {ID_TO_CAT[cur.id] || cur.cat} · No sign-up.</Typography>
-    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>Guide last updated {CONTENT_UPDATED}.</Typography>
-    <Suspense fallback={<Box sx={{ py: 4, textAlign: 'center' }}><CircularProgress /><Typography color="text.secondary" sx={{ mt: 1 }}>Loading calculator...</Typography></Box>}><cur.Component key={cur.id} /></Suspense>
+    <Typography variant="body1" color="text.secondary" gutterBottom>{CAT_EMOJI[ID_TO_CAT[cur.id]] || ''}{' '}{ID_TO_CAT[cur.id] || cur.cat}{' · No sign-up.'}</Typography>
+    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>Guide last updated{' '}{CONTENT_UPDATED}.</Typography>
+    <Suspense fallback={<Card elevation={2} sx={{ borderRadius: 3 }}><CardContent sx={{ py: 5, textAlign: 'center' }}><CircularProgress /><Typography color="text.secondary" sx={{ mt: 1 }}>Loading calculator...</Typography></CardContent></Card>}><cur.Component key={cur.id} /></Suspense>
     {cur.id === 'marla' && (<>
       <Box sx={{ bgcolor: '#fff8e1', borderRadius: 2, p: 2, mt: 2 }}><Typography variant="body2">225 sq ft is common in housing societies like DHA and Bahria Town. 250 sq ft is the CDA Islamabad standard. 272.25 sq ft is the revenue-record Marla. Confirm from your plot documents which one applies to you.</Typography></Box>
       <Accordion sx={{ mt: 2 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>How it works</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary">Square feet = Marla × sq ft per Marla. Square yards = square feet ÷ 9. Square metres = square feet ÷ 10.7639. Kanal = Marla ÷ 20. Acre = Marla ÷ 160.</Typography></AccordionDetails></Accordion>
-      <Accordion><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>225 vs 250 vs 272.25 - quick table</Typography></AccordionSummary><AccordionDetails><Table size="small"><TableBody>{[[1, 225, 250, 272.25], [5, 1125, 1250, 1361.25], [10, 2250, 2500, 2722.5], [20, 4500, 5000, 5445]].map(([m, a, b, c]) => (<TableRow key={m}><TableCell>{m === 20 ? '20 = 1 Kanal' : `${m} Marla`}</TableCell><TableCell>{fmt(a)}</TableCell><TableCell>{fmt(b)}</TableCell><TableCell>{fmt(c)}</TableCell></TableRow>))}</TableBody></Table></AccordionDetails></Accordion>
+      <Accordion><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>225 vs 250 vs 272.25 - quick table</Typography></AccordionSummary><AccordionDetails><Box sx={{ overflowX: 'auto' }}><Table size="small" sx={{ minWidth: 480 }}><TableBody>{[[1, 225, 250, 272.25], [5, 1125, 1250, 1361.25], [10, 2250, 2500, 2722.5], [20, 4500, 5000, 5445]].map(([m, a, b, c]) => (<TableRow key={m}><TableCell>{m === 20 ? '20 = 1 Kanal' : `${m} Marla`}</TableCell><TableCell>{fmt(a)}</TableCell><TableCell>{fmt(b)}</TableCell><TableCell>{fmt(c)}</TableCell></TableRow>))}</TableBody></Table></Box></AccordionDetails></Accordion>
       <Accordion><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>❓ Common questions</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary" paragraph><b>How many Marla in 1 Kanal?</b> 20 Marla, under both standards.</Typography><Typography variant="body2" color="text.secondary"><b>Which standard should I use?</b> The one written in your plot documents.</Typography></AccordionDetails></Accordion>
     </>)}
     <Box sx={{ mt: 2 }}><Button variant="outlined" color="success" startIcon={<WhatsAppIcon />} component="a" href={`https://wa.me/?text=${encodeURIComponent(showTitle(cur) + ' - ' + toolUrl(cur.slug))}`} target="_blank" rel="noopener noreferrer">Share on WhatsApp</Button></Box>
     {guide && (<Box component="section" sx={{ mt: 4 }}>{guide.map((s) => (<Box key={s.h} sx={{ mb: 3 }}>
       <Typography variant="h5" component="h2" fontWeight={700} gutterBottom>{s.h}</Typography>
       {s.p.map((para, i) => (<Typography key={i} variant="body1" color="text.secondary" paragraph>{para}</Typography>))}
-      {s.table && (<Box sx={{ overflowX: 'auto' }}><Table size="small"><TableBody><TableRow>{s.table.head.map((c) => (<TableCell key={c} sx={{ fontWeight: 700 }}>{c}</TableCell>))}</TableRow>{s.table.rows.map((r, ri) => (<TableRow key={ri}>{r.map((c, ci) => (<TableCell key={ci}>{c}</TableCell>))}</TableRow>))}</TableBody></Table></Box>)}
+      {s.table && (<Box sx={{ overflowX: 'auto' }}><Table size="small" sx={{ minWidth: Math.max(320, s.table.head.length * 130) }}><TableBody><TableRow>{s.table.head.map((c) => (<TableCell key={c} sx={{ fontWeight: 700 }}>{c}</TableCell>))}</TableRow>{s.table.rows.map((r, ri) => (<TableRow key={ri}>{r.map((c, ci) => (<TableCell key={ci}>{c}</TableCell>))}</TableRow>))}</TableBody></Table></Box>)}
     </Box>))}</Box>)}
     {cur.id !== 'marla' && cur.faqs && cur.faqs.length > 0 && (<Accordion sx={{ mt: 2 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>❓ Common questions</Typography></AccordionSummary><AccordionDetails>{cur.faqs.map(([fq, fa]) => (<Typography key={fq} variant="body2" color="text.secondary" paragraph><b>{fq}</b> {fa}</Typography>))}</AccordionDetails></Accordion>)}
     {(() => { const sib = (CATEGORIES.find((c) => c.name === ID_TO_CAT[cur.id]) || { tools: [] }).tools.filter((t) => t.id !== cur.id).slice(0, 4); return sib.length > 0 ? (<Box sx={{ mt: 5 }}><Typography variant="h6" component="h2" fontWeight={700} gutterBottom>🔗 More free tools</Typography><ToolGrid tools={sib} go={go} mdCols={2} /></Box>) : null; })()}
@@ -323,8 +370,11 @@ export default function App() {
 
   const aboutView = staticPage('About Kalkio', (<>
     <Typography variant="body1" paragraph>Kalkio is a collection of 46 free calculators and converters, covering property, tax and salary, prices, finance, files and everyday calculations.</Typography>
-    <Typography variant="body1" paragraph>Every tool runs in the visitor’s browser - there is no backend, no database, no login and no sign-up. File converters also run fully in the browser.</Typography>
+    <Typography variant="body1" paragraph>How to use it: search for a tool or browse a category, enter your numbers, and the result appears straight away. There is nothing to install and no account to create.</Typography>
+    <Typography variant="body1" paragraph>Every tool runs in the visitor’s browser - there is no backend, no database, no login and no sign-up. File converters also run fully in the browser, so your files never leave your device.</Typography>
+    <Typography variant="body1" paragraph>The tools cover everyday needs: converting Marla and Kanal, working out salary tax, Zakat and PTA tax, checking petrol and gold prices, converting files, and checking GTA 6 prices and release dates.</Typography>
     <Typography variant="body1" paragraph>Tax, bill and fuel results are estimates - confirm official rates before a financial decision.</Typography>
+    <Typography variant="body1" paragraph>Questions or a tool to suggest? Email <Link href="mailto:sammykhanmalng@gmail.com">sammykhanmalng@gmail.com</Link>.</Typography>
   </>));
   const contactView = staticPage('Contact Kalkio', (<>
     <Typography variant="body1" paragraph>Questions about Kalkio? Email us at <Link href="mailto:sammykhanmalng@gmail.com">sammykhanmalng@gmail.com</Link>.</Typography>
