@@ -120,6 +120,7 @@ export const CONTENT_BY_ID = {
         ['Non-filer and PSEB registered', '0.50%'],
         ['Non-filer, not PSEB registered', '2%'],
       ] } },
+    { h: 'The 80% banking-channel rule', p: ['The low rate is not automatic. At least 80% of your foreign earnings must arrive in Pakistan through approved banking channels — a Pakistani bank account, or Payoneer or Wise routed into a local bank account. Money that stays in a foreign wallet or comes through informal channels does not count.', 'For every foreign payment, ask your bank for a Proceeds Realization Certificate (PRC). It is your proof that the money came from abroad. If less than 80% comes through banking channels, the low rate can be lost and the income can be taxed at the normal rates instead.', 'Example: if you earn $2,000 in a month, at least $1,600 of it must come through a bank. The 0.25% rate for PSEB-registered exporters runs through Tax Year 2029.'] },
     { h: 'Examples', p: ['Tax on annual export receipts under each status:'], table: {
       head: ['Annual receipts', 'Filer + PSEB', 'Filer, no PSEB', 'Non-filer + PSEB', 'Non-filer, no PSEB'],
       rows: [
