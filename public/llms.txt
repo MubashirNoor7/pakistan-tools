@@ -1,6 +1,6 @@
 # Kalkio
 
-Kalkio is a free website with 48 calculators and converters. Every tool runs in the visitor's browser - no sign-up, no account, no backend. File converters run fully in the browser and files are never uploaded to a server. Tax, bill and fuel results are estimates; official rates are final.
+Kalkio is a free website with 50 calculators and converters. Every tool runs in the visitor's browser - no sign-up, no account, no backend. File converters run fully in the browser and files are never uploaded to a server. Tax, bill and fuel results are estimates; official rates are final.
 
 Contact: sammykhanmalng@gmail.com
 
@@ -23,6 +23,8 @@ Contact: sammykhanmalng@gmail.com
 - GTA 6 Total Cost: Console + Game Price: https://kalkio.vercel.app/tools/gta-6-total-cost/
 - GTA 6 Pre-Order: Editions, Price & Dates: https://kalkio.vercel.app/tools/gta-6-pre-order/
 - Will GTA 6 Fit on My Console? Storage Checker: https://kalkio.vercel.app/tools/gta-6-storage-space-checker/
+GTA 6 New Zealand Trick: Play Up to 19 Hours Early: https://kalkio.vercel.app/tools/gta-6-new-zealand-trick/
+GTA 6 PC Release Date: Reported Q1 2027 Window: https://kalkio.vercel.app/tools/gta-6-pc-release-date/
 - HEIC to JPG Converter Online (Free, Private): https://kalkio.vercel.app/tools/heic-to-jpg-converter-online/
 - WebP to JPG Converter Online Free: https://kalkio.vercel.app/tools/webp-to-jpg-converter-online/
 - Rent vs Buy Calculator Pakistan: https://kalkio.vercel.app/tools/rent-vs-buy-calculator-pakistan/
