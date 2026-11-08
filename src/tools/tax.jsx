@@ -5,22 +5,44 @@ import { fmt, Hero, Rows, CommaInput } from './shared.jsx';
 // FBR salaried slabs 2026-27 (Finance Act 2026), verified from multiple published tables:
 // 0 to 600k, 1% to 1.2M, 11% to 2.2M (6,000+), 20% to 3.2M (116,000+), 25% to 4.1M (316,000+),
 // 29% to 5.6M (541,000+), 32% to 7M (976,000+), 35% above (1,424,000+). Surcharge abolished for salaried.
+const SALARY_SLABS = [[600000, 0, 0], [1200000, 0.01, 0], [2200000, 0.11, 6000], [3200000, 0.20, 116000], [4100000, 0.25, 316000], [5600000, 0.29, 541000], [7000000, 0.32, 976000], [Infinity, 0.35, 1424000]];
 export function salaryTax(annual) {
-  const slabs = [[600000, 0, 0], [1200000, 0.01, 0], [2200000, 0.11, 6000], [3200000, 0.20, 116000], [4100000, 0.25, 316000], [5600000, 0.29, 541000], [7000000, 0.32, 976000], [Infinity, 0.35, 1424000]];
+  const slabs = SALARY_SLABS;
   for (let i = 0; i < slabs.length; i++) {
     const [limit, rate, fixed] = slabs[i]; const prev = i === 0 ? 0 : slabs[i - 1][0];
     if (annual <= limit) return fixed + rate * (annual - prev);
   }
   return 0;
 }
+// Which slab an annual salary falls in, for the result panel. Slab numbers
+// match the guide table: 1 is up to Rs 600,000, 3 is 1,200,001-2,200,000 at 11%.
+export function slabFor(annual) {
+  for (let i = 0; i < SALARY_SLABS.length; i++) {
+    const [limit, rate] = SALARY_SLABS[i]; const prev = i === 0 ? 0 : SALARY_SLABS[i - 1][0];
+    if (annual <= limit) {
+      if (i === 0) return `Slab 1: Up to Rs ${fmt(600000)} at 0%`;
+      if (limit === Infinity) return `Slab ${i + 1}: Above Rs ${fmt(prev)} at ${rate * 100}%`;
+      return `Slab ${i + 1}: Rs ${fmt(prev + 1)}-${fmt(limit)} at ${rate * 100}%`;
+    }
+  }
+  return '';
+}
 function Wrap({ children, note }) {
   return (<><Card elevation={2} sx={{ borderRadius: 3 }}><CardContent sx={{ p: 3 }}>{children}</CardContent></Card>{note && <Alert severity="info" sx={{ mt: 2 }}>{note}</Alert>}</>);
 }
 export function SalaryTaxTool() {
-  const [m, setM] = useState('200000'); const monthly = parseFloat(m) || 0; const annual = monthly * 12; const tax = salaryTax(annual);
+  // Default is Rs 150,000 a month, so the result is visible on first load:
+  // monthly tax Rs 6,000, take-home Rs 144,000, yearly tax Rs 72,000.
+  const [mode, setMode] = useState('monthly');
+  const [input, setInput] = useState('150000');
+  const entered = parseFloat(input) || 0;
+  const monthly = mode === 'monthly' ? entered : entered / 12;
+  const annual = monthly * 12; const tax = salaryTax(annual);
+  const switchMode = (nv) => { if (!nv || nv === mode) return; setInput(String(Math.round(nv === 'annual' ? monthly * 12 : monthly))); setMode(nv); };
   return (<Wrap note="Estimate only - FBR salaried slabs 2026-27 (Finance Act 2026). Allowances, deductions and payslip figures can change the final amount. Confirm from FBR / your payslip before filing.">
-    <TextField fullWidth label="Monthly salary (Rs)" type="number" value={m} onChange={(e) => setM(e.target.value)} sx={{ '& input': { fontSize: 24, fontWeight: 700 } }} />
-    {monthly > 0 && (<><Hero value={'Rs ' + fmt(tax / 12)} unit="Monthly tax deduction" eq={`Annual tax Rs ${fmt(tax)}`} /><Rows rows={[['Annual salary', 'Rs ' + fmt(annual)], ['Annual tax', 'Rs ' + fmt(tax)], ['Monthly take-home', 'Rs ' + fmt(monthly - tax / 12)], ['Annual take-home', 'Rs ' + fmt(annual - tax)], ['Effective rate', fmt(annual > 0 ? (tax / annual) * 100 : 0) + '%']]} /></>)}
+    <ToggleButtonGroup value={mode} exclusive fullWidth onChange={(_, nv) => switchMode(nv)} sx={{ mb: 2 }}><ToggleButton value="monthly">Monthly salary</ToggleButton><ToggleButton value="annual">Annual salary</ToggleButton></ToggleButtonGroup>
+    <TextField fullWidth label={mode === 'monthly' ? 'Monthly salary (Rs)' : 'Annual salary (Rs)'} type="number" value={input} onChange={(e) => setInput(e.target.value)} sx={{ '& input': { fontSize: 24, fontWeight: 700 } }} />
+    {monthly > 0 && (<><Hero value={'Rs ' + fmt(tax / 12)} unit="Monthly tax deduction" eq={`Annual tax Rs ${fmt(tax)}`} /><Rows rows={[['Annual salary', 'Rs ' + fmt(annual)], ['Annual tax', 'Rs ' + fmt(tax)], ['Monthly take-home', 'Rs ' + fmt(monthly - tax / 12)], ['Annual take-home', 'Rs ' + fmt(annual - tax)], ['Effective rate', fmt(annual > 0 ? (tax / annual) * 100 : 0) + '%'], ['Tax slab', slabFor(annual)]]} /></>)}
     <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>Slabs: 0% to Rs 600,000 · 1% to 1.2M · 11% to 2.2M · 20% to 3.2M · 25% to 4.1M · 29% to 5.6M · 32% to 7M · 35% above 7M.</Typography>
   </Wrap>);
 }
