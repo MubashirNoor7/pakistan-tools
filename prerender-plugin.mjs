@@ -41,20 +41,41 @@ export async function prerender(root, dist) {
   const { CONTENT_BY_ID, CONTENT_UPDATED } = await import(pathToFileURL(path.join(root, 'src/content.js')).href);
   const { CONTENT_MORE } = await import(pathToFileURL(path.join(root, 'src/content-more.js')).href);
   const ALL_GUIDES = { ...CONTENT_BY_ID, ...CONTENT_MORE };
-  const guide = (id) => (ALL_GUIDES[id] || []).map((s) => `<h2>${esc(s.h)}</h2>` + s.p.map((x) => `<p>${esc(x)}</p>`).join('') + (s.table ? `<div style="overflow-x:auto"><table><tr>${s.table.head.map((c) => `<th>${esc(c)}</th>`).join('')}</tr>${s.table.rows.map((r) => `<tr>${r.map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</table></div>` : '')).join('');
+  // Guide paragraphs can link to other tools with [[id|label]] tokens.
+  const linkify = (x) => {
+    const parts = x.split(/\[\[([a-z0-9]+)\|([^\]]+)\]\]/);
+    let out = '';
+    for (let i = 0; i < parts.length; i++) {
+      if (i % 3 === 0) out += esc(parts[i]);
+      else if (i % 3 === 1) { const s = SEO_BY_ID[parts[i]]; out += s ? `<a href="/tools/${s.slug}/">${esc(parts[i + 1])}</a>` : esc(parts[i + 1]); }
+    }
+    return out;
+  };
+  const guide = (id) => (ALL_GUIDES[id] || []).map((s) => `<h2>${esc(s.h)}</h2>` + s.p.map((x) => `<p>${linkify(x)}</p>`).join('') + (s.table ? `<div style="overflow-x:auto"><table><tr>${s.table.head.map((c) => `<th>${esc(c)}</th>`).join('')}</tr>${s.table.rows.map((r) => `<tr>${r.map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</table></div>` : '')).join('');
+  // Default calculator result, rendered as plain text in the static HTML so
+  // crawlers see the result without JavaScript. Figures are verified from the
+  // same slabs the calculator uses: Rs 150,000/mo is Rs 1,800,000 a year,
+  // tax Rs 72,000 a year (Rs 6,000 a month), take-home Rs 144,000 a month,
+  // effective rate 4%, Slab 3 at 11%.
+  const DEFAULT_RESULT = {
+    salarytax: '<h2>Calculator result: Rs 150,000 a month</h2><p>Monthly salary Rs 150,000: monthly tax Rs 6,000, monthly take-home Rs 144,000, yearly tax Rs 72,000. Effective rate 4%. Slab 3: Rs 1,200,001-2,200,000 at 11%.</p>',
+  };
   const tpl = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
   const titles = readTitles(fs.readFileSync(path.join(root, 'src/App.jsx'), 'utf8'));
   const write = (rel, html) => { const f = path.join(dist, rel, 'index.html'); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, html); };
   // "More free tools" links use the display title (no country name), so the
   // static HTML shows the same clean titles the visitor sees in the app.
-  const linksFor = (id) => '<h2>More free tools</h2><ul>' + Object.entries(SEO_BY_ID).filter(([i]) => titles[i]).map(([i, x]) => `<li><a href="/tools/${x.slug}/">${esc(titles[i].display)}</a></li>`).join('') + '</ul><p><a href="/">All Kalkio tools</a></p>';
+  // Per-page topical lists where one is defined (salarytax: tax tools only);
+  // every other page keeps the full list, as before.
+  const TOPICAL_RELATED = { salarytax: ['bps', 'freelancer', 'taxslab', 'salarycalc', 'zakat', 'pta'] };
+  const linksFor = (id) => '<h2>More free tools</h2><ul>' + (TOPICAL_RELATED[id] || Object.keys(SEO_BY_ID)).filter((i) => titles[i]).map((i) => `<li><a href="/tools/${SEO_BY_ID[i].slug}/">${esc(titles[i].display)}</a></li>`).join('') + '</ul><p><a href="/">All Kalkio tools</a></p>';
   const allLinks = linksFor(null);
   let n = 0;
   for (const [id, s] of Object.entries(SEO_BY_ID)) {
     const t = titles[id];
     if (!t || !t.title) continue; // never invent a title
     const faqs = s.faqs || [];
-    const body = `<p>${esc(s.desc)}</p><p>Guide last updated ${esc(CONTENT_UPDATED)}.</p>` + guide(id) + (faqs.length ? '<h2>Common questions</h2>' + faqs.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('') : '') + linksFor(id);
+    const body = `<p>${esc(s.desc)}</p><p>Guide last updated ${esc(CONTENT_UPDATED)}.</p>` + (DEFAULT_RESULT[id] || '') + guide(id) + (faqs.length ? '<h2>Common questions</h2>' + faqs.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('') : '') + linksFor(id);
     const jsonld = faqs.length ? { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) } : null;
     write(`tools/${s.slug}`, page(tpl, { title: seoTitle(t.title), desc: s.desc, url: toolUrl(s.slug), h1: t.display, body, jsonld }));
     n++;
