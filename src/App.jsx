@@ -233,6 +233,18 @@ export default function App() {
   const [openCat, setOpenCat] = useState(null);
   const navigate = (path) => { if (window.location.pathname !== path) { window.history.pushState(null, '', path); setRoute(parseRoute(path)); } window.scrollTo(0, 0); };
   const go = (e, path) => { e.preventDefault(); navigate(path); };
+  // Guide paragraphs can link to other tools with [[id|label]] tokens
+  // (used by the salary-tax guide). Unknown ids render as plain text.
+  const renderGuideText = (text) => {
+    const parts = text.split(/\[\[([a-z0-9]+)\|([^\]]+)\]\]/);
+    if (parts.length === 1) return text;
+    const out = [];
+    for (let i = 0; i < parts.length; i++) {
+      if (i % 3 === 0) { if (parts[i]) out.push(parts[i]); }
+      else if (i % 3 === 1) { const label = parts[i + 1]; const t = TOOLS.find((x) => x.id === parts[i]); out.push(t ? (<Link key={i} href={`/tools/${t.slug}/`} onClick={(e) => go(e, `/tools/${t.slug}/`)}>{label}</Link>) : label); }
+    }
+    return out;
+  };
   const query = q.trim().toLowerCase();
   // Hyphens count as spaces when matching, so "pre order" finds "Pre-Order".
   const norm = (s) => s.toLowerCase().replace(/-/g, ' ');
@@ -361,6 +373,7 @@ export default function App() {
     <Typography variant="h4" component="h1" fontWeight={800} gutterBottom>{showTitle(cur)}</Typography>
     <Typography variant="body1" color="text.secondary" gutterBottom>{CAT_EMOJI[ID_TO_CAT[cur.id]] || ''}{' '}{ID_TO_CAT[cur.id] || cur.cat}{' · No sign-up.'}</Typography>
     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>Guide last updated{' '}{CONTENT_UPDATED}.</Typography>
+    {cur.id === 'salarytax' && (<Typography variant="body1" sx={{ mb: 2, fontWeight: 700 }}>Quick answer: Up to Rs 600,000 a year is tax-free; Rs 100,000 a month pays Rs 500 a month in tax.</Typography>)}
     <Suspense fallback={<Card elevation={2} sx={{ borderRadius: 3 }}><CardContent sx={{ py: 5, textAlign: 'center' }}><CircularProgress /><Typography color="text.secondary" sx={{ mt: 1 }}>Loading calculator...</Typography></CardContent></Card>}><cur.Component key={cur.id} /></Suspense>
     {cur.id === 'marla' && (<>
       <Box sx={{ bgcolor: '#fff8e1', borderRadius: 2, p: 2, mt: 2 }}><Typography variant="body2">225 sq ft is common in housing societies like DHA and Bahria Town. 250 sq ft is the CDA Islamabad standard. 272.25 sq ft is the revenue-record Marla. Confirm from your plot documents which one applies to you.</Typography></Box>
@@ -371,7 +384,7 @@ export default function App() {
     <Box sx={{ mt: 2 }}><Button variant="outlined" color="success" startIcon={<WhatsAppIcon />} component="a" href={`https://wa.me/?text=${encodeURIComponent(showTitle(cur) + ' - ' + toolUrl(cur.slug))}`} target="_blank" rel="noopener noreferrer">Share on WhatsApp</Button></Box>
     {guide && (<Box component="section" sx={{ mt: 4 }}>{guide.map((s) => (<Box key={s.h} sx={{ mb: 3 }}>
       <Typography variant="h5" component="h2" fontWeight={700} gutterBottom>{s.h}</Typography>
-      {s.p.map((para, i) => (<Typography key={i} variant="body1" color="text.secondary" paragraph>{para}</Typography>))}
+      {s.p.map((para, i) => (<Typography key={i} variant="body1" color="text.secondary" paragraph>{renderGuideText(para)}</Typography>))}
       {s.table && (<Box sx={{ overflowX: 'auto' }}><Table size="small" sx={{ minWidth: Math.max(320, s.table.head.length * 130) }}><TableBody><TableRow>{s.table.head.map((c) => (<TableCell key={c} sx={{ fontWeight: 700 }}>{c}</TableCell>))}</TableRow>{s.table.rows.map((r, ri) => (<TableRow key={ri}>{r.map((c, ci) => (<TableCell key={ci}>{c}</TableCell>))}</TableRow>))}</TableBody></Table></Box>)}
     </Box>))}</Box>)}
     {cur.id !== 'marla' && cur.faqs && cur.faqs.length > 0 && (<Accordion sx={{ mt: 2 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>❓ Common questions</Typography></AccordionSummary><AccordionDetails>{cur.faqs.map(([fq, fa]) => (<Typography key={fq} variant="body2" color="text.secondary" paragraph><b>{fq}</b> {fa}</Typography>))}</AccordionDetails></Accordion>)}

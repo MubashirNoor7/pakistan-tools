@@ -7,9 +7,20 @@
 export const CONTENT_UPDATED = '5 Nov 2026';
 export const CONTENT_BY_ID = {
   salarytax: [
+    { h: 'Quick answer', p: [
+      'Up to Rs 600,000 a year is tax-free; Rs 100,000 a month pays Rs 500 a month in tax.',
+    ] },
     { h: 'How salary tax is worked out for 2026-27', p: [
       'Pakistan taxes salaried people on their annual salary, in slabs. Only the part of your salary that falls inside a slab is taxed at that slab’s rate. This calculator multiplies your monthly salary by 12, applies the FBR slabs from the Finance Act 2026, and divides the annual tax by 12 to give your monthly deduction.',
       'The extra surcharge that used to apply to salaried people has been abolished, so it is not added here.',
+    ] },
+    { h: 'Taxable salary, not gross', p: [
+      'Tax is worked out on your taxable salary, not on your gross pay. Your basic pay counts, and so do most allowances, overtime and bonuses. That is why the tax on your payslip can be higher than the tax on your basic pay alone.',
+      'Medical allowance is exempt up to 10% of your basic pay. The part above that counts as taxable salary.',
+      'In a month with a bonus or a raise, the tax withheld that month is higher, because that month’s pay is higher. Your employer works it out on the year’s total, and the final figure is settled when you file your return. Try your new salary in the [[bps|BPS Salary Calculator]] or check your slab in the [[taxslab|FBR Tax Slab 2026-27]] tool, and see how freelancers are taxed in the [[freelancer|Freelancer Tax Calculator (154A)]] tool.',
+    ] },
+    { h: 'Where these figures come from', p: [
+      'Finance Act 2026, gazetted 26 June 2026; FBR First Schedule, Part I, Division I; Tax Year 2027 (1 Jul 2026-30 Jun 2027).',
     ] },
     { h: 'Salaried tax slabs 2026-27', p: ['Annual taxable salary, the tax already due at the start of the slab, and the rate on the amount above it:'], table: {
       head: ['Annual salary', 'Tax rate', 'Fixed tax at slab start'],
