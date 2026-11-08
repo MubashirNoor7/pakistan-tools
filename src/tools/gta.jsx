@@ -26,6 +26,22 @@
 // gametechreport.com, Nov 2026): PS5 825 GB about 667 GB, PS5 Slim 1 TB
 // about 848 GB, PS5 Pro 2 TB about 1,860 GB, Xbox Series X 1 TB about
 // 802 GB, Xbox Series S 512 GB about 364 GB.
+// Two more tools (Nov 2026): New Zealand trick (how many hours earlier
+// you can play, by country) and PC date (reported Q1 2027 window vs
+// Rockstar's history). Unlock times are from PlayStation/Xbox Store
+// listings (GTAVice read 63 countries' PS Store listings, Sep 2026;
+// Kotaku/NME reported) - Rockstar has NOT announced an unlock hour, so
+// they can change. NZ unlocks first at 11:00 UTC Wed 18 Nov 2026;
+// Mexico/Central America last at 06:00 UTC Thu 19 Nov. The USA and
+// Canada share ONE store time (midnight Eastern = 05:00 UTC Thu 19 Nov),
+// so the whole USA gains 18 hours. Pakistan has no PlayStation Store,
+// so its midnight-local time is the expected pattern and the unlock
+// follows the account's store region. PC: GamesBeat report 13 Oct 2026
+// (four anonymous sources) says Q1 2027; Rockstar declined to comment.
+// History (verified): GTA IV console 29 Apr 2008 -> PC 2 Dec 2008
+// (about 7 months); RDR2 console 26 Oct 2018 -> PC 5 Nov 2019 (about
+// 12 months); GTA V console 17 Sep 2013 -> PC 14 Apr 2015 (about
+// 19 months). Pachter (Wedbush, via BBC) about 6-7 months.
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, Typography, TextField, Box, MenuItem, ToggleButton, ToggleButtonGroup, Alert, Button, Checkbox, FormControlLabel, Table, TableBody, TableRow, TableCell } from '@mui/material';
 import { fmt, Hero, Rows } from './shared.jsx';
@@ -337,5 +353,97 @@ export function Gta6StorageTool() {
     {freeGb > 0 && (<><Hero value={fits ? fmt(left) + ' GB left' : fmt(-left) + ' GB short'} unit={fits ? 'free space after installing GTA 6' : 'more space needed for GTA 6'} eq={'GTA 6 needs 212 GB of your ' + fmt(freeGb) + ' GB free - ' + (fits ? 'it fits' : 'it does not fit')} /><Rows rows={[['Console', con.label + ' (' + con.advertised + ')'], ['Usable storage', 'about ' + fmt(con.usable) + ' GB'], ['Your free space', fmt(freeGb) + ' GB'], ['GTA 6 size', 'up to 212 GB'], [fits ? 'Space left after installing' : 'Shortfall', fmt(Math.abs(left)) + ' GB'], ['Share of your free space', share + '%']]} /></>)}
     {freeGb <= 0 && (<Typography variant="body2" color="text.secondary">Enter how much free space your console has, in GB.</Typography>)}
     <Box sx={{ mt: 2 }}><Button variant="outlined" component="a" href="/tools/gta-6-download-time-calculator/">How long will the 212 GB download take?</Button></Box>
+  </Wrap>);
+}
+
+// --- New Zealand trick ---
+// GTA 6 unlocks at midnight local time in each store region, so New
+// Zealand (11:00 UTC, Wed 18 Nov 2026) plays first and the last regions
+// (Mexico and Central America, 06:00 UTC Thu 19 Nov) play last. Unlock
+// times are from PlayStation/Xbox Store listings (GTAVice read 63
+// countries' PS Store listings, Sep 2026; Kotaku/NME reported) - Rockstar
+// has NOT announced an unlock hour, so they can change. The USA and
+// Canada share ONE store time (midnight Eastern = 05:00 UTC Thu 19 Nov),
+// so the whole USA gains 18 hours, not 21. Pakistan has no PlayStation
+// Store, so its midnight-local time is the expected pattern and the
+// unlock follows the account's store region (UAE account: 9 hours early,
+// US account: 18 hours early). Xbox = change console region (free,
+// quick to undo); PS5 = new NZ PSN account and buy the game again
+// (second copy).
+const NZ_UNLOCK = Date.parse('2026-11-18T11:00:00Z');
+const NZ_COUNTRIES = [
+  { id: 'pakistan', label: 'Pakistan', unlock: '2026-11-18T19:00:00Z', unlockLocal: 'Midnight, Thu 19 Nov (PKT)', nzLocal: '4:00 PM, Wed 18 Nov (PKT)', expected: true },
+  { id: 'usa', label: 'USA', unlock: '2026-11-19T05:00:00Z', unlockLocal: 'Midnight ET, Thu 19 Nov (9:00 PM PT Wed)', nzLocal: '6:00 AM ET / 3:00 AM PT, Wed 18 Nov' },
+  { id: 'uk', label: 'United Kingdom', unlock: '2026-11-19T00:00:00Z', unlockLocal: 'Midnight, Thu 19 Nov (GMT)', nzLocal: '11:00 AM, Wed 18 Nov' },
+  { id: 'canada', label: 'Canada', unlock: '2026-11-19T05:00:00Z', unlockLocal: 'Midnight ET, Thu 19 Nov (9:00 PM PT Wed)', nzLocal: '6:00 AM ET / 3:00 AM PT, Wed 18 Nov' },
+  { id: 'india', label: 'India', unlock: '2026-11-18T18:30:00Z', unlockLocal: 'Midnight, Thu 19 Nov (IST)', nzLocal: '4:30 PM, Wed 18 Nov' },
+  { id: 'uae', label: 'UAE', unlock: '2026-11-18T20:00:00Z', unlockLocal: 'Midnight, Thu 19 Nov (GST)', nzLocal: '3:00 PM, Wed 18 Nov' },
+  { id: 'saudi', label: 'Saudi Arabia', unlock: '2026-11-18T21:00:00Z', unlockLocal: 'Midnight, Thu 19 Nov (AST)', nzLocal: '2:00 PM, Wed 18 Nov' },
+  { id: 'australia', label: 'Australia', unlock: '2026-11-18T13:00:00Z', unlockLocal: 'Midnight, Thu 19 Nov (AEDT, Sydney/Melbourne)', nzLocal: '10:00 PM, Wed 18 Nov' },
+  { id: 'germany', label: 'Germany', unlock: '2026-11-18T23:00:00Z', unlockLocal: 'Midnight, Thu 19 Nov (CET)', nzLocal: '12:00 PM, Wed 18 Nov' },
+  { id: 'france', label: 'France', unlock: '2026-11-18T23:00:00Z', unlockLocal: 'Midnight, Thu 19 Nov (CET)', nzLocal: '12:00 PM, Wed 18 Nov' },
+  { id: 'brazil', label: 'Brazil', unlock: '2026-11-19T03:00:00Z', unlockLocal: 'Midnight, Thu 19 Nov (UTC−3)', nzLocal: '8:00 AM, Wed 18 Nov' },
+  { id: 'japan', label: 'Japan', unlock: '2026-11-18T15:00:00Z', unlockLocal: 'Midnight, Thu 19 Nov (JST)', nzLocal: '8:00 PM, Wed 18 Nov' },
+  { id: 'mexico', label: 'Mexico', unlock: '2026-11-19T06:00:00Z', unlockLocal: 'Midnight, Thu 19 Nov (CST)', nzLocal: '5:00 AM, Wed 18 Nov' },
+];
+export function Gta6NzTrickTool({ defaultCountry }) {
+  const [country, setCountry] = useState(defaultCountry || 'usa');
+  const [console, setConsole] = useState('xbox');
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
+  const c = NZ_COUNTRIES.find((x) => x.id === country) || NZ_COUNTRIES[0];
+  const hours = (Date.parse(c.unlock) - NZ_UNLOCK) / 3600000;
+  const hoursStr = fmt(hours);
+  const diff = Math.max(0, NZ_UNLOCK - now);
+  const out = diff <= 0;
+  const days = Math.floor(diff / 86400000);
+  const hrs = Math.floor((diff % 86400000) / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+  const secs = Math.floor((diff % 60000) / 1000);
+  const note = (c.expected ? 'Pakistan has no PlayStation Store, so this time is the midnight-local pattern and your unlock follows your account’s store region (a UAE account unlocks 9 hours early, a US account 18 hours early). ' : '') + 'Unlock times come from PlayStation and Xbox Store listings, not a Rockstar announcement, so they can change. On PS5 the trick needs a new New Zealand account and buying the game again - you pay twice, and it can break pre-order bonuses tied to your original store region. Rockstar has not commented on region switching.';
+  return (<Wrap note={note}>
+    <TextField select fullWidth label="Your country" value={country} onChange={(e) => setCountry(e.target.value)} sx={{ mb: 2 }}>{NZ_COUNTRIES.map((x) => (<MenuItem key={x.id} value={x.id}>{x.label}</MenuItem>))}</TextField>
+    <Typography variant="body2" color="text.secondary" gutterBottom>Your console</Typography>
+    <ToggleButtonGroup value={console} exclusive fullWidth onChange={(_, nv) => nv && setConsole(nv)} sx={{ mb: 2 }}><ToggleButton value="xbox">Xbox Series X|S</ToggleButton><ToggleButton value="ps5">PS5</ToggleButton></ToggleButtonGroup>
+    <Hero value={hoursStr + ' hours earlier'} unit={'with the New Zealand trick in ' + c.label} eq={out ? 'New Zealand unlocked at 11:00 UTC, Wed 18 Nov 2026' : 'New Zealand unlocks in ' + days + 'd ' + hrs + 'h ' + mins + 'm ' + secs + 's'} />
+    <Rows rows={[['Your country', c.label], ['Your normal unlock', c.unlockLocal + (c.expected ? ' (expected)' : '')], ['New Zealand unlock in your time', c.nzLocal], ['Hours earlier', hoursStr + ' hours'], ['How it works', console === 'xbox' ? 'Change your Xbox region to New Zealand' : 'New NZ PSN account + buy the game again']]} />
+    <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>How to do it on {console === 'xbox' ? 'Xbox' : 'PS5'}</Typography>
+    {console === 'xbox' ? (<Typography variant="body2" color="text.secondary">1. Buy GTA 6 and finish the pre-load (from 10 Nov). 2. On your Xbox go to Profile &amp; System, then Settings, System, Language &amp; Location. 3. Set the location to New Zealand and restart the console. 4. The game unlocks at New Zealand midnight. Change the location back after you start playing.</Typography>) : (<Typography variant="body2" color="text.secondary">1. Create a new PlayStation Network account set to New Zealand. 2. Buy GTA 6 again from the New Zealand PlayStation Store (in New Zealand dollars) and pre-load it from 10 Nov. 3. On the new account, turn on console sharing and offline play. 4. Play on the new account at the New Zealand unlock time. Your save lives on the new account, and you pay for the game twice.</Typography>)}
+    <Box sx={{ mt: 2 }}><Button variant="outlined" component="a" href="/tools/gta-6-release-date-countdown/">See the launch countdown</Button></Box>
+  </Wrap>);
+}
+
+// --- PC date ---
+// NO PC version announced. The only public timing is the GamesBeat
+// report (13 Oct 2026, Alexander Lee, four anonymous industry sources):
+// a Q1 2027 window (Jan-Mar 2027). Rockstar declined to comment.
+// Take-Two CEO Strauss Zelnick, 21 May 2026: "console only so far".
+// History (verified): GTA IV console 29 Apr 2008 -> PC 2 Dec 2008
+// (about 7 months); RDR2 console 26 Oct 2018 -> PC 5 Nov 2019 (about
+// 12 months); GTA V console 17 Sep 2013 -> PC 14 Apr 2015 (about
+// 19 months). Pachter (Wedbush, via BBC) about 6-7 months. GameSpot's
+// Q1 2028 is an informed guess, not a plan.
+const PC_WINDOW_OPEN = Date.parse('2027-01-01T00:00:00Z');
+const PC_HISTORY = [
+  ['GTA IV', '29 Apr 2008', '2 Dec 2008', 'about 7 months', 'Jun 2027'],
+  ['Red Dead Redemption 2', '26 Oct 2018', '5 Nov 2019', 'about 12 months', 'Nov 2027'],
+  ['GTA V', '17 Sep 2013', '14 Apr 2015', 'about 19 months', 'Jun 2028'],
+];
+export function Gta6PcDateTool() {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
+  const diff = Math.max(0, PC_WINDOW_OPEN - now);
+  const out = diff <= 0;
+  const days = Math.floor(diff / 86400000);
+  const hrs = Math.floor((diff % 86400000) / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+  const secs = Math.floor((diff % 60000) / 1000);
+  return (<Wrap note="This page will be updated the day Rockstar announces a real PC date. Analyst Michael Pachter (Wedbush, via BBC) expects about 6 to 7 months, which would mean around May to June 2027. GameSpot guessed Q1 2028 from history alone - that is an informed guess, not a plan. A PC version has not been announced, and no PC price, storefront or system requirements exist yet.">
+    <Alert severity="warning" sx={{ mb: 2 }}>REPORTED, not confirmed. Rockstar has not announced a PC version or a PC date. The Q1 2027 window comes from a GamesBeat report (13 October 2026, four anonymous sources). Rockstar declined to comment.</Alert>
+    <Hero value="Q1 2027" unit="reported PC window (Jan–Mar 2027)" eq={out ? 'The reported window has opened - check Rockstar for a real date' : days + ' days until the reported window opens (1 Jan 2027)'} />
+    <Rows rows={[['Reported window', 'Q1 2027 (1 Jan - 31 Mar 2027)'], ['Days after console launch', '43 to 132 days'], ['Source', 'GamesBeat, 13 Oct 2026 - four anonymous sources'], ['Rockstar’s response', 'Declined to comment - no PC date announced'], ['Take-Two CEO (21 May 2026)', '“Console only so far”'], ['PC price, storefront, specs', 'Not announced']]} />
+    <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>What Rockstar’s history says</Typography>
+    <Box sx={{ overflowX: 'auto' }}><Table size="small" sx={{ minWidth: 480 }}><TableBody><TableRow><TableCell sx={{ fontWeight: 700 }}>Game</TableCell><TableCell sx={{ fontWeight: 700 }}>Console</TableCell><TableCell sx={{ fontWeight: 700 }}>PC</TableCell><TableCell sx={{ fontWeight: 700 }}>Gap</TableCell><TableCell sx={{ fontWeight: 700 }}>Same gap = GTA 6 PC</TableCell></TableRow>{PC_HISTORY.map(([g, co, pc, gap, eq]) => (<TableRow key={g}><TableCell>{g}</TableCell><TableCell>{co}</TableCell><TableCell>{pc}</TableCell><TableCell>{gap}</TableCell><TableCell>{eq}</TableCell></TableRow>))}</TableBody></Table></Box>
+    <Box sx={{ mt: 2 }}><Button variant="outlined" component="a" href="/tools/can-my-pc-run-gta-6/">Can my PC run GTA 6?</Button></Box>
   </Wrap>);
 }
