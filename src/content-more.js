@@ -314,6 +314,57 @@ export const CONTENT_MORE = {
       ] } },
     { h: 'If GTA 6 does not fit', p: ['Delete a game you have finished. On PS5 you can add an M.2 SSD (Gen 4, 250 GB to 8 TB, 5,500 MB/s or faster recommended). On Xbox Series X|S you can add a storage expansion card.'] },
   ],
+  gta6nztick: [
+    { h: 'How the New Zealand trick works', p: [
+      'GTA 6 unlocks at midnight local time in each store region, so New Zealand plays first at 11:00 UTC on Wednesday 18 November 2026, and the last regions (Mexico and Central America) play last at 06:00 UTC on Thursday 19 November. Switching your console or account region to New Zealand makes the game unlock at New Zealand time.',
+      'How many hours earlier you play depends on your country: the USA and Canada gain 18 hours, the UK 13 hours, Germany and France 12 hours, the UAE 9 hours, Pakistan 8 hours, India 7.5 hours, Japan 4 hours and Australia 2 hours. Pick your country in the tool above for the exact number.',
+    ] },
+    { h: 'Xbox vs PS5 - the steps are different', p: [
+      'On Xbox Series X|S, change the console location to New Zealand (Profile & System, then Settings, System, Language & Location), restart the console, and the game unlocks at New Zealand midnight. It costs nothing and is quick to undo. You must already own the game and have finished the pre-load.',
+      'On PS5 there is no region switch. You need a new PlayStation Network account set to New Zealand, then buy GTA 6 again from the New Zealand PlayStation Store in New Zealand dollars and pre-load it from 10 November. Your save lives on the new account, and you pay for the game twice.',
+    ] },
+    { h: 'Warnings - read before you try it', p: [
+      'Unlock times come from PlayStation and Xbox Store listings, not a Rockstar announcement, so they can change. Rockstar has not commented on region switching, and the trick has worked for some Rockstar titles and not others.',
+      'On PS5, buying again can break pre-order bonuses tied to your original store region, including the Vintage Vice City Pack. Pakistan has no PlayStation Store, so the unlock follows your account’s store region: a UAE account unlocks 9 hours early, a US account 18 hours early.',
+    ], table: {
+      head: ['Country', 'Normal unlock (UTC)', 'Hours earlier'],
+      rows: [
+        ['Pakistan', '19:00, Wed 18 Nov', '8'],
+        ['USA', '05:00, Thu 19 Nov', '18'],
+        ['United Kingdom', '00:00, Thu 19 Nov', '13'],
+        ['Canada', '05:00, Thu 19 Nov', '18'],
+        ['India', '18:30, Wed 18 Nov', '7.5'],
+        ['UAE', '20:00, Wed 18 Nov', '9'],
+        ['Saudi Arabia', '21:00, Wed 18 Nov', '10'],
+        ['Australia', '13:00, Wed 18 Nov', '2'],
+        ['Germany', '23:00, Wed 18 Nov', '12'],
+        ['France', '23:00, Wed 18 Nov', '12'],
+        ['Brazil', '03:00, Thu 19 Nov', '16'],
+        ['Japan', '15:00, Wed 18 Nov', '4'],
+        ['Mexico', '06:00, Thu 19 Nov', '19'],
+      ] } },
+  ],
+  gta6pcdate: [
+    { h: 'The reported Q1 2027 window', p: [
+      'On 13 October 2026, GamesBeat reported that Rockstar plans to release GTA 6 on PC in Q1 2027 - January to March 2027 - citing four industry sources familiar with the studio’s plans, all anonymous. Rockstar declined to comment, and has said nothing about a PC version since.',
+      'If the window holds, PC players get the game 43 to 132 days after the 19 November 2026 console launch. No month, price, storefront or system requirements were named in the report.',
+    ] },
+    { h: 'What Rockstar and Take-Two have actually said', p: [
+      'Rockstar has announced GTA 6 only for PlayStation 5 and Xbox Series X|S, launching 19 November 2026. No PC version, date, storefront or price has been announced.',
+      'Take-Two CEO Strauss Zelnick said on 21 May 2026 that Rockstar has announced GTA 6 “for console only so far”. That is the only official word on PC.',
+    ] },
+    { h: 'What history says', p: [
+      'Rockstar has never released a major game on PC at the same time as consoles. The gaps are a matter of record: GTA IV took about 7 months, Red Dead Redemption 2 about 12 months, and GTA V about 19 months. The same gaps from 19 November 2026 land in June 2027, November 2027 and June 2028.',
+      'Analyst Michael Pachter (Wedbush, via BBC) expects about 6 to 7 months, which would mean around May to June 2027. GameSpot guessed Q1 2028 from history alone - that is an informed guess, not a plan.',
+    ], table: {
+      head: ['Game', 'Console launch', 'PC launch', 'Gap', 'Same gap = GTA 6 PC'],
+      rows: [
+        ['GTA IV', '29 Apr 2008', '2 Dec 2008', 'about 7 months', 'Jun 2027'],
+        ['Red Dead Redemption 2', '26 Oct 2018', '5 Nov 2019', 'about 12 months', 'Nov 2027'],
+        ['GTA V', '17 Sep 2013', '14 Apr 2015', 'about 19 months', 'Jun 2028'],
+      ] } },
+    { h: 'What to do while you wait', p: ['Check the Can My PC Run GTA 6 tool on this site for the predicted system requirements. This page will be updated the day Rockstar announces a real PC date.'] },
+  ],
   age: [
     { h: 'How age is calculated', p: [
       'The calculator counts full years, then months, then days from your date of birth to today, or to any date you choose. It also shows total days lived and days until your next birthday.',
