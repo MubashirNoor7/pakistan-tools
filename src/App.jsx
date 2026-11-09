@@ -297,13 +297,39 @@ export default function App() {
     else { document.title = 'Tool not found | Kalkio'; setMetaTag('description', 'That tool does not exist on Kalkio. Browse all 50 free tools on the home page.'); setCanonical(BASE_URL + '/'); setFaqJsonLd(null); }
   }, [route, cur]);
 
-  const footer = (<Box component="footer" sx={{ mt: 6, pt: 3, borderTop: '1px solid #E7E5E4', textAlign: 'center' }}>
-    <Typography variant="body2" color="text.secondary" gutterBottom sx={{ '& a': { color: 'primary.main' } }}>
-      <Link href="/about/" onClick={(e) => go(e, '/about/')}>About</Link>{' · '}
-      <Link href="/contact/" onClick={(e) => go(e, '/contact/')}>Contact</Link>{' · '}
-      <Link href="/privacy/" onClick={(e) => go(e, '/privacy/')}>Privacy Policy</Link>
-    </Typography>
-    <Typography variant="caption" color="text.secondary">Kalkio - free tools, no sign-up.</Typography>
+  // Footer category link: go home, open that category, scroll to it.
+  const goCategory = (e, name) => {
+    e.preventDefault();
+    if (route.kind !== 'home') navigate('/');
+    setOpenCat(name);
+    setTimeout(() => document.getElementById('categories')?.scrollIntoView({ behavior: 'smooth' }), 60);
+  };
+
+  const footer = (<Box component="footer" sx={{ mt: 6, pt: 4, pb: 2, borderTop: '1px solid #E7E5E4' }}>
+    <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', md: '2fr 1fr 1fr 1.5fr' } }}>
+      <Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+          <Box sx={{ bgcolor: 'primary.main', borderRadius: 2, p: 0.5, display: 'flex', color: 'white' }}><CalculateIcon /></Box>
+          <Typography variant="h6" fontWeight={800}>Kalkio</Typography>
+        </Box>
+        <Typography variant="body2" color="text.secondary">Free calculators and converters. No sign-up.</Typography>
+      </Box>
+      <Box>
+        <Typography variant="subtitle2" fontWeight={700} gutterBottom>Categories</Typography>
+        {CATEGORIES.map((c) => (<Typography key={c.name} variant="body2" sx={{ mb: 0.5 }}><Link href="/" onClick={(e) => goCategory(e, c.name)} underline="hover" color="text.secondary">{c.name}</Link></Typography>))}
+      </Box>
+      <Box>
+        <Typography variant="subtitle2" fontWeight={700} gutterBottom>Kalkio</Typography>
+        <Typography variant="body2" sx={{ mb: 0.5 }}><Link href="/about/" onClick={(e) => go(e, '/about/')} underline="hover" color="text.secondary">About</Link></Typography>
+        <Typography variant="body2" sx={{ mb: 0.5 }}><Link href="/contact/" onClick={(e) => go(e, '/contact/')} underline="hover" color="text.secondary">Contact</Link></Typography>
+        <Typography variant="body2" sx={{ mb: 0.5 }}><Link href="/privacy/" onClick={(e) => go(e, '/privacy/')} underline="hover" color="text.secondary">Privacy Policy</Link></Typography>
+      </Box>
+      <Box>
+        <Typography variant="subtitle2" fontWeight={700} gutterBottom>Contact</Typography>
+        <Typography variant="body2"><Link href="mailto:sammykhanmalng@gmail.com" underline="hover" color="text.secondary">sammykhanmalng@gmail.com</Link></Typography>
+      </Box>
+    </Box>
+    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3, pt: 2, borderTop: '1px solid #E7E5E4' }}>© 2026 Kalkio · Last updated 6 Nov 2026. · Tax, bill and fuel results are estimates.</Typography>
   </Box>);
 
   const notFound = (<Box sx={{ maxWidth: 720, mx: 'auto', py: 6 }}>
@@ -321,7 +347,7 @@ export default function App() {
   // Sticky white header: logo, search, nav. The search filters every tool;
   // typing shows the matches as cards in the main content below.
   const header = (<AppBar position="sticky" elevation={0} sx={{ bgcolor: '#fff', color: 'text.primary', borderBottom: '1px solid #E7E5E4' }}>
-    <Toolbar sx={{ gap: 2, flexWrap: 'wrap', py: 1 }}>
+    <Toolbar sx={{ gap: 2, flexWrap: 'wrap', py: 0.5, minHeight: 56 }}>
       <Box component="a" href="/" onClick={(e) => go(e, '/')} sx={{ display: 'flex', alignItems: 'center', gap: 1, textDecoration: 'none', color: 'inherit' }}>
         <Box sx={{ bgcolor: 'primary.main', borderRadius: 2, p: 0.5, display: 'flex', color: 'white' }}><CalculateIcon /></Box>
         <Typography variant="h6" fontWeight={800}>Kalkio</Typography>
@@ -347,10 +373,9 @@ export default function App() {
   </Box>);
 
   const homeView = (<>
-    <Box sx={{ textAlign: 'center', py: { xs: 5, md: 7 }, px: 1 }}>
-      <Typography variant="h3" component="h1" fontWeight={800} gutterBottom sx={{ fontSize: { xs: '2rem', md: '2.75rem' } }}>50 free calculators and converters.</Typography>
+    <Box sx={{ textAlign: 'center', py: { xs: 3, md: 4 }, px: 1 }}>
+      <Typography variant="h3" component="h1" fontWeight={800} gutterBottom sx={{ fontSize: { xs: '1.75rem', md: '2.25rem' } }}>50 free calculators and converters.</Typography>
       <Typography variant="h6" color="text.secondary" fontWeight={400} sx={{ maxWidth: 640, mx: 'auto' }}>From loan EMI and age to JPG to PDF and GTA 6 prices. Everything runs in your browser. No sign-up.</Typography>
-      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3 }}>Last updated 6 Nov 2026.</Typography>
     </Box>
     <Typography variant="body2" color="text.secondary" fontWeight={700} sx={{ mb: 1, textAlign: 'center' }}>Categories</Typography>
     <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 1, mb: 1, justifyContent: { xs: 'flex-start', md: 'center' } }}>
@@ -367,7 +392,6 @@ export default function App() {
     </Box>
     <Typography variant="h5" component="h2" fontWeight={800} sx={{ mt: 5 }} gutterBottom>❓ Common questions</Typography>
     {HOME_FAQS.map(([q, a]) => (<Accordion key={q} sx={{ mb: 1 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>{q}</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary">{a}</Typography></AccordionDetails></Accordion>))}
-    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3, textAlign: 'center' }}>Tax, bill and fuel results are estimates - confirm official rates before a financial decision.</Typography>
   </>);
 
   const toolView = cur && (<Box sx={{ maxWidth: 720, mx: 'auto', py: 4 }}>
