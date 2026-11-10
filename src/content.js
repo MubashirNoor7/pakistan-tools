@@ -4,7 +4,7 @@
 // from the same slabs/bands the tool uses (checked 5 Nov 2026).
 // Shape: { h: heading, p: [paragraphs], table?: { head: [...], rows: [[...]] } }
 // Date the guide content was last updated (shown under each tool title).
-export const CONTENT_UPDATED = '5 Nov 2026';
+export const CONTENT_UPDATED = '10 Nov 2026';
 export const CONTENT_BY_ID = {
   salarytax: [
     { h: 'Quick answer', p: [
@@ -246,7 +246,7 @@ export const CONTENT_BY_ID = {
   fuelavg: [
     { h: 'How to measure your fuel average', p: [
       'Fill the tank fully and note the odometer reading. Drive as usual. At the next fill-up, fill the tank fully again and note the odometer. The litres you added are the fuel used for the kilometres driven in between.',
-      'Fuel average in km per litre = distance travelled ÷ fuel used. The calculator also shows litres per 100 km and the fuel cost per kilometre.',
+      'Fuel average in km per litre = distance travelled ÷ fuel used. The calculator also shows litres per 100 km and the fuel cost per kilometre. The tool also works out your monthly fuel budget from your daily driving, and shows typical averages for Pakistan - a 660cc kei car does 18–22 km/L, a sedan 14–17 km/L and an SUV 9–12 km/L (PlanDrivo ranges).',
     ] },
     { h: 'Example', p: [
       'Driving 400 km and adding 32 litres gives 400 ÷ 32 = 12.5 km per litre, which is 8 litres per 100 km. At an example price of Rs 300 per litre (not today’s rate), the cost is Rs 24 per km.',
