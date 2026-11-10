@@ -41,7 +41,7 @@ export function FuelTool() {
   const [dist, setDist] = useState('100'); const [mile, setMile] = useState('12'); const [fuel, setFuel] = useState('petrol'); const [rate, setRate] = useState(String(RATES.petrol)); const [rateDate, setRateDate] = useState(RATES.fuelUpdated); const [fetched, setFetched] = useState(null); const [rateSrc, setRateSrc] = useState(RATES.fuelSource);
   useEffect(() => { fetch('/rates.json').then((r) => r.ok ? r.json() : null).then((j) => { if (j && j.petrol) { setFetched(j); setRate(String(j.petrol)); setRateDate(j.fuelUpdated || rateDate); setRateSrc(j.fuelSource || rateSrc); } }).catch(() => {}); }, []);
   const d = parseFloat(dist) || 0; const m = parseFloat(mile) || 0; const r = parseFloat(rate) || 0; const litres = m > 0 ? d / m : 0; const cost = litres * r;
-  return (<Wrap note="Fuel rates change often. Defaults are the 6 Nov 2026 OGRA notified rates (petrol Rs 352.59, diesel Rs 382.25), loaded from rates.json so they can be updated without rebuilding the app. Edit the rate to today's OGRA rate for an exact trip cost.">
+  return (<Wrap note="Fuel rates change often. Defaults are the 7 Nov 2026 OGRA notified rates (petrol Rs 346.00, diesel Rs 378.00), loaded from rates.json so they can be updated without rebuilding the app. Edit the rate to today's OGRA rate for an exact trip cost.">
     <ToggleButtonGroup value={fuel} exclusive fullWidth onChange={(_, nv) => { if (nv) { setFuel(nv); setRate(nv === 'petrol' ? String(fetched ? fetched.petrol : RATES.petrol) : String(fetched ? fetched.diesel : RATES.diesel)); } }} sx={{ mb: 2 }}><ToggleButton value="petrol">Petrol</ToggleButton><ToggleButton value="diesel">Diesel</ToggleButton></ToggleButtonGroup>
     <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Default rate date: {rateDate} - {rateSrc}. {fuelAgeDays(rateDate) > 15 ? 'Warning: this rate is more than 15 days old and may be out of date - enter today\'s OGRA rate.' : 'Rates are checked daily; if OGRA changes them, the default is updated from rates.json.'}</Typography>
     <TextField fullWidth label="Distance (km)" type="number" value={dist} onChange={(e) => setDist(e.target.value)} sx={{ mb: 2 }} />
@@ -54,13 +54,14 @@ export function FuelTool() {
 // Petrol Price Pakistan Today - today's OGRA petrol + diesel rates, with the
 // week's table. Rates come from RATES (built in) and /rates.json (live), the
 // same source the Fuel tools use, so the page stays current without a rebuild.
-// The week's table is the verified OGRA week 2-6 Nov 2026.
+// The week's table is the verified OGRA week 2-7 Nov 2026.
 const FUEL_WEEK = [
   ['Mon 2 Nov 2026', 'Rs 377.91', 'Rs 402.96'],
   ['Tue 3 Nov 2026', 'Rs 374.51', 'Rs 395.20'],
   ['Wed 4 Nov 2026', 'Rs 369.06', 'Rs 391.52'],
   ['Thu 5 Nov 2026', 'Rs 362.00', 'Rs 387.81'],
   ['Fri 6 Nov 2026', 'Rs 352.59', 'Rs 382.25'],
+  ['Sat 7 Nov 2026', 'Rs 346.00', 'Rs 378.00'],
 ];
 export function PetrolPriceTool() {
   const [rates, setRates] = useState(RATES);
@@ -70,7 +71,7 @@ export function PetrolPriceTool() {
     <Rows rows={[['Petrol (per litre)', 'Rs ' + fmt(rates.petrol)], ['Diesel (per litre)', 'Rs ' + fmt(rates.diesel)], ['Rate date', rates.fuelUpdated || RATES.fuelUpdated], ['Source', rates.fuelSource || RATES.fuelSource]]} />
     <Typography variant="h6" component="h2" fontWeight={700} sx={{ mt: 3, mb: 1 }}>This week's rates</Typography>
     <Rows rows={FUEL_WEEK.map(([d, p, ds]) => [d, 'Petrol ' + p + ' · Diesel ' + ds])} />
-    <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>Petrol fell Rs 25.32 a litre this week (Rs 377.91 on Monday to Rs 352.59 on Friday) - the fourth straight cut.</Typography>
+    <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>Petrol fell Rs 31.91 a litre this week (Rs 377.91 on Monday to Rs 346.00 on Saturday) and diesel fell Rs 24.96 (Rs 402.96 to Rs 378.00) - the fifth straight cut.</Typography>
     <Box sx={{ mt: 2 }}><Button variant="outlined" component="a" href="/tools/fuel-trip-cost-calculator-pakistan-ogra/">Work out a trip's fuel cost</Button></Box>
   </Wrap>);
 }

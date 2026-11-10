@@ -140,7 +140,7 @@ export function TokenTool() {
   </Wrap>);
 }
 export function ZakatTool() {
-  const [cash, setCash] = useState('500000'); const [goldG, setGoldG] = useState('20'); const [goldR, setGoldR] = useState('25000'); const [silG, setSilG] = useState('0'); const [silR, setSilR] = useState('3000'); const [stocks, setStocks] = useState('0'); const [debts, setDebts] = useState('0');
+  const [cash, setCash] = useState('500000'); const [goldG, setGoldG] = useState('20'); const [goldR, setGoldR] = useState('36754'); const [silG, setSilG] = useState('0'); const [silR, setSilR] = useState('511'); const [stocks, setStocks] = useState('0'); const [debts, setDebts] = useState('0');
   const total = (parseFloat(cash) || 0) + (parseFloat(goldG) || 0) * (parseFloat(goldR) || 0) + (parseFloat(silG) || 0) * (parseFloat(silR) || 0) + (parseFloat(stocks) || 0) - (parseFloat(debts) || 0);
   const goldNisabVal = 87.48 * (parseFloat(goldR) || 0); const silNisabVal = 612.36 * (parseFloat(silR) || 0);
   const nisabCands = [goldNisabVal, silNisabVal].filter((x) => x > 0); const nisab = nisabCands.length ? Math.min(...nisabCands) : 0;
@@ -152,6 +152,7 @@ export function ZakatTool() {
     <TextField fullWidth label="Gold rate (Rs per gram)" type="number" value={goldR} onChange={(e) => setGoldR(e.target.value)} sx={{ mb: 2 }} />
     <TextField fullWidth label="Silver (grams)" type="number" value={silG} onChange={(e) => setSilG(e.target.value)} sx={{ mb: 2 }} />
     <TextField fullWidth label="Silver rate (Rs per gram)" type="number" value={silR} onChange={(e) => setSilR(e.target.value)} sx={{ mb: 2 }} />
+    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Default rates are 10 Nov 2026 Sarafa benchmark: gold Rs 428,700 per tola (Rs 36,754 per gram), silver Rs 5,960 per tola (Rs 511 per gram). Rates change daily - edit to today's rate.</Typography>
     <TextField fullWidth label="Stocks / investments (Rs)" type="number" value={stocks} onChange={(e) => setStocks(e.target.value)} sx={{ mb: 2 }} />
     <TextField fullWidth label="Debts to pay (Rs)" type="number" value={debts} onChange={(e) => setDebts(e.target.value)} />
     {total > 0 && (<><Hero value={'Rs ' + fmt(zakat)} unit={belowNisab ? 'Zakat due - below nisab (Rs 0)' : 'Zakat due (2.5%)'} /><Rows rows={[['Total zakatable wealth', 'Rs ' + fmt(total)], ['Nisab threshold (lower of gold/silver)', nisab > 0 ? 'Rs ' + fmt(nisab) : '- (enter gold/silver rate)'], ['Gold nisab value (87.48g)', 'Rs ' + fmt(goldNisabVal)], ['Silver nisab value (612.36g)', 'Rs ' + fmt(silNisabVal)], ['Gold value', 'Rs ' + fmt((parseFloat(goldG) || 0) * (parseFloat(goldR) || 0))], ['Silver value', 'Rs ' + fmt((parseFloat(silG) || 0) * (parseFloat(silR) || 0))]]} /></>)}

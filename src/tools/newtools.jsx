@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, Typography, TextField, Box, MenuItem, ToggleButton, ToggleButtonGroup, Alert, Button } from '@mui/material';
 import { fmt, Hero, Rows } from './shared.jsx';
 import { salaryTax } from './tax.jsx';
+import { RATES } from '../rates.js';
 
 function Wrap({ children, note }) {
   return (<><Card elevation={2} sx={{ borderRadius: 3 }}><CardContent sx={{ p: 3 }}>{children}</CardContent></Card>{note && <Alert severity="info" sx={{ mt: 2 }}>{note}</Alert>}</>);
@@ -42,15 +43,15 @@ export function TaxSlabTool() {
   </Wrap>);
 }
 
-// Gold - 1 tola = 11.664 grams. Default 24K rate 6 Nov 2026: Rs 435,636 per tola
-// (All-Pakistan Sarafa Association; live-market sites the same day showed
-// Rs 427,598, so the rate is EDITABLE).
+// Gold - 1 tola = 11.664 grams. Default 24K rate 10 Nov 2026: Rs 428,700 per tola
+// (All-Pakistan Sarafa Association; live-market benchmark the same day showed
+// about Rs 427,300, so the rate is EDITABLE).
 export function GoldTool() {
-  const [tolaRate, setTolaRate] = useState('435636'); const [qty, setQty] = useState('1'); const [unit, setUnit] = useState('tola'); const [purity, setPurity] = useState('24');
+  const [tolaRate, setTolaRate] = useState('428700'); const [qty, setQty] = useState('1'); const [unit, setUnit] = useState('tola'); const [purity, setPurity] = useState('24');
   const rate = parseFloat(tolaRate) || 0; const q = parseFloat(qty) || 0; const purityF = { 24: 1, 22: 0.916, 21: 0.875, 18: 0.75 }[purity];
   const tolas = unit === 'tola' ? q : unit === 'gram' ? q / 11.664 : q * 10 / 11.664;
   const value = tolas * rate * purityF;
-  return (<Wrap note="Default rate is 6 Nov 2026, 24K Rs 435,636 per tola (Sarafa Association). Gold rates change daily and jewellers add making charges - edit the rate to today's sarafa rate for an exact value. This tool does NOT fetch live gold prices automatically.">
+  return (<Wrap note="Default rate is 10 Nov 2026, 24K Rs 428,700 per tola (Sarafa Association). Gold rates change daily and jewellers add making charges - edit the rate to today's sarafa rate for an exact value. This tool does NOT fetch live gold prices automatically.">
     <TextField fullWidth label="Gold rate - 24K, Rs per tola (editable)" type="number" value={tolaRate} onChange={(e) => setTolaRate(e.target.value)} sx={{ mb: 2 }} />
     <TextField select fullWidth label="Purity" value={purity} onChange={(e) => setPurity(e.target.value)} sx={{ mb: 2 }}>{['24', '22', '21', '18'].map((k) => (<MenuItem key={k} value={k}>{k} Karat</MenuItem>))}</TextField>
     <ToggleButtonGroup value={unit} exclusive fullWidth onChange={(_, nv) => nv && setUnit(nv)} sx={{ mb: 2 }}><ToggleButton value="tola">Tola</ToggleButton><ToggleButton value="gram">Gram</ToggleButton><ToggleButton value="10g">10 gram</ToggleButton></ToggleButtonGroup>
@@ -105,10 +106,11 @@ export function JpgToPdfTool() {
 
 // Fuel Average - km per litre, litres per 100 km, cost per km.
 export function FuelAverageTool() {
-  const [dist, setDist] = useState('100'); const [fuelUsed, setFuelUsed] = useState('8'); const [price, setPrice] = useState('352.59');
+  const [dist, setDist] = useState('100'); const [fuelUsed, setFuelUsed] = useState('8'); const [price, setPrice] = useState(String(RATES.petrol));
+  useEffect(() => { fetch('/rates.json').then((r) => r.ok ? r.json() : null).then((j) => { if (j && j.petrol) setPrice(String(j.petrol)); }).catch(() => {}); }, []);
   const d = parseFloat(dist) || 0; const fu = parseFloat(fuelUsed) || 0; const pr = parseFloat(price) || 0;
   const kmpl = fu > 0 ? d / fu : 0; const l100 = d > 0 ? fu / d * 100 : 0; const costKm = d > 0 ? fu * pr / d : 0;
-  return (<Wrap note="Fill the tank, note the kilometres, fill again - the fuel you added is the fuel used. Default fuel price is 6 Nov 2026 OGRA petrol Rs 352.59, editable.">
+  return (<Wrap note="Fill the tank, note the kilometres, fill again - the fuel you added is the fuel used. Default fuel price is the OGRA petrol rate (Rs 346.00, 7 Nov 2026), loaded from rates.json and editable.">
     <TextField fullWidth label="Distance travelled (km)" type="number" value={dist} onChange={(e) => setDist(e.target.value)} sx={{ mb: 2 }} />
     <TextField fullWidth label="Fuel used (litres)" type="number" value={fuelUsed} onChange={(e) => setFuelUsed(e.target.value)} sx={{ mb: 2 }} />
     <TextField fullWidth label="Fuel price (Rs per litre)" type="number" value={price} onChange={(e) => setPrice(e.target.value)} />
