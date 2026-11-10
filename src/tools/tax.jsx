@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Card, CardContent, Typography, TextField, Box, List, ListItem, ListItemText, Divider, MenuItem, ToggleButton, ToggleButtonGroup, Alert, FormControlLabel, Checkbox, Button } from '@mui/material';
+import { Card, CardContent, Typography, TextField, Box, List, ListItem, ListItemText, Divider, MenuItem, ToggleButton, ToggleButtonGroup, Alert, FormControlLabel, Checkbox, Button, Autocomplete } from '@mui/material';
 import { fmt, Hero, Rows, CommaInput } from './shared.jsx';
+import { PTA_MODELS } from './pta-models.js';
 
 // FBR salaried slabs 2026-27 (Finance Act 2026), verified from multiple published tables:
 // 0 to 600k, 1% to 1.2M, 11% to 2.2M (6,000+), 20% to 3.2M (116,000+), 25% to 4.1M (316,000+),
@@ -68,6 +69,8 @@ export function BpsTool() {
 // PTA 2026-27 - FIXED bands, not percentages (except sales tax). SRO 1064(I)/2026, Finance Act 2026.
 // Band: [max USD, RD, sales%, WHT filer, levy]
 // Non-filer WHT = double filer WHT. Customs value = USD x exchange rate. DIRBS final amount is authoritative.
+// Model values: PTA_MODELS from ./pta-models.js (FBR rulings VR 1999/2025, VR 1834/2023, VR 2070/2026;
+// 'projected' = Oraan estimates, NOT FBR values; 'unlisted' = no published FBR value, USD entered manually).
 const PTA_BANDS = [
   [30, 240, 18, 100, 100],
   [100, 2400, 18, 100, 200],
@@ -77,31 +80,24 @@ const PTA_BANDS = [
   [700, 17600, 25, 11500, 8000],
   [Infinity, 17600, 25, 11500, 16000],
 ];
-// Used-phone approximate customs values (USD) from FBR Valuation Ruling 1035/2035
-// as reported by PhoneWorld / legalpoint / taxationmaeasy. These are APPROXIMATE
-// used values - DIRBS assesses each exact model and the final PSID is authoritative.
-// Selecting a model only fills the USD field; the user can still edit it.
-const PTA_MODELS = [
-  { label: 'Custom / other phone - enter USD yourself', usd: '' },
-  { label: 'iPhone 15 Pro Max (used, ~$460)', usd: 460 },
-  { label: 'iPhone 15 Pro (used, ~$390)', usd: 390 },
-  { label: 'iPhone 15 Plus (used, ~$320)', usd: 320 },
-  { label: 'iPhone 15 (used, ~$310)', usd: 310 },
-  { label: 'Galaxy S23 Ultra (used, ~$160)', usd: 160 },
-  { label: 'Galaxy S23 Plus (used, ~$120)', usd: 120 },
-  { label: 'Galaxy S23 (used, ~$110)', usd: 110 },
-  { label: 'Galaxy S22 Ultra (used, ~$135)', usd: 135 },
-  { label: 'Galaxy S21 (used, ~$50)', usd: 50 },
-];
 export function PtaTool() {
-  const [model, setModel] = useState(''); const [usd, setUsd] = useState('500'); const [rate, setRate] = useState('280'); const [filer, setFiler] = useState('filer');
+  const [cond, setCond] = useState('new'); const [model, setModel] = useState(null); const [usd, setUsd] = useState('500'); const [rate, setRate] = useState('280'); const [filer, setFiler] = useState('filer');
+  const options = PTA_MODELS.filter((m) => cond === 'new' ? (m.kind === 'new' || m.kind === 'projected' || m.kind === 'unlisted') : m.kind === 'used');
+  const label = (m) => {
+    const base = m.brand + ' ' + m.model;
+    if (m.kind === 'unlisted') return base + ' — no official value';
+    return base + ' — $' + m.usd + (m.kind === 'projected' ? ' (Projected — estimate)' : m.kind === 'used' ? ' (Used)' : '');
+  };
   const u = parseFloat(usd) || 0; const customs = u * (parseFloat(rate) || 0);
   const band = PTA_BANDS.find(([max]) => u <= max) || PTA_BANDS[PTA_BANDS.length - 1];
   const [_, rd, salesPct, whtF, levy] = band; const wht = filer === 'filer' ? whtF : whtF * 2; const sales = customs * salesPct / 100; const total = rd + sales + wht + levy;
   return (<Wrap note="Estimate only - PTA tax is charged on FBR's assessed customs value for your exact model, not the shop price. Sales tax is 18% up to $500 and 25% above. All other charges are fixed rupee amounts by band (SRO 1064(I)/2026). Confirm the final PSID amount on DIRBS (dirbs.pta.gov.pk) before paying.">
-    <TextField select fullWidth label="Phone model" value={model} onChange={(e) => { setModel(e.target.value); const m = PTA_MODELS.find((x) => x.label === e.target.value); if (m && m.usd !== '') setUsd(String(m.usd)); }} sx={{ mb: 2 }}>{PTA_MODELS.map((m) => (<MenuItem key={m.label} value={m.label}>{m.label}</MenuItem>))}</TextField>
+    <ToggleButtonGroup value={cond} exclusive fullWidth onChange={(_, nv) => { if (nv) { setCond(nv); setModel(null); } }} sx={{ mb: 2 }}><ToggleButton value="new">New</ToggleButton><ToggleButton value="used">Used</ToggleButton></ToggleButtonGroup>
+    <Autocomplete fullWidth sx={{ mb: 2 }} options={options} value={model} onChange={(_, v) => { setModel(v); if (v && v.usd != null) setUsd(String(v.usd)); }} getOptionLabel={label} isOptionEqualToValue={(o, v) => o.brand === v.brand && o.model === v.model && o.usd === v.usd && o.kind === v.kind} filterOptions={(opts, state) => { const q = state.inputValue.trim().toLowerCase(); if (!q) return []; return opts.filter((m) => (m.brand + ' ' + m.model).toLowerCase().includes(q)).slice(0, 100); }} noOptionsText="Type a phone name to search" renderOption={(props, m) => (<li {...props} key={m.brand + '|' + m.model + '|' + m.usd + '|' + m.kind}>{label(m)}</li>)} renderInput={(params) => (<TextField {...params} label="Phone model — type to search" />)} />
+    {model && model.kind === 'projected' && (<Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Projected value — FBR has not valued this model yet. DIRBS final PSID is authoritative.</Typography>)}
+    {model && model.kind === 'unlisted' && (<Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>No official FBR value for this model yet — enter the USD value yourself.</Typography>)}
     <TextField fullWidth label="Phone customs value (USD) - editable" type="number" value={usd} onChange={(e) => setUsd(e.target.value)} sx={{ mb: 2 }} />
-    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Model values are used-phone approximate customs values. New phones and other models: enter the DIRBS assessed value here. DIRBS final PSID is authoritative, not this estimate.</Typography>
+    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Values are FBR-published customs values (new and used). Projected values are estimates. For models not listed, enter the DIRBS assessed value. DIRBS final PSID is authoritative.</Typography>
     <TextField fullWidth label="Exchange rate (Rs per USD)" type="number" value={rate} onChange={(e) => setRate(e.target.value)} sx={{ mb: 2 }} />
     <ToggleButtonGroup value={filer} exclusive fullWidth onChange={(_, nv) => nv && setFiler(nv)} sx={{ mb: 2 }}><ToggleButton value="filer">Filer (ATL)</ToggleButton><ToggleButton value="nonfiler">Non-filer (WHT double)</ToggleButton></ToggleButtonGroup>
     {u > 0 && (<><Hero value={'Rs ' + fmt(total)} unit="Total PTA tax (estimate)" /><Rows rows={[['Customs value', 'Rs ' + fmt(customs)], ['Regulatory Duty (fixed)', 'Rs ' + fmt(rd)], ['Sales Tax (' + salesPct + '%)', 'Rs ' + fmt(sales)], ['Income Tax / WHT', 'Rs ' + fmt(wht)], ['Handset Levy (fixed)', 'Rs ' + fmt(levy)]]} /></>)}
