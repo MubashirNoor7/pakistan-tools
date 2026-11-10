@@ -1,6 +1,6 @@
 # Kalkio
 
-Kalkio is a free website with 50 calculators and converters. Every tool runs in the visitor's browser - no sign-up, no account, no backend. File converters run fully in the browser and files are never uploaded to a server. Tax, bill and fuel results are estimates; official rates are final.
+Kalkio is a free website with 52 calculators and converters. Every tool runs in the visitor's browser - no sign-up, no account, no backend. File converters run fully in the browser and files are never uploaded to a server. Tax, bill and fuel results are estimates; official rates are final.
 
 Contact: sammykhanmalng@gmail.com
 
@@ -9,6 +9,7 @@ Contact: sammykhanmalng@gmail.com
 - Marla to Sq Ft Converter Pakistan (2026): https://kalkio.vercel.app/tools/marla-to-sq-ft-converter-pakistan/
 - Kanal to Marla Converter Pakistan: https://kalkio.vercel.app/tools/kanal-to-marla-converter-pakistan/
 - Plot Size Calculator: Length × Width to Marla: https://kalkio.vercel.app/tools/plot-size-calculator-length-width-to-marla/
+- Plot Price Calculator: Price per Marla, Kanal & Sq Ft: https://kalkio.vercel.app/tools/plot-price-per-marla-calculator/
 - Pakistan Salary Tax Calculator 2026-27: https://kalkio.vercel.app/tools/pakistan-salary-tax-calculator-2026-27/
 - BPS Salary Calculator Pakistan 2026-27: https://kalkio.vercel.app/tools/bps-salary-calculator-pakistan-2026-27/
 - PTA Tax Calculator Pakistan by Phone Model: https://kalkio.vercel.app/tools/pta-tax-calculator-pakistan-by-phone-model/
@@ -27,6 +28,7 @@ GTA 6 New Zealand Trick: Play Up to 19 Hours Early: https://kalkio.vercel.app/to
 GTA 6 PC Release Date: Reported Q1 2027 Window: https://kalkio.vercel.app/tools/gta-6-pc-release-date/
 - HEIC to JPG Converter Online (Free, Private): https://kalkio.vercel.app/tools/heic-to-jpg-converter-online/
 - WebP to JPG Converter Online Free: https://kalkio.vercel.app/tools/webp-to-jpg-converter-online/
+- JPG to WebP Converter Online (Free, Private): https://kalkio.vercel.app/tools/jpg-to-webp-converter-online/
 - Rent vs Buy Calculator Pakistan: https://kalkio.vercel.app/tools/rent-vs-buy-calculator-pakistan/
 - FBR Pakistan Tax Slab 2026-27: Which Slab Are You In?: https://kalkio.vercel.app/tools/pakistan-tax-slab-2026-27-which-slab-are-you-in/
 - Gold Price Pakistan Today: 1 Tola Calculator: https://kalkio.vercel.app/tools/gold-price-pakistan-today-1-tola-calculator/
