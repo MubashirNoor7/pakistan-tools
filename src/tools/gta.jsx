@@ -56,6 +56,25 @@ const COUNTRIES = {
   canada: { label: 'Canada', sym: 'C$', game: { standard: 109.99, ultimate: 139.99 } },
   pakistan: { label: 'Pakistan', sym: 'Rs ', game: null },
 };
+// Pre-order only: UK/EU store prices are verified (UK 69.99/89.99,
+// EU 79.99/99.99). Kept separate from COUNTRIES because the total-cost
+// tool has no UK/EU console prices.
+const PREORDER_COUNTRIES = {
+  ...COUNTRIES,
+  uk: { label: 'UK', sym: '£', game: { standard: 69.99, ultimate: 89.99 } },
+  eu: { label: 'Europe', sym: '€', game: { standard: 79.99, ultimate: 99.99 } },
+};
+// Price tool: Standard Edition by country (verified, audit 10 Nov 2026).
+// Ultimate shown only where officially listed; '—' means not verified.
+const PRICE_TABLE = [
+  ['USA', '$79.99', '$99.99'],
+  ['UK', '£69.99', '£89.99'],
+  ['Europe', '€79.99', '€99.99'],
+  ['Canada', 'C$109.99', 'C$139.99'],
+  ['Australia', 'A$129.95', '—'],
+  ['India', '₹5,999', '—'],
+  ['Japan', '¥9,800', '—'],
+];
 const EDITIONS = { standard: { label: 'Standard' }, ultimate: { label: 'Ultimate' } };
 const money = (sym, n, dec) => sym + fmt(dec ? Math.round(n * 100) / 100 : Math.round(n));
 function CountryPicker({ value, onChange }) {
@@ -82,34 +101,45 @@ export function Gta6PriceTool({ defaultCountry }) {
     {country !== 'pakistan' && (<><Hero value={money(c.sym, storePrice, true)} unit={'GTA 6 ' + EDITIONS[edition].label + ' Edition in ' + c.label + ' (before tax)'} eq={'Release date: 19 November 2026 - PS5 and Xbox Series X|S'} /><Rows rows={[['Edition', EDITIONS[edition].label + ' - ' + money(c.sym, storePrice, true)], ['Price before tax', money(c.sym, storePrice, true)], ['Tax', 'Added at checkout - varies by ' + (country === 'usa' ? 'state' : 'province')], ['Release date', '19 November 2026'], ['Platforms', 'PS5 and Xbox Series X|S']]} /></>)}
     {country === 'pakistan' && r > 0 && (<><Hero value={'Rs ' + fmt(Math.round(pkr))} unit={'GTA 6 ' + EDITIONS[edition].label + ' Edition in Pakistan'} eq={'$' + usd + ' × Rs ' + fmt(r) + ' per $1'} /><Rows rows={[['Edition', EDITIONS[edition].label + ' - $' + usd], ['Price in rupees', 'Rs ' + fmt(Math.round(pkr))], ['With bank charges (about 5%)', 'Rs ' + fmt(Math.round(withCharges))], ['Release date', '19 November 2026'], ['Platforms', 'PS5 and Xbox Series X|S']]} /></>)}
     {country === 'pakistan' && sal > 0 && (<Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>At a monthly salary of Rs {fmt(sal)}, the {EDITIONS[edition].label} Edition costs about {fmt(days)} days of your salary.</Typography>)}
+    <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>Price by country (official store prices)</Typography>
+    <Box sx={{ overflowX: 'auto' }}><Table size="small" sx={{ minWidth: 480 }}><TableBody><TableRow><TableCell sx={{ fontWeight: 700 }}>Country</TableCell><TableCell sx={{ fontWeight: 700 }}>Standard</TableCell><TableCell sx={{ fontWeight: 700 }}>Ultimate</TableCell></TableRow>{PRICE_TABLE.map(([co, s, u]) => (<TableRow key={co}><TableCell>{co}</TableCell><TableCell>{s}</TableCell><TableCell>{u}</TableCell></TableRow>))}</TableBody></Table></Box>
+    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>Tax is added at checkout in the USA and Canada. Ultimate prices are shown only where officially listed.</Typography>
     <Box sx={{ mt: 2 }}><Button variant="outlined" component="a" href="/tools/gta-6-download-time-calculator/">How long will the 212 GB download take?</Button></Box>
   </Wrap>);
 }
 
-const SPEEDS = ['10', '20', '50', '100'];
+const SPEEDS = ['10', '20', '50', '100', '300', '1000'];
+const EFFICIENCIES = [
+  { label: '100% - best case', value: 1 },
+  { label: '80% - typical', value: 0.8 },
+  { label: '60% - busy / slow', value: 0.6 },
+];
+const fmtTime = (secs) => { const totalMin = Math.round(secs / 60); const h = Math.floor(totalMin / 60); const m = totalMin % 60; return h > 0 ? h + 'h ' + m + 'm' : m + 'm'; };
 export function Gta6DownloadTool() {
   const [gb, setGb] = useState('212');
   const [speed, setSpeed] = useState('50');
+  const [eff, setEff] = useState(0.8);
   const g = parseFloat(gb) || 0;
   const s = parseFloat(speed) || 0;
-  const secs = s > 0 ? (g * 8 * 1000) / s : 0;
-  const h = Math.floor(secs / 3600);
-  const m = Math.round((secs % 3600) / 60);
-  const timeStr = secs > 0 ? (h > 0 ? h + 'h ' + m + 'm' : m + 'm') : '-';
-  return (<Wrap note="Download size is up to 212 GB (Rockstar, 3 November 2026). Pre-load starts 10 November 2026 and the game unlocks 19 November. Actual download time also depends on your connection and how busy the store servers are.">
+  const secs = s > 0 ? (g * 8 * 1000) / s / eff : 0;
+  const timeStr = secs > 0 ? fmtTime(secs) : '-';
+  return (<Wrap note="Download size is up to 212 GB (Rockstar, 3 November 2026). Pre-load starts 10 November 2026 and the game unlocks 19 November. The 100% figure is the theoretical best case — real downloads run slower. At 100 Mbps, 212 GB takes 4h 43m in theory but about 5h 53m at 80% efficiency.">
     <TextField fullWidth label="Download size (GB)" type="number" value={gb} onChange={(e) => setGb(e.target.value)} sx={{ mb: 2 }} />
     <Typography variant="body2" color="text.secondary" gutterBottom>Your internet speed (Mbps)</Typography>
     <ToggleButtonGroup value={speed} exclusive fullWidth onChange={(_, nv) => nv && setSpeed(nv)} sx={{ mb: 2 }}>{SPEEDS.map((v) => (<ToggleButton key={v} value={v}>{v} Mbps</ToggleButton>))}</ToggleButtonGroup>
     <TextField fullWidth label="Or type your speed (Mbps)" type="number" value={speed} onChange={(e) => setSpeed(e.target.value)} sx={{ mb: 2 }} />
-    {g > 0 && s > 0 && (<><Hero value={timeStr} unit={'to download ' + fmt(g) + ' GB at ' + fmt(s) + ' Mbps'} eq={fmt(Math.round(secs / 3600 * 10) / 10) + ' hours'} /><Rows rows={[['Download size', fmt(g) + ' GB'], ['Your speed', fmt(s) + ' Mbps'], ['Download time', timeStr], ['Pre-load starts', '10 November 2026'], ['Game unlocks', '19 November 2026']]} /></>)}
+    <Typography variant="body2" color="text.secondary" gutterBottom>Real-world efficiency (your speed is rarely 100%)</Typography>
+    <ToggleButtonGroup value={String(eff)} exclusive fullWidth onChange={(_, nv) => nv && setEff(parseFloat(nv))} sx={{ mb: 2 }}>{EFFICIENCIES.map((e) => (<ToggleButton key={e.value} value={String(e.value)}>{e.label}</ToggleButton>))}</ToggleButtonGroup>
+    {g > 0 && s > 0 && (<><Hero value={timeStr} unit={'to download ' + fmt(g) + ' GB at ' + fmt(s) + ' Mbps (' + Math.round(eff * 100) + '% efficiency)'} eq={fmt(Math.round(secs / 3600 * 10) / 10) + ' hours'} /><Rows rows={[['Download size', fmt(g) + ' GB'], ['Your speed', fmt(s) + ' Mbps'], ['Efficiency', Math.round(eff * 100) + '%'], ['Download time', timeStr], ['Pre-load starts', '10 November 2026'], ['Game unlocks', '19 November 2026']]} /></>)}
+    {g > 0 && (<><Typography variant="body2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>Download time by speed (at {Math.round(eff * 100)}% efficiency)</Typography>
+    <Box sx={{ overflowX: 'auto' }}><Table size="small" sx={{ minWidth: 480 }}><TableBody><TableRow><TableCell sx={{ fontWeight: 700 }}>Speed</TableCell><TableCell sx={{ fontWeight: 700 }}>Time for {fmt(g)} GB</TableCell></TableRow>{SPEEDS.map((v) => (<TableRow key={v}><TableCell>{v} Mbps</TableCell><TableCell>{fmtTime((g * 8 * 1000) / parseFloat(v) / eff)}</TableCell></TableRow>))}</TableBody></Table></Box></>)}
     <Box sx={{ mt: 2 }}><Button variant="outlined" component="a" href="/tools/gta-6-price/">How much is GTA 6?</Button></Box>
   </Wrap>);
 }
 
 // Countdown targets are midnight Eastern Time (New York / Toronto) - the
-// main US/Canada unlock moment. The unlock row and note show only the
-// country the visitor picked, so a USA/Canada visitor never sees the
-// Pakistan unlock time on this page.
+// main US/Canada unlock moment. The unlock table below reuses the 13
+// countries' unlock times from NZ_COUNTRIES (same file).
 const PRELOAD = Date.parse('2026-11-10T00:00:00-05:00');
 const LAUNCH = Date.parse('2026-11-19T00:00:00-05:00');
 export function Gta6CountdownTool({ defaultCountry }) {
@@ -136,6 +166,8 @@ export function Gta6CountdownTool({ defaultCountry }) {
     <CountryPicker value={country} onChange={setCountry} />
     <ToggleButtonGroup value={target} exclusive fullWidth onChange={(_, nv) => nv && setTarget(nv)} sx={{ mb: 2 }}><ToggleButton value="preload">Pre-load - 10 Nov</ToggleButton><ToggleButton value="launch">Launch - 19 Nov</ToggleButton></ToggleButtonGroup>
     {out ? (<Hero value={target === 'preload' ? 'Pre-load is open!' : 'GTA 6 is out!'} unit={target === 'preload' ? 'Pre-load opened 10 November 2026' : 'Released 19 November 2026 on PS5 and Xbox Series X|S'} />) : (<><Hero value={days + ' days'} unit={label} eq={hours + 'h ' + mins + 'm ' + secs + 's to go'} /><Rows rows={[['Pre-load starts', '10 November 2026'], ['Launch date', '19 November 2026'], [unlockLabel, unlockValue], ['Platforms', 'PS5 and Xbox Series X|S'], ['PC version', 'Not announced yet'], ['Disc in the box', 'No - download code only']]} /></>)}
+    <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>Unlock time by country</Typography>
+    <Box sx={{ overflowX: 'auto' }}><Table size="small" sx={{ minWidth: 480 }}><TableBody><TableRow><TableCell sx={{ fontWeight: 700 }}>Country</TableCell><TableCell sx={{ fontWeight: 700 }}>Unlocks (local time)</TableCell></TableRow>{NZ_COUNTRIES.map((x) => (<TableRow key={x.id}><TableCell>{x.label}</TableCell><TableCell>{x.unlockLocal}{x.expected ? ' (expected)' : ''}</TableCell></TableRow>))}</TableBody></Table></Box>
     <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>The countdown counts down to midnight Eastern Time (New York / Toronto) on {dateStr}.</Typography>
     <Box sx={{ mt: 2 }}><Button variant="outlined" component="a" href="/tools/gta-6-price/">How much is GTA 6?</Button></Box>
   </Wrap>);
@@ -147,7 +179,7 @@ const GPU_OPTS = [
   { label: 'GTX 1660 or older / RX 5600 XT or older', tier: 0 },
   { label: 'RTX 2060 / RTX 3060 / RX 5700 / RX 6600', tier: 1 },
   { label: 'RTX 3070 / RTX 4070 / RX 6700 XT / RX 7800 XT', tier: 2 },
-  { label: 'RTX 4080 / RTX 4090 / RX 7900 XTX', tier: 3 },
+  { label: 'RTX 4080 / RTX 4090 / RTX 5070 / RTX 5080 / RTX 5090 / RX 7900 XTX', tier: 3 },
 ];
 const CPU_OPTS = [
   { label: 'i5-9400 / Ryzen 5 3600 or older', tier: 0 },
@@ -182,7 +214,7 @@ export function Gta6PcCheckTool() {
   const minTier = Math.min(...parts.map(([, t]) => t));
   const weakest = parts.filter(([, t]) => t === minTier).map(([n]) => n).join(', ');
   const v = VERDICTS[minTier];
-  return (<Wrap note="Rockstar has not announced a PC version or official system specs. These are predicted specs from experts and the community, not official requirements. This page will be updated when Rockstar publishes official specs. The PC version is expected about a year after the console launch.">
+  return (<Wrap note="Rockstar has not announced a PC version or official system specs. These are predicted specs from experts and the community, not official requirements. This page will be updated when Rockstar publishes official specs. The reported PC window is Q1 2027 — 43 to 132 days after the 19 November 2026 console launch.">
     <TextField select fullWidth label="Graphics card (GPU)" value={gpu} onChange={(e) => setGpu(parseInt(e.target.value, 10))} sx={{ mb: 2 }}>{GPU_OPTS.map((o, i) => (<MenuItem key={i} value={i}>{o.label}</MenuItem>))}</TextField>
     <TextField select fullWidth label="Processor (CPU)" value={cpu} onChange={(e) => setCpu(parseInt(e.target.value, 10))} sx={{ mb: 2 }}>{CPU_OPTS.map((o, i) => (<MenuItem key={i} value={i}>{o.label}</MenuItem>))}</TextField>
     <TextField select fullWidth label="RAM" value={ram} onChange={(e) => setRam(parseInt(e.target.value, 10))} sx={{ mb: 2 }}>{RAM_OPTS.map((o, i) => (<MenuItem key={i} value={i}>{o.label}</MenuItem>))}</TextField>
@@ -261,6 +293,9 @@ export function Gta6TotalCostTool({ defaultCountry }) {
   const gameCharges = isPk ? gamePrice * 0.05 : 0;
   const extrasTotal = extraDefs.reduce((sum, e) => sum + (extras[e.key] ? (parseFloat(extraPrices[e.key]) || 0) : 0), 0);
   const total = cp + gamePrice + gameCharges + extrasTotal;
+  const gameStd = isPk ? 79.99 * r : c.game.standard;
+  const gameStdTotal = isPk ? gameStd * 1.05 : gameStd;
+  const combos = [{ label: 'Already own a console - game only', total: gameStdTotal }, ...consoles.map((co) => ({ label: co.label + ' + game', total: co.price + gameStdTotal }))].sort((a, b) => a.total - b.total);
   const changeCountry = (nc) => {
     setCountry(nc); setConsoleIdx(0); setConsolePrice(String(CONSOLES_BY_COUNTRY[nc][0].price));
     const ep = {}; EXTRAS_BY_COUNTRY[nc].forEach((e) => { ep[e.key] = String(e.price); }); setExtraPrices(ep);
@@ -278,6 +313,9 @@ export function Gta6TotalCostTool({ defaultCountry }) {
     <Typography variant="body2" color="text.secondary" gutterBottom>Optional extras (tick to add)</Typography>
     {extraDefs.map((e) => (<Box key={e.key} sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 1 }}><FormControlLabel control={<Checkbox checked={extras[e.key]} onChange={(ev) => setExtras({ ...extras, [e.key]: ev.target.checked })} />} label={e.label + (e.est ? ' (estimate)' : '')} sx={{ flexGrow: 1 }} /><TextField label={isPk ? 'Rs' : c.sym} type="number" size="small" value={extraPrices[e.key]} onChange={(ev) => setExtraPrices({ ...extraPrices, [e.key]: ev.target.value })} sx={{ width: 130 }} disabled={!extras[e.key]} /></Box>))}
     {cp > 0 && (isPk ? r > 0 : true) && (<><Hero value={money(c.sym, total, dec)} unit={'Total cost to play GTA 6 in ' + c.label + ' (' + consoles[consoleIdx].label + ' + ' + EDITIONS[edition].label + ')'} eq={'Console ' + money(c.sym, cp, dec) + ' + Game ' + money(c.sym, gamePrice, dec) + (gameCharges > 0 ? ' + charges ' + money(c.sym, gameCharges, dec) : '') + (extrasTotal > 0 ? ' + extras ' + money(c.sym, extrasTotal, dec) : '') + ' (before tax)'} /><Rows rows={[['Console', consoles[consoleIdx].label + ' - ' + money(c.sym, cp, dec)], ['Game (' + EDITIONS[edition].label + ')', money(c.sym, gamePrice, dec)], ['Bank charges on game', gameCharges > 0 ? money(c.sym, gameCharges, dec) + ' (about 5%)' : 'None - bought in the local store'], ['Extras', extrasTotal > 0 ? money(c.sym, extrasTotal, dec) : 'None'], ['Total (before tax)', money(c.sym, total, dec)]]} /></>)}
+    {cp > 0 && (isPk ? r > 0 : true) && (<><Typography variant="body2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>Cheapest way to play in {c.label} (Standard Edition, cheapest first)</Typography>
+    <Box sx={{ overflowX: 'auto' }}><Table size="small" sx={{ minWidth: 480 }}><TableBody><TableRow><TableCell sx={{ fontWeight: 700 }}>Way to play</TableCell><TableCell sx={{ fontWeight: 700 }}>Total</TableCell></TableRow>{combos.map((x) => (<TableRow key={x.label}><TableCell>{x.label}</TableCell><TableCell>{money(c.sym, x.total, dec)}</TableCell></TableRow>))}</TableBody></Table></Box>
+    <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>No PS Plus or Game Pass needed for single-player — only for online play. Used or refurbished consoles cost less: in the USA, a Series S goes from about $400.</Typography></>)}
     <Box sx={{ mt: 2 }}><Button variant="outlined" component="a" href="/tools/gta-6-price/">How much is GTA 6?</Button></Box>
   </Wrap>);
 }
@@ -302,7 +340,7 @@ export function Gta6PreorderTool({ defaultCountry }) {
   const [country, setCountry] = useState(defaultCountry || 'usa');
   const [edition, setEdition] = useState('standard');
   const [rate, setRate] = useState(String(USD_RATE));
-  const c = COUNTRIES[country];
+  const c = PREORDER_COUNTRIES[country];
   const isPk = country === 'pakistan';
   const usd = edition === 'standard' ? 79.99 : 99.99;
   const r = parseFloat(rate) || 0;
@@ -311,15 +349,20 @@ export function Gta6PreorderTool({ defaultCountry }) {
   const price = isPk ? 'Rs ' + fmt(Math.round(pkr)) : money(c.sym, c.game[edition], true);
   const note = isPk
     ? 'No official price in rupees - Pakistan has no PlayStation Store, so most players use a UAE or US account and pay in dollars. The rupee figure is an estimate at the rate you enter, plus about 5% bank charges. Ultimate is digital only. The Standard box holds a download code, not a disc.'
+    : (country === 'uk' || country === 'eu')
+    ? 'Prices are the official store prices. Ultimate is digital only. The Standard box holds a download code, not a disc.'
     : 'Prices are the official store prices before tax - tax is added at checkout and varies by state (USA) or province (Canada). Ultimate is digital only. The Standard box holds a download code, not a disc.';
   return (<Wrap note={note}>
-    <CountryPicker value={country} onChange={setCountry} />
+    <Typography variant="body2" color="text.secondary" gutterBottom>Country</Typography>
+    <ToggleButtonGroup value={country} exclusive fullWidth onChange={(_, nv) => nv && setCountry(nv)} sx={{ mb: 2 }}>{Object.entries(PREORDER_COUNTRIES).map(([k, v]) => (<ToggleButton key={k} value={k}>{v.label}</ToggleButton>))}</ToggleButtonGroup>
     <ToggleButtonGroup value={edition} exclusive fullWidth onChange={(_, nv) => nv && setEdition(nv)} sx={{ mb: 2 }}><ToggleButton value="standard">Standard - {isPk ? '$79.99' : money(c.sym, c.game.standard, true)}</ToggleButton><ToggleButton value="ultimate">Ultimate - {isPk ? '$99.99' : money(c.sym, c.game.ultimate, true)}</ToggleButton></ToggleButtonGroup>
     {isPk && (<TextField fullWidth label="USD to PKR rate (Rs per $1)" type="number" value={rate} onChange={(e) => setRate(e.target.value)} sx={{ mb: 2 }} />)}
-    {(!isPk || r > 0) && (<><Hero value={price} unit={'GTA 6 ' + EDITIONS[edition].label + ' Edition in ' + c.label + (isPk ? '' : ' (before tax)')} eq={'Pre-load opens 10 November 2026 - launch 19 November 2026'} /><Rows rows={[['Edition', EDITIONS[edition].label + ' - ' + price], ['Price' + (isPk ? ' in rupees' : ' before tax'), price], ...(isPk ? [['With bank charges (about 5%)', 'Rs ' + fmt(Math.round(withCharges))]] : []), ['Pre-load opens', '10 November 2026'], ['Launch date', '19 November 2026'], ['In the box', edition === 'ultimate' ? 'Digital only - no box' : 'Download code only - no disc'], ['Pre-order bonus', 'Vintage Vice City Pack if you buy before 20 Nov 2026' + (isPk ? '' : '; digital pre-order also gets 1 month of GTA+')]]} /></>)}
+    {(!isPk || r > 0) && (<><Hero value={price} unit={'GTA 6 ' + EDITIONS[edition].label + ' Edition in ' + c.label + ((isPk || country === 'uk' || country === 'eu') ? '' : ' (before tax)')} eq={'Pre-load opens 10 November 2026 - launch 19 November 2026'} /><Rows rows={[['Edition', EDITIONS[edition].label + ' - ' + price], ['Price' + (isPk ? ' in rupees' : (country === 'uk' || country === 'eu' ? '' : ' before tax')), price], ...(isPk ? [['With bank charges (about 5%)', 'Rs ' + fmt(Math.round(withCharges))]] : []), ['Pre-load opens', '10 November 2026'], ['Launch date', '19 November 2026'], ['In the box', edition === 'ultimate' ? 'Digital only - no box' : 'Download code only - no disc'], ['Pre-order bonus', 'Vintage Vice City Pack if you buy before 20 Nov 2026' + (isPk ? '' : '; digital pre-order also gets 1 month of GTA+')], ...(!isPk ? [['GTA+ (1 month, digital pre-order)', 'Claim by 31 Mar 2027 on PlayStation, within 180 days on Xbox']] : [])]} /></>)}
+    <Typography variant="body2" sx={{ mt: 2 }}>Ultimate Edition: 16 exclusive items. They unlock through the story, chapter by chapter — not all at once.</Typography>
     <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>What each edition includes</Typography>
     <Box sx={{ overflowX: 'auto' }}><Table size="small" sx={{ minWidth: 480 }}><TableBody><TableRow><TableCell sx={{ fontWeight: 700 }}>What you get</TableCell><TableCell sx={{ fontWeight: 700 }}>Standard</TableCell><TableCell sx={{ fontWeight: 700 }}>Ultimate</TableCell></TableRow>{EDITION_COMPARE.map(([item, s, u]) => (<TableRow key={item}><TableCell>{item}</TableCell><TableCell>{s}</TableCell><TableCell>{u}</TableCell></TableRow>))}</TableBody></Table></Box>
     <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>The $20 difference buys only the Ultimate Edition Upgrade content. The story, map and missions are the same in both editions. Standard owners can buy the upgrade separately later for $20 in the USA.</Typography>
+    <Alert severity="warning" sx={{ mt: 2 }}>The $399.99 Vice City Collection is a merch box, not a game edition — it does not include GTA 6.</Alert>
     <Box sx={{ mt: 2 }}><Button variant="outlined" component="a" href="/tools/gta-6-price/">How much is GTA 6?</Button></Box>
   </Wrap>);
 }
@@ -330,27 +373,35 @@ export function Gta6PreorderTool({ defaultCountry }) {
 // figures are the reported storage per model (Nov 2026): PS5 825 GB
 // about 667 GB, PS5 Slim 1 TB about 848 GB, PS5 Pro 2 TB about 1,860 GB,
 // Xbox Series X 1 TB about 802 GB, Xbox Series S 512 GB about 364 GB.
-const GTA_SIZE_GB = 212;
+// Xbox game size is 210 GB (209.86 GB, Microsoft Store catalog) vs PS5
+// 212 GB; day-one patch 15-50 GB + 10% margin means keep about 288 GB
+// free on PS5 and 286 GB on Xbox.
+// Game size differs by platform: PS5 212 GB, Xbox 210 GB (209.86 GB,
+// Microsoft Store catalog). Safety number: size + 15-50 GB day-one patch
+// + 10% margin = about 288 GB free on PS5, 286 GB on Xbox.
 const CONSOLE_STORAGE = [
-  { label: 'PS5 (original)', advertised: '825 GB', usable: 667 },
-  { label: 'PS5 Slim', advertised: '1 TB', usable: 848 },
-  { label: 'PS5 Pro', advertised: '2 TB', usable: 1860 },
-  { label: 'Xbox Series X', advertised: '1 TB', usable: 802 },
-  { label: 'Xbox Series S', advertised: '512 GB', usable: 364 },
+  { label: 'PS5 (original)', advertised: '825 GB', usable: 667, size: 212 },
+  { label: 'PS5 Slim', advertised: '1 TB', usable: 848, size: 212 },
+  { label: 'PS5 Pro', advertised: '2 TB', usable: 1860, size: 212 },
+  { label: 'Xbox Series X', advertised: '1 TB', usable: 802, size: 210 },
+  { label: 'Xbox Series S', advertised: '512 GB', usable: 364, size: 210 },
 ];
 export function Gta6StorageTool() {
   const [consoleIdx, setConsoleIdx] = useState(0);
   const [free, setFree] = useState(String(CONSOLE_STORAGE[0].usable));
   const con = CONSOLE_STORAGE[consoleIdx];
+  const size = con.size;
   const freeGb = parseFloat(free) || 0;
-  const left = freeGb - GTA_SIZE_GB;
+  const left = freeGb - size;
   const fits = left >= 0;
-  const share = freeGb > 0 ? Math.round((GTA_SIZE_GB / freeGb) * 100) : 0;
+  const safe = size === 210 ? 286 : 288;
+  const tier = freeGb >= 234 ? 'Fits with room' : freeGb >= size ? 'Tight - fits, but only just' : "Won't fit";
+  const share = freeGb > 0 ? Math.round((size / freeGb) * 100) : 0;
   const changeConsole = (i) => { setConsoleIdx(i); setFree(String(CONSOLE_STORAGE[i].usable)); };
-  return (<Wrap note="GTA 6 needs up to 212 GB (Rockstar, 3 November 2026). Usable storage is less than the advertised size because the system software takes a chunk. A day-one patch could add more, so leave some room on top of 212 GB. If it does not fit, delete a game or add storage: an M.2 SSD on PS5, a storage expansion card on Xbox Series X|S.">
+  return (<Wrap note="GTA 6 needs up to 212 GB on PS5 and 210 GB on Xbox (Rockstar, 3 November 2026). A day-one patch could add 15–50 GB, plus a 10% margin — so keep about 288 GB free on PS5 and 286 GB on Xbox. Usable storage is less than the advertised size because the system software takes a chunk. A USB drive cannot run GTA 6 — it can only store it; the game must run from the internal SSD (an M.2 SSD on PS5, a storage expansion card on Xbox). Check free space: PS5 Settings > Storage; Xbox Settings > System > Storage.">
     <TextField select fullWidth label="Your console" value={consoleIdx} onChange={(e) => changeConsole(parseInt(e.target.value, 10))} sx={{ mb: 2 }}>{CONSOLE_STORAGE.map((co, i) => (<MenuItem key={i} value={i}>{co.label} ({co.advertised})</MenuItem>))}</TextField>
     <TextField fullWidth label="Free space on your console (GB)" type="number" value={free} onChange={(e) => setFree(e.target.value)} sx={{ mb: 2 }} />
-    {freeGb > 0 && (<><Hero value={fits ? fmt(left) + ' GB left' : fmt(-left) + ' GB short'} unit={fits ? 'free space after installing GTA 6' : 'more space needed for GTA 6'} eq={'GTA 6 needs 212 GB of your ' + fmt(freeGb) + ' GB free - ' + (fits ? 'it fits' : 'it does not fit')} /><Rows rows={[['Console', con.label + ' (' + con.advertised + ')'], ['Usable storage', 'about ' + fmt(con.usable) + ' GB'], ['Your free space', fmt(freeGb) + ' GB'], ['GTA 6 size', 'up to 212 GB'], [fits ? 'Space left after installing' : 'Shortfall', fmt(Math.abs(left)) + ' GB'], ['Share of your free space', share + '%']]} /></>)}
+    {freeGb > 0 && (<><Hero value={tier} unit={fits ? fmt(left) + ' GB left after installing GTA 6' : fmt(-left) + ' GB short of GTA 6'} eq={'GTA 6 needs ' + fmt(size) + ' GB of your ' + fmt(freeGb) + ' GB free'} /><Rows rows={[['Console', con.label + ' (' + con.advertised + ')'], ['Usable storage', 'about ' + fmt(con.usable) + ' GB'], ['Your free space', fmt(freeGb) + ' GB'], ['GTA 6 size on this console', 'up to ' + fmt(size) + ' GB'], ['Verdict', tier], ['Keep free to be safe', 'about ' + fmt(safe) + ' GB (game + day-one patch + 10% margin)'], [fits ? 'Space left after installing' : 'Shortfall', fmt(Math.abs(left)) + ' GB'], ['Share of your free space', share + '%']]} /></>)}
     {freeGb <= 0 && (<Typography variant="body2" color="text.secondary">Enter how much free space your console has, in GB.</Typography>)}
     <Box sx={{ mt: 2 }}><Button variant="outlined" component="a" href="/tools/gta-6-download-time-calculator/">How long will the 212 GB download take?</Button></Box>
   </Wrap>);
@@ -402,13 +453,14 @@ export function Gta6NzTrickTool({ defaultCountry }) {
   const secs = Math.floor((diff % 60000) / 1000);
   const note = (c.expected ? 'Pakistan has no PlayStation Store, so this time is the midnight-local pattern and your unlock follows your account’s store region (a UAE account unlocks 9 hours early, a US account 18 hours early). ' : '') + 'Unlock times come from PlayStation and Xbox Store listings, not a Rockstar announcement, so they can change. On PS5 the trick needs a new New Zealand account and buying the game again - you pay twice, and it can break pre-order bonuses tied to your original store region. Rockstar has not commented on region switching.';
   return (<Wrap note={note}>
+    <Alert severity="warning" sx={{ mb: 2 }}>Untested for GTA 6 — nobody has shown this trick works for this game yet. And anyone selling “early access” is a scam — there is no early access to sell.</Alert>
     <TextField select fullWidth label="Your country" value={country} onChange={(e) => setCountry(e.target.value)} sx={{ mb: 2 }}>{NZ_COUNTRIES.map((x) => (<MenuItem key={x.id} value={x.id}>{x.label}</MenuItem>))}</TextField>
     <Typography variant="body2" color="text.secondary" gutterBottom>Your console</Typography>
     <ToggleButtonGroup value={console} exclusive fullWidth onChange={(_, nv) => nv && setConsole(nv)} sx={{ mb: 2 }}><ToggleButton value="xbox">Xbox Series X|S</ToggleButton><ToggleButton value="ps5">PS5</ToggleButton></ToggleButtonGroup>
     <Hero value={hoursStr + ' hours earlier'} unit={'with the New Zealand trick in ' + c.label} eq={out ? 'New Zealand unlocked at 11:00 UTC, Wed 18 Nov 2026' : 'New Zealand unlocks in ' + days + 'd ' + hrs + 'h ' + mins + 'm ' + secs + 's'} />
     <Rows rows={[['Your country', c.label], ['Your normal unlock', c.unlockLocal + (c.expected ? ' (expected)' : '')], ['New Zealand unlock in your time', c.nzLocal], ['Hours earlier', hoursStr + ' hours'], ['How it works', console === 'xbox' ? 'Change your Xbox region to New Zealand' : 'New NZ PSN account + buy the game again']]} />
     <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>How to do it on {console === 'xbox' ? 'Xbox' : 'PS5'}</Typography>
-    {console === 'xbox' ? (<Typography variant="body2" color="text.secondary">1. Buy GTA 6 and finish the pre-load (from 10 Nov). 2. On your Xbox go to Profile &amp; System, then Settings, System, Language &amp; Location. 3. Set the location to New Zealand and restart the console. 4. The game unlocks at New Zealand midnight. Change the location back after you start playing.</Typography>) : (<Typography variant="body2" color="text.secondary">1. Create a new PlayStation Network account set to New Zealand. 2. Buy GTA 6 again from the New Zealand PlayStation Store (in New Zealand dollars) and pre-load it from 10 Nov. 3. On the new account, turn on console sharing and offline play. 4. Play on the new account at the New Zealand unlock time. Your save lives on the new account, and you pay for the game twice.</Typography>)}
+    {console === 'xbox' ? (<Typography variant="body2" color="text.secondary">1. Buy GTA 6 and finish the pre-load (from 10 Nov). 2. On your Xbox go to Profile &amp; System, then Settings, System, Language &amp; Location. 3. Set the location to New Zealand and restart the console. 4. The game unlocks at New Zealand midnight. Change the location back after you start playing.</Typography>) : (<Typography variant="body2" color="text.secondary">1. Create a new PlayStation Network account set to New Zealand. 2. Buy GTA 6 again from the New Zealand PlayStation Store (in New Zealand dollars) and pre-load it from 10 Nov. 3. On the new account, turn on console sharing and offline play. 4. Play on the new account at the New Zealand unlock time. Your save lives on the new account, and you pay for the game twice. Foreign cards often fail on the New Zealand store, so most players pay with New Zealand PlayStation gift cards.</Typography>)}
     <Box sx={{ mt: 2 }}><Button variant="outlined" component="a" href="/tools/gta-6-release-date-countdown/">See the launch countdown</Button></Box>
   </Wrap>);
 }
@@ -429,6 +481,12 @@ const PC_HISTORY = [
   ['Red Dead Redemption 2', '26 Oct 2018', '5 Nov 2019', 'about 12 months', 'Nov 2027'],
   ['GTA V', '17 Sep 2013', '14 Apr 2015', 'about 19 months', 'Jun 2028'],
 ];
+const PC_WINDOWS = [
+  ['Q1 2027', 'GamesBeat, 13 Oct 2026', 'Reported — four anonymous sources'],
+  ['May–Jun 2027', 'Michael Pachter, Wedbush (via BBC)', 'Analyst estimate — about 6–7 months after launch'],
+  ['Q1 2028', 'GameSpot', 'Informed guess from history, not a plan'],
+  ['No date', 'Rockstar / Take-Two', 'Official — no PC version announced'],
+];
 export function Gta6PcDateTool() {
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
@@ -439,11 +497,14 @@ export function Gta6PcDateTool() {
   const mins = Math.floor((diff % 3600000) / 60000);
   const secs = Math.floor((diff % 60000) / 1000);
   return (<Wrap note="This page will be updated the day Rockstar announces a real PC date. Analyst Michael Pachter (Wedbush, via BBC) expects about 6 to 7 months, which would mean around May to June 2027. GameSpot guessed Q1 2028 from history alone - that is an informed guess, not a plan. A PC version has not been announced, and no PC price, storefront or system requirements exist yet.">
+    <Alert severity="error" sx={{ mb: 2 }}>Any GTA 6 PC download site is fake — there is no PC version to download yet. Do not download anything claiming to be GTA 6 for PC.</Alert>
     <Alert severity="warning" sx={{ mb: 2 }}>REPORTED, not confirmed. Rockstar has not announced a PC version or a PC date. The Q1 2027 window comes from a GamesBeat report (13 October 2026, four anonymous sources). Rockstar declined to comment.</Alert>
     <Hero value="Q1 2027" unit="reported PC window (Jan–Mar 2027)" eq={out ? 'The reported window has opened - check Rockstar for a real date' : days + ' days until the reported window opens (1 Jan 2027)'} />
     <Rows rows={[['Reported window', 'Q1 2027 (1 Jan - 31 Mar 2027)'], ['Days after console launch', '43 to 132 days'], ['Source', 'GamesBeat, 13 Oct 2026 - four anonymous sources'], ['Rockstar’s response', 'Declined to comment - no PC date announced'], ['Take-Two CEO (21 May 2026)', '“Console only so far”'], ['PC price, storefront, specs', 'Not announced']]} />
     <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>What Rockstar’s history says</Typography>
     <Box sx={{ overflowX: 'auto' }}><Table size="small" sx={{ minWidth: 480 }}><TableBody><TableRow><TableCell sx={{ fontWeight: 700 }}>Game</TableCell><TableCell sx={{ fontWeight: 700 }}>Console</TableCell><TableCell sx={{ fontWeight: 700 }}>PC</TableCell><TableCell sx={{ fontWeight: 700 }}>Gap</TableCell><TableCell sx={{ fontWeight: 700 }}>Same gap = GTA 6 PC</TableCell></TableRow>{PC_HISTORY.map(([g, co, pc, gap, eq]) => (<TableRow key={g}><TableCell>{g}</TableCell><TableCell>{co}</TableCell><TableCell>{pc}</TableCell><TableCell>{gap}</TableCell><TableCell>{eq}</TableCell></TableRow>))}</TableBody></Table></Box>
+    <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>Every claimed PC window, side by side</Typography>
+    <Box sx={{ overflowX: 'auto' }}><Table size="small" sx={{ minWidth: 480 }}><TableBody><TableRow><TableCell sx={{ fontWeight: 700 }}>Window</TableCell><TableCell sx={{ fontWeight: 700 }}>Who said it</TableCell><TableCell sx={{ fontWeight: 700 }}>Status</TableCell></TableRow>{PC_WINDOWS.map(([w, who, st]) => (<TableRow key={w}><TableCell>{w}</TableCell><TableCell>{who}</TableCell><TableCell>{st}</TableCell></TableRow>))}</TableBody></Table></Box>
     <Box sx={{ mt: 2 }}><Button variant="outlined" component="a" href="/tools/can-my-pc-run-gta-6/">Can my PC run GTA 6?</Button></Box>
   </Wrap>);
 }

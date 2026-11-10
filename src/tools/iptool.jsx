@@ -6,36 +6,98 @@ function Wrap({ children, note }) {
 }
 
 // What's My IP - shows the visitor's public IP address, location and ISP.
-// The IP is fetched in the visitor's browser from a public IP service
-// (ipapi.co, with ipify.org as fallback). Kalkio does not store the IP.
+// The IP is fetched in the visitor's browser from a public IP service:
+// ipapi.co first, ipwho.is as a second full-data fallback (no key needed),
+// ipify.org last with IP only. Kalkio does not store the IP.
+// ASN, coordinates and the IPv4/IPv6 label come from the same lookup;
+// the hostname comes from a reverse-DNS (PTR) lookup, best effort -
+// most IPs have no PTR record, so a miss just means no hostname shown.
+
+// Shape every lookup into the same fields, whichever service answered.
+function normalizeIpapi(j) {
+  return { ip: j.ip || '', city: [j.city, j.region].filter(Boolean).join(', '), country: j.country_name || '', org: j.org || '', tz: j.timezone || '', asn: j.asn || '', version: j.version || '', lat: j.latitude, lon: j.longitude };
+}
+function normalizeIpwho(j) {
+  const c = j.connection || {};
+  const t = j.timezone || {};
+  return { ip: j.ip || '', city: [j.city, j.region].filter(Boolean).join(', '), country: j.country || '', org: c.isp || c.org || '', tz: t.id || '', asn: c.asn ? 'AS' + c.asn : '', version: j.type || '', lat: j.latitude, lon: j.longitude };
+}
+
+// Reverse-DNS name for an IP, for a PTR lookup over DNS-over-HTTPS.
+function reverseName(ip) {
+  if (ip.includes(':')) {
+    // IPv6: expand :: to 8 groups, split into nibbles, reverse, add .ip6.arpa
+    const parts = ip.split('::');
+    const head = parts[0] ? parts[0].split(':') : [];
+    const tail = parts[1] ? parts[1].split(':') : [];
+    const missing = 8 - head.length - tail.length;
+    const groups = [...head, ...Array(Math.max(0, missing)).fill('0'), ...tail];
+    return groups.map((g) => g.padStart(4, '0')).join('').split('').reverse().join('.') + '.ip6.arpa';
+  }
+  return ip.split('.').reverse().join('.') + '.in-addr.arpa';
+}
+
+async function fetchHostname(ip) {
+  try {
+    const r = await fetch('https://dns.google/resolve?name=' + encodeURIComponent(reverseName(ip)) + '&type=PTR');
+    if (!r.ok) return '';
+    const j = await r.json();
+    const ans = (j.Answer || []).find((a) => a.type === 12);
+    return ans && ans.data ? String(ans.data).replace(/\.$/, '') : '';
+  } catch { return ''; }
+}
+
 export function WhatsMyIpTool() {
   const [ip, setIp] = useState('');
   const [city, setCity] = useState('');
   const [country, setCountry] = useState('');
   const [org, setOrg] = useState('');
   const [tz, setTz] = useState('');
+  const [asn, setAsn] = useState('');
+  const [version, setVersion] = useState('');
+  const [coords, setCoords] = useState('');
+  const [hostname, setHostname] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true); setError(''); setCopied(false);
+    setHostname(''); setAsn(''); setVersion(''); setCoords('');
+    let data = null;
     try {
       const r = await fetch('https://ipapi.co/json/');
       if (!r.ok) throw new Error('ipapi failed');
       const j = await r.json();
       if (!j.ip) throw new Error('no ip');
-      setIp(j.ip); setCity([j.city, j.region].filter(Boolean).join(', ')); setCountry(j.country_name || ''); setOrg(j.org || ''); setTz(j.timezone || '');
+      data = normalizeIpapi(j);
     } catch {
       try {
-        const r2 = await fetch('https://api.ipify.org?format=json');
-        if (!r2.ok) throw new Error('ipify failed');
+        const r2 = await fetch('https://ipwho.is/');
+        if (!r2.ok) throw new Error('ipwho failed');
         const j2 = await r2.json();
-        setIp(j2.ip || ''); setCity(''); setCountry(''); setOrg(''); setTz('');
-        if (!j2.ip) throw new Error('no ip');
+        if (!j2.ip || j2.success === false) throw new Error('no ip');
+        data = normalizeIpwho(j2);
       } catch {
-        setError('Could not fetch your IP. Check your connection and try again.');
+        try {
+          const r3 = await fetch('https://api.ipify.org?format=json');
+          if (!r3.ok) throw new Error('ipify failed');
+          const j3 = await r3.json();
+          if (!j3.ip) throw new Error('no ip');
+          data = { ip: j3.ip, city: '', country: '', org: '', tz: '', asn: '', version: '', lat: undefined, lon: undefined };
+        } catch {
+          setError('Could not fetch your IP. Check your connection and try again.');
+        }
       }
+    }
+    if (data) {
+      setIp(data.ip); setCity(data.city); setCountry(data.country); setOrg(data.org); setTz(data.tz);
+      setAsn(data.asn);
+      setVersion(data.version || (data.ip.includes(':') ? 'IPv6' : 'IPv4'));
+      setCoords(typeof data.lat === 'number' && typeof data.lon === 'number' ? data.lat.toFixed(4) + ', ' + data.lon.toFixed(4) : '');
+      // Hostname lookup runs on its own - the result shows without it if
+      // there is no PTR record or the lookup fails.
+      fetchHostname(data.ip).then((h) => { if (h) setHostname(h); });
     }
     setLoading(false);
   }, []);
@@ -55,11 +117,15 @@ export function WhatsMyIpTool() {
       <Box textAlign="center" sx={{ py: 2 }}>
         <Typography variant="body2" color="text.secondary">Your public IP address</Typography>
         <Typography variant="h3" fontWeight={800} sx={{ wordBreak: 'break-all' }}>{ip}</Typography>
+        {version && <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>{version}</Typography>}
         {city && <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>{city}{country ? `, ${country}` : ''}</Typography>}
       </Box>
-      {(org || tz) && (
+      {(org || tz || asn || hostname || coords) && (
         <Box sx={{ mt: 1 }}>
           {org && <Typography variant="body2" color="text.secondary" gutterBottom>Internet provider: {org}</Typography>}
+          {asn && <Typography variant="body2" color="text.secondary" gutterBottom>Network (ASN): {asn}</Typography>}
+          {hostname && <Typography variant="body2" color="text.secondary" gutterBottom>Hostname: {hostname}</Typography>}
+          {coords && <Typography variant="body2" color="text.secondary" gutterBottom>Coordinates: {coords}</Typography>}
           {tz && <Typography variant="body2" color="text.secondary">Time zone: {tz}</Typography>}
         </Box>
       )}

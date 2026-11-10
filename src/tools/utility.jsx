@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { RATES, fuelAgeDays } from '../rates.js';
-import { Card, CardContent, Typography, TextField, Box, MenuItem, ToggleButton, ToggleButtonGroup, Alert, Button, Link } from '@mui/material';
+import { Card, CardContent, Typography, TextField, Box, MenuItem, ToggleButton, ToggleButtonGroup, Alert, Button, Link, Slider } from '@mui/material';
 import { fmt, Hero, Rows } from './shared.jsx';
 
 function Wrap({ children, note }) {
@@ -38,16 +38,17 @@ export function ElectricityTool() {
   </Wrap>);
 }
 export function FuelTool() {
-  const [dist, setDist] = useState('100'); const [mile, setMile] = useState('12'); const [fuel, setFuel] = useState('petrol'); const [rate, setRate] = useState(String(RATES.petrol)); const [rateDate, setRateDate] = useState(RATES.fuelUpdated); const [fetched, setFetched] = useState(null); const [rateSrc, setRateSrc] = useState(RATES.fuelSource);
+  const [dist, setDist] = useState('100'); const [mile, setMile] = useState('12'); const [fuel, setFuel] = useState('petrol'); const [rate, setRate] = useState(String(RATES.petrol)); const [rateDate, setRateDate] = useState(RATES.fuelUpdated); const [fetched, setFetched] = useState(null); const [rateSrc, setRateSrc] = useState(RATES.fuelSource); const [roundTrip, setRoundTrip] = useState(false);
   useEffect(() => { fetch('/rates.json').then((r) => r.ok ? r.json() : null).then((j) => { if (j && j.petrol) { setFetched(j); setRate(String(j.petrol)); setRateDate(j.fuelUpdated || rateDate); setRateSrc(j.fuelSource || rateSrc); } }).catch(() => {}); }, []);
-  const d = parseFloat(dist) || 0; const m = parseFloat(mile) || 0; const r = parseFloat(rate) || 0; const litres = m > 0 ? d / m : 0; const cost = litres * r;
+  const d = parseFloat(dist) || 0; const m = parseFloat(mile) || 0; const r = parseFloat(rate) || 0; const effD = roundTrip ? d * 2 : d; const litres = m > 0 ? effD / m : 0; const cost = litres * r;
   return (<Wrap note="Fuel rates change often. Defaults are the 7 Nov 2026 OGRA notified rates (petrol Rs 346.00, diesel Rs 378.00), loaded from rates.json so they can be updated without rebuilding the app. Edit the rate to today's OGRA rate for an exact trip cost.">
     <ToggleButtonGroup value={fuel} exclusive fullWidth onChange={(_, nv) => { if (nv) { setFuel(nv); setRate(nv === 'petrol' ? String(fetched ? fetched.petrol : RATES.petrol) : String(fetched ? fetched.diesel : RATES.diesel)); } }} sx={{ mb: 2 }}><ToggleButton value="petrol">Petrol</ToggleButton><ToggleButton value="diesel">Diesel</ToggleButton></ToggleButtonGroup>
     <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Default rate date: {rateDate} - {rateSrc}. {fuelAgeDays(rateDate) > 15 ? 'Warning: this rate is more than 15 days old and may be out of date - enter today\'s OGRA rate.' : 'Rates are checked daily; if OGRA changes them, the default is updated from rates.json.'}</Typography>
-    <TextField fullWidth label="Distance (km)" type="number" value={dist} onChange={(e) => setDist(e.target.value)} sx={{ mb: 2 }} />
+    <ToggleButtonGroup value={roundTrip ? 'round' : 'one'} exclusive fullWidth onChange={(_, nv) => nv && setRoundTrip(nv === 'round')} sx={{ mb: 2 }}><ToggleButton value="one">One way</ToggleButton><ToggleButton value="round">Round trip (there and back)</ToggleButton></ToggleButtonGroup>
+    <TextField fullWidth label="Distance (km, one way)" type="number" value={dist} onChange={(e) => setDist(e.target.value)} sx={{ mb: 2 }} />
     <TextField fullWidth label="Mileage (km per litre)" type="number" value={mile} onChange={(e) => setMile(e.target.value)} sx={{ mb: 2 }} />
     <TextField fullWidth label="Fuel rate (Rs per litre)" type="number" value={rate} onChange={(e) => setRate(e.target.value)} />
-    {d > 0 && m > 0 && (<><Hero value={'Rs ' + fmt(cost)} unit="Trip fuel cost" /><Rows rows={[['Fuel needed', fmt(litres) + ' litres'], ['Rate', 'Rs ' + fmt(r) + ' / litre'], ['Distance', fmt(d) + ' km']]} /></>)}
+    {d > 0 && m > 0 && (<><Hero value={'Rs ' + fmt(cost)} unit="Trip fuel cost" /><Rows rows={[['Fuel needed', fmt(litres) + ' litres'], ['Rate', 'Rs ' + fmt(r) + ' / litre'], ['Distance', fmt(effD) + ' km' + (roundTrip ? ' (round trip: 2 × ' + fmt(d) + ' km)' : ' (one way)')]]} /></>)}
   </Wrap>);
 }
 
@@ -68,36 +69,64 @@ export function PetrolPriceTool() {
   useEffect(() => { fetch('/rates.json').then((r) => r.ok ? r.json() : null).then((j) => { if (j && j.petrol) setRates(j); }).catch(() => {}); }, []);
   return (<Wrap note="OGRA notified rates. OGRA changes fuel rates on weekdays; Friday's rates run on Saturday and Sunday too. Rates are checked daily - if OGRA changes them, this page updates from rates.json.">
     <Hero value={'Rs ' + fmt(rates.petrol)} unit="Petrol per litre" eq={'Diesel Rs ' + fmt(rates.diesel) + ' / litre · ' + (rates.fuelUpdated || RATES.fuelUpdated)} />
-    <Rows rows={[['Petrol (per litre)', 'Rs ' + fmt(rates.petrol)], ['Diesel (per litre)', 'Rs ' + fmt(rates.diesel)], ['Rate date', rates.fuelUpdated || RATES.fuelUpdated], ['Source', rates.fuelSource || RATES.fuelSource]]} />
+    <Rows rows={[['Petrol (per litre)', 'Rs ' + fmt(rates.petrol)], ['Diesel (per litre)', 'Rs ' + fmt(rates.diesel)], ['Hi-octane (per litre)', 'Rs 415.00'], ['Light diesel (per litre)', 'Rs 251.37'], ['Kerosene (per litre)', 'Rs 308.52'], ['Rate date', rates.fuelUpdated || RATES.fuelUpdated], ['Source', rates.fuelSource || RATES.fuelSource]]} />
+    <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>Hi-octane, light diesel and kerosene: 7 Nov 2026 rates (OGRA daily bulletin via MashriqTV; PSO official rates via checkprice.pk). Petrol/diesel update from rates.json.</Typography>
     <Typography variant="h6" component="h2" fontWeight={700} sx={{ mt: 3, mb: 1 }}>This week's rates</Typography>
     <Rows rows={FUEL_WEEK.map(([d, p, ds]) => [d, 'Petrol ' + p + ' · Diesel ' + ds])} />
     <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>Petrol fell Rs 31.91 a litre this week (Rs 377.91 on Monday to Rs 346.00 on Saturday) and diesel fell Rs 24.96 (Rs 402.96 to Rs 378.00) - the fifth straight cut.</Typography>
     <Box sx={{ mt: 2 }}><Button variant="outlined" component="a" href="/tools/fuel-trip-cost-calculator-pakistan-ogra/">Work out a trip's fuel cost</Button></Box>
   </Wrap>);
 }
-function FileTool({ from, to, mime, ext }) {
-  const [url, setUrl] = useState(''); const [name, setName] = useState(''); const [err, setErr] = useState(''); const [busy, setBusy] = useState(false);
-  const onFile = async (f) => {
-    if (!f) return; setErr(''); setUrl(''); setName(f.name.replace(/\.[^.]+$/, '') + '.' + ext); setBusy(true);
+// Shared single/batch image converter (browser-only). HEIC goes through
+// heic2any (JPEG, quality 0.92) with a native-decode fallback (Safari);
+// everything else is decoded by the browser and re-encoded on a canvas
+// with the given mime + quality. Batch mode converts up to 50 files at
+// once, each with its own download button.
+function FileTool({ from, to, mime, ext, quality = 0.92, batch = false, controls = null }) {
+  const [items, setItems] = useState([]); const [err, setErr] = useState(''); const [busy, setBusy] = useState(false);
+  const convertOne = async (f) => {
     if (from === 'HEIC') {
       try {
         const heic2any = (await import('heic2any')).default;
         const out = await heic2any({ blob: f, toType: 'image/jpeg', quality: 0.92 });
-        const blob = Array.isArray(out) ? out[0] : out; setUrl(URL.createObjectURL(blob)); setBusy(false); return;
+        const blob = Array.isArray(out) ? out[0] : out; return { url: URL.createObjectURL(blob) };
       } catch (e) { /* fall through to native decode below (Safari) */ }
     }
-    const img = new Image(); const src = URL.createObjectURL(f); img.onload = () => {
-      const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; const ctx = c.getContext('2d');
-      if (mime === 'image/jpeg') { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height); }
-      ctx.drawImage(img, 0, 0); c.toBlob((b) => { if (b) setUrl(URL.createObjectURL(b)); else setErr('Conversion failed in this browser.'); setBusy(false); }, mime, 0.92);
-    }; img.onerror = () => { setErr(from === 'HEIC' ? 'This HEIC file could not be decoded in this browser. Try exporting it as JPG from Photos, or try again in Chrome / Safari.' : 'This file could not be decoded in this browser.'); setBusy(false); }; img.src = src;
+    return new Promise((resolve) => {
+      const img = new Image(); const src = URL.createObjectURL(f); img.onload = () => {
+        const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; const ctx = c.getContext('2d');
+        if (mime === 'image/jpeg') { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height); }
+        ctx.drawImage(img, 0, 0); c.toBlob((b) => { if (b) resolve({ url: URL.createObjectURL(b) }); else resolve({ error: 'Conversion failed in this browser.' }); }, mime, quality);
+      }; img.onerror = () => resolve({ error: from === 'HEIC' ? 'This HEIC file could not be decoded in this browser. Try exporting it as JPG from Photos, or try again in Chrome / Safari.' : 'This file could not be decoded in this browser.' }); img.src = src;
+    });
   };
-  return (<Wrap note="Private by design - your file never leaves your device. Conversion runs in your browser only, nothing is uploaded to a server.">
-    <Button variant="contained" component="label" fullWidth sx={{ mb: 2 }}>{busy ? 'Converting…' : `Choose ${from} file`}<input type="file" hidden accept="image/*" onChange={(e) => onFile(e.target.files[0])} /></Button>
+  const onFiles = async (files) => {
+    const list = Array.from(files || []).slice(0, batch ? 50 : 1); if (!list.length) return;
+    setErr(''); setBusy(true); setItems([]);
+    const done = [];
+    for (const f of list) {
+      const r = await convertOne(f);
+      done.push({ name: f.name.replace(/\.[^.]+$/, '') + '.' + ext, url: r.url || '', error: r.error || '' });
+      setItems([...done]);
+    }
+    setBusy(false);
+  };
+  return (<Wrap note="Private by design - your files never leave your device. Conversion runs in your browser only, nothing is uploaded to a server.">
+    {controls && <Box sx={{ mb: 2 }}>{controls}</Box>}
+    <Button variant="contained" component="label" fullWidth sx={{ mb: 2 }}>{busy ? 'Converting…' : `Choose ${from} file${batch ? 's (up to 50)' : ''}`}<input type="file" hidden multiple={batch} accept="image/*" onChange={(e) => onFiles(e.target.files)} /></Button>
     {err && <Alert severity="warning" sx={{ mb: 2 }}>{err}</Alert>}
-    {url && (<Box textAlign="center"><Typography variant="body1" sx={{ mb: 1 }}>Ready: {name}</Typography><Button variant="outlined" href={url} download={name}>Download {to.toUpperCase()}</Button></Box>)}
-    {!url && !err && <Typography variant="body2" color="text.secondary">Select a {from} file. The converted file downloads to your device.</Typography>}
+    {items.length > 0 && (<Box>{items.map((it, i) => (<Box key={it.name + i} display="flex" alignItems="center" gap={1} sx={{ mb: 1 }}><Typography variant="body2" sx={{ flexGrow: 1 }}>{it.name}</Typography>{it.url ? <Button size="small" variant="outlined" href={it.url} download={it.name}>Download {to.toUpperCase()}</Button> : <Typography variant="body2" color="warning.main">{it.error}</Typography>}</Box>))}</Box>)}
+    {!items.length && !err && <Typography variant="body2" color="text.secondary">Select {batch ? 'one or more' : 'a'} {from} file{batch ? 's' : ''}. {batch ? 'Each file converts and downloads separately.' : 'The converted file downloads to your device.'}</Typography>}
   </Wrap>);
 }
-export function HeicTool() { return <FileTool from="HEIC" to="jpg" mime="image/jpeg" ext="jpg" />; }
-export function WebpTool() { return <FileTool from="WebP" to="jpg" mime="image/jpeg" ext="jpg" />; }
+export function HeicTool() { return <FileTool from="HEIC" to="jpg" mime="image/jpeg" ext="jpg" quality={0.92} batch />; }
+export function WebpTool() {
+  const [q, setQ] = useState(92);
+  return (<FileTool from="WebP" to="jpg" mime="image/jpeg" ext="jpg" quality={q / 100} batch controls={(<><Typography variant="body2" gutterBottom>Quality: {q}% - lower means a smaller file</Typography><Slider value={q} onChange={(_, v) => setQ(v)} min={10} max={100} step={1} aria-label="JPG quality" /></>)} />);
+}
+// JPG / PNG to WebP - NEW component (not wired into App.jsx / seo-data.js /
+// sitemap; that is Phase B). Same FileTool pattern: canvas toBlob('image/webp').
+export function JpgToWebpTool() {
+  const [q, setQ] = useState(80);
+  return (<FileTool from="JPG / PNG" to="webp" mime="image/webp" ext="webp" quality={q / 100} batch controls={(<><Typography variant="body2" gutterBottom>Quality: {q}% - lower means a smaller file</Typography><Slider value={q} onChange={(_, v) => setQ(v)} min={10} max={100} step={1} aria-label="WebP quality" /></>)} />);
+}

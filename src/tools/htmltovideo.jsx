@@ -50,6 +50,9 @@ function Wrap({ children, note }) {
 // - A 3D/WebGL scene (for example Three.js) is captured too: the preview asks
 //   the browser to keep the last frame, otherwise the whole scene comes out black.
 // - Video bitrate is 5 Mbps so compression does not soften the picture.
+// - Video quality: 720p by default (the scales above); 1080p snapshots at
+//   3x instead, so a wide preview becomes 1920x1080. The 1800-frame cap
+//   applies at either resolution.
 const SAMPLE = `<!DOCTYPE html>
 <html>
 <head><style>
@@ -222,6 +225,7 @@ export function HtmlToVideoTool() {
   const [duration, setDuration] = useState('5');
   const [customSeconds, setCustomSeconds] = useState('10');
   const [fps, setFps] = useState('30');
+  const [resolution, setResolution] = useState('720'); // '720' or '1080'; 720p is the original behaviour
   const [startFrom, setStartFrom] = useState('start');
   const [format, setFormat] = useState(CAN_MAKE_MP4 ? 'mp4' : 'webm');
   const [recording, setRecording] = useState(false);
@@ -277,7 +281,7 @@ export function HtmlToVideoTool() {
       const ar = detectPortrait(doc, iframe.clientWidth, iframe.clientHeight);
       if (ar > 0) {
         const w = 360;
-        const h = Math.min(720, Math.max(360, Math.round(w / ar)));
+        const h = Math.min(resolution === '1080' ? 1080 : 720, Math.max(360, Math.round(w / ar)));
         setPreviewSize((prev) => (prev && prev.w === w && prev.h === h ? prev : { w, h }));
       } else {
         setPreviewSize((prev) => (prev === null ? prev : null));
@@ -321,14 +325,18 @@ export function HtmlToVideoTool() {
     const h = (iframe && iframe.clientHeight) || 360;
     const bodyH = (doc.body && doc.body.scrollHeight) || h;
     const fullBody = bodyH > h + 50 && bodyH <= 1200;
-    const shotOpts = { backgroundColor: '#ffffff', logging: false, useCORS: true, scale: live ? 1.5 : 2 };
+    // Resolution: 720p keeps the original snapshot scales (2x smooth, 1.5x
+    // live). 1080p snapshots at 3x, so a 640x360 preview becomes 1920x1080
+    // and a 360x640 vertical preview becomes 1080x1920. The long side is
+    // still capped at 1920 below, and the 1800-frame cap still applies.
+    const shotOpts = { backgroundColor: '#ffffff', logging: false, useCORS: true, scale: resolution === '1080' ? 3 : (live ? 1.5 : 2) };
     if (!fullBody) { shotOpts.width = w; shotOpts.height = h; }
     let first;
     try {
       const t0 = Date.now();
       first = await html2canvas(doc.body, shotOpts);
       if (Date.now() - t0 > 400) {
-        shotOpts.scale = live ? 1 : 1.5;
+        shotOpts.scale = resolution === '1080' ? 2 : (live ? 1 : 1.5);
         first = await html2canvas(doc.body, shotOpts);
       }
     } catch { snapFailedRef.current = true; }
@@ -478,7 +486,7 @@ export function HtmlToVideoTool() {
       // 120ms, shrink them so the picture keeps moving instead of hanging.
       // The video stays the same size; the picture just gets a little softer.
       if (snapCount >= 3 && snapMs / snapCount > 120 && shotOpts.scale > 1) {
-        shotOpts.scale = shotOpts.scale > 1.25 ? 1.25 : 1;
+        shotOpts.scale = shotOpts.scale > 2 ? 2 : shotOpts.scale > 1.25 ? 1.25 : 1;
         snapMs = 0; snapCount = 0;
       }
       busy = false;
@@ -606,16 +614,16 @@ export function HtmlToVideoTool() {
     if (det.kind === 'css' && smoothOn) {
       const frames = Math.round(total * (parseInt(fps, 10) || 30));
       const est = frames * 0.12;
-      return 'Your video: about ' + total + ' seconds, smooth ' + fps + ' fps. Recording takes about ' + (est >= 60 ? Math.round(est / 60) + ' minutes' : Math.max(5, Math.round(est)) + ' seconds') + '.';
+      return 'Your video: about ' + total + ' seconds, smooth ' + fps + ' fps, ' + resolution + 'p. Recording takes about ' + (est >= 60 ? Math.round(est / 60) + ' minutes' : Math.max(5, Math.round(est)) + ' seconds') + '.';
     }
-    if (det.kind === 'css') return 'Your video: ' + total + ' seconds, recorded live at ' + fps + ' fps. Recording takes ' + total + ' seconds.';
+    if (det.kind === 'css') return 'Your video: ' + total + ' seconds, recorded live at ' + fps + ' fps, ' + resolution + 'p. Recording takes ' + total + ' seconds.';
     if (det.kind === 'js') {
-      return 'Your story plays live: ' + total + ' seconds at ' + fps + ' fps. Recording takes ' + total + ' seconds.'
+      return 'Your story plays live: ' + total + ' seconds at ' + fps + ' fps, ' + resolution + 'p. Recording takes ' + total + ' seconds.'
         + (/AudioContext/i.test(code) ? ' With sound.' : '')
         + (det.playButton && startFrom === 'start' ? ' It presses Play for you.' : '')
         + (det.playButton && startFrom === 'current' ? ' Press Play in the preview first if the story has not started.' : '');
     }
-    return 'No animation in your code: ' + total + ' seconds of still video.';
+    return 'No animation in your code: ' + total + ' seconds of still video, ' + resolution + 'p.';
   })();
   const mp4Disabled = det.kind === 'css' ? !CAN_MAKE_MP4 : !MP4_SUPPORTED;
 
@@ -635,6 +643,10 @@ export function HtmlToVideoTool() {
     <Typography variant="body2" color="text.secondary" gutterBottom>Video smoothness (frames per second)</Typography>
     <ToggleButtonGroup value={fps} exclusive fullWidth onChange={(_, nv) => nv && setFps(nv)} sx={{ mb: 2 }}>
       <ToggleButton value="10">10 fps</ToggleButton><ToggleButton value="30">30 fps - smooth</ToggleButton><ToggleButton value="60">60 fps - smoothest</ToggleButton>
+    </ToggleButtonGroup>
+    <Typography variant="body2" color="text.secondary" gutterBottom>Video quality</Typography>
+    <ToggleButtonGroup value={resolution} exclusive fullWidth onChange={(_, nv) => nv && setResolution(nv)} sx={{ mb: 2 }}>
+      <ToggleButton value="720">720p</ToggleButton><ToggleButton value="1080">1080p - sharper</ToggleButton>
     </ToggleButtonGroup>
     <Button size="small" variant="outlined" sx={{ mb: 2 }} onClick={() => setShowAdvanced((v) => !v)}>{showAdvanced ? 'Fewer options' : 'More options'}</Button>
     {showAdvanced && (<>
