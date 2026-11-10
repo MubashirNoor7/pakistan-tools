@@ -51,19 +51,32 @@ export function SalaryTaxTool() {
 // 21 July 2026, effective 1 July 2026, merging ARA-2022 + ARA-2025). Verified 5 Nov 2026
 // against the official chart; the same figures are in the BPS guide below the tool.
 const BPS_2026_MIN = { 1: 16280, 2: 16600, 3: 17130, 4: 17650, 5: 18300, 6: 18930, 7: 19590, 8: 20290, 9: 20990, 10: 21680, 11: 22410, 12: 23750, 13: 25420, 14: 27060, 15: 28730, 16: 33720, 17: 54140, 18: 68330, 19: 105510, 20: 123090, 21: 136680, 22: 146770 };
+// Annual increment + maximum basic pay per grade, from the same Finance Division
+// OM chart (F.1(2)IMP/2026) - the full table is in the BPS guide. Running basic
+// = minimum + stage x increment, up to the maximum. Stage 0 = starting basic.
+// Spot-checked against published OM charts: BPS-16 33,720 / 2,720 / 115,320
+// (30 increments), BPS-1 16,280 / 520 / 31,880, BPS-5 18,300 / 910 / 45,600.
+const BPS_2026_INC = { 1: 520, 2: 590, 3: 700, 4: 800, 5: 910, 6: 1010, 7: 1100, 8: 1210, 9: 1310, 10: 1430, 11: 1580, 12: 1720, 13: 1880, 14: 2090, 15: 2380, 16: 2720, 17: 4110, 18: 5120, 19: 5450, 20: 8040, 21: 8920, 22: 10470 };
+const BPS_2026_MAX = { 1: 31880, 2: 34300, 3: 38130, 4: 41650, 5: 45600, 6: 49230, 7: 52590, 8: 56590, 9: 60290, 10: 64580, 11: 69810, 12: 75350, 13: 81820, 14: 89760, 15: 100130, 16: 115320, 17: 136340, 18: 170730, 19: 214510, 20: 235650, 21: 261560, 22: 293350 };
 export function BpsTool() {
-  const [grade, setGrade] = useState('16'); const [basic, setBasic] = useState('80000'); const [hra, setHra] = useState('20000'); const [conv, setConv] = useState('5000'); const [med, setMed] = useState('3000'); const [adhoc, setAdhoc] = useState('10000');
-  const minBasic = BPS_2026_MIN[parseInt(grade, 10)];
+  const [grade, setGrade] = useState('16'); const [stage, setStage] = useState('0'); const [basic, setBasic] = useState('33720'); const [hra, setHra] = useState('20000'); const [conv, setConv] = useState('5000'); const [med, setMed] = useState('3000'); const [adhoc, setAdhoc] = useState('10000');
+  const g = parseInt(grade, 10);
+  const minBasic = BPS_2026_MIN[g]; const inc = BPS_2026_INC[g]; const maxBasic = BPS_2026_MAX[g];
+  const stages = (minBasic && inc && maxBasic) ? Math.round((maxBasic - minBasic) / inc) : 0;
+  const basicFor = (gg, ss) => BPS_2026_MIN[parseInt(gg, 10)] + (parseInt(ss, 10) || 0) * BPS_2026_INC[parseInt(gg, 10)];
+  const onGrade = (ng) => { setGrade(ng); setStage('0'); setBasic(String(BPS_2026_MIN[parseInt(ng, 10)])); };
+  const onStage = (ns) => { setStage(ns); if (ns !== '') setBasic(String(basicFor(grade, ns))); };
   const b = parseFloat(basic) || 0; const gross = b + (parseFloat(hra) || 0) + (parseFloat(conv) || 0) + (parseFloat(med) || 0) + (parseFloat(adhoc) || 0); const tax = salaryTax(gross * 12) / 12;
   return (<Wrap note="BPS allowances vary by grade, city and department - no single fixed table is used here on purpose. Enter the allowances from your payslip. Gross minus FBR salary tax (2026-27 slabs) gives the take-home estimate.">
-    <TextField select fullWidth label="BPS Grade" value={grade} onChange={(e) => setGrade(e.target.value)} sx={{ mb: 2 }}>{Array.from({ length: 22 }, (_, i) => i + 1).map((g) => (<MenuItem key={g} value={String(g)}>BPS {g}</MenuItem>))}</TextField>
-    {minBasic ? (<><Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>BPS {grade} (2026) minimum basic: Rs {fmt(minBasic)} - Finance Division, 1 July 2026. This is only a starting point; your actual basic comes from your payslip.</Typography><Button variant="outlined" size="small" sx={{ mb: 2 }} onClick={() => setBasic(String(minBasic))}>Use BPS {grade} minimum basic (Rs {fmt(minBasic)})</Button></>) : (<Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Is grade ka 2026 minimum is tool mein nahi hai - apna actual basic payslip se likhen. Grade alone does not fix allowances; they vary by city and department.</Typography>)}
-    <TextField fullWidth label="Basic pay (Rs/month)" type="number" value={basic} onChange={(e) => setBasic(e.target.value)} sx={{ mb: 2 }} />
+    <TextField select fullWidth label="BPS Grade" value={grade} onChange={(e) => onGrade(e.target.value)} sx={{ mb: 2 }}>{Array.from({ length: 22 }, (_, i) => i + 1).map((gg) => (<MenuItem key={gg} value={String(gg)}>BPS {gg}</MenuItem>))}</TextField>
+    <TextField select fullWidth label="Pay stage (0 = starting basic)" value={stage} onChange={(e) => onStage(e.target.value)} sx={{ mb: 2 }}><MenuItem value="">Custom — typed basic below</MenuItem>{Array.from({ length: stages + 1 }, (_, i) => i).map((s) => (<MenuItem key={s} value={String(s)}>Stage {s} — Rs {fmt(basicFor(grade, String(s)))}</MenuItem>))}</TextField>
+    {minBasic ? (<Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>BPS {grade} (2026): starting basic Rs {fmt(minBasic)} · annual increment Rs {fmt(inc)} · maximum Rs {fmt(maxBasic)} · {stages} increments. Finance Division OM F.1(2)IMP/2026, 1 July 2026. Your actual basic comes from your payslip.</Typography>) : (<Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Is grade ka 2026 minimum is tool mein nahi hai - apna actual basic payslip se likhen. Grade alone does not fix allowances; they vary by city and department.</Typography>)}
+    <TextField fullWidth label="Basic pay (Rs/month)" type="number" value={basic} onChange={(e) => { setBasic(e.target.value); setStage(''); }} sx={{ mb: 2 }} />
     <TextField fullWidth label="House Rent Allowance (Rs)" type="number" value={hra} onChange={(e) => setHra(e.target.value)} sx={{ mb: 2 }} />
     <TextField fullWidth label="Conveyance Allowance (Rs)" type="number" value={conv} onChange={(e) => setConv(e.target.value)} sx={{ mb: 2 }} />
     <TextField fullWidth label="Medical Allowance (Rs)" type="number" value={med} onChange={(e) => setMed(e.target.value)} sx={{ mb: 2 }} />
     <TextField fullWidth label="Ad hoc / other allowances (Rs)" type="number" value={adhoc} onChange={(e) => setAdhoc(e.target.value)} />
-    {gross > 0 && (<><Hero value={'Rs ' + fmt(gross - tax)} unit="Monthly take-home (estimate)" /><Rows rows={[['Gross monthly', 'Rs ' + fmt(gross)], ['Monthly tax (estimate)', 'Rs ' + fmt(tax)], ['Basic pay', 'Rs ' + fmt(b)]]} /></>)}
+    {gross > 0 && (<><Hero value={'Rs ' + fmt(gross - tax)} unit="Monthly take-home (estimate)" /><Rows rows={[['Gross monthly', 'Rs ' + fmt(gross)], ['Monthly tax (estimate)', 'Rs ' + fmt(tax)], ['Basic pay', 'Rs ' + fmt(b)], ['Pay stage', stage === '' ? 'Custom (typed)' : 'Stage ' + stage + ' of ' + stages]]} /></>)}
   </Wrap>);
 }
 // PTA 2026-27 - FIXED bands, not percentages (except sales tax). SRO 1064(I)/2026, Finance Act 2026.
@@ -104,16 +117,23 @@ export function PtaTool() {
     <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>Bands: up to $30 · $31-100 · $101-200 · $201-350 · $351-500 · $501-700 · above $700. Example check: $500 at Rs 280 = Rs 12,000 + Rs 25,200 + Rs 5,000 + Rs 4,000 = Rs 46,200 (filer, with levy).</Typography>
   </Wrap>);
 }
+// Freelancer Tax Calculator - section 154A flat rates on export receipts.
+// Receipts may be entered in PKR or USD (freelancers earn in USD); USD is
+// converted at the rate you type (default Rs 280 per USD - edit it to today's
+// rate). Rates: Filer+PSEB 0.25%, Filer 1%, Non-filer+PSEB 0.50%, Non-filer 2%.
 export function FreelancerTool() {
-  const [rec, setRec] = useState('1000000'); const [pseb, setPseb] = useState('yes'); const [filer, setFiler] = useState('filer');
-  const receipts = parseFloat(rec) || 0;
+  const [cur, setCur] = useState('pkr'); const [rec, setRec] = useState('1000000'); const [fx, setFx] = useState('280'); const [pseb, setPseb] = useState('yes'); const [filer, setFiler] = useState('filer');
+  const switchCur = (nv) => { if (!nv || nv === cur) return; const r = parseFloat(fx) || 0; const v = parseFloat(rec) || 0; setRec(String(Math.round(nv === 'usd' ? (r ? v / r : v) : v * r))); setCur(nv); };
+  const receipts = cur === 'usd' ? (parseFloat(rec) || 0) * (parseFloat(fx) || 0) : parseFloat(rec) || 0;
   const rate = filer === 'filer' ? (pseb === 'yes' ? 0.25 : 1) : (pseb === 'yes' ? 0.5 : 2);
   const tax = receipts * rate / 100;
   return (<Wrap note="Section 154A, Finance Act 2026 - 0.25% rate for PSEB-registered IT/ITeS exporters extended through Tax Year 2029. Income must come through a bank and a return must be filed for the rate to be final. Confirm from FBR / your tax adviser.">
+    <ToggleButtonGroup value={cur} exclusive fullWidth onChange={(_, nv) => switchCur(nv)} sx={{ mb: 2 }}><ToggleButton value="pkr">Receipts in PKR</ToggleButton><ToggleButton value="usd">Receipts in USD</ToggleButton></ToggleButtonGroup>
+    {cur === 'usd' && (<TextField fullWidth label="Exchange rate (Rs per USD)" type="number" value={fx} onChange={(e) => setFx(e.target.value)} sx={{ mb: 2 }} />)}
     <ToggleButtonGroup value={pseb} exclusive fullWidth onChange={(_, nv) => nv && setPseb(nv)} sx={{ mb: 2 }}><ToggleButton value="yes">PSEB registered</ToggleButton><ToggleButton value="no">Not registered</ToggleButton></ToggleButtonGroup>
     <ToggleButtonGroup value={filer} exclusive fullWidth onChange={(_, nv) => nv && setFiler(nv)} sx={{ mb: 2 }}><ToggleButton value="filer">Filer</ToggleButton><ToggleButton value="nonfiler">Non-filer</ToggleButton></ToggleButtonGroup>
-    <CommaInput label="Annual freelance export receipts (Rs)" value={rec} onChange={setRec} />
-    {receipts > 0 && (<><Hero value={'Rs ' + fmt(tax)} unit="Tax (final, estimate)" /><Rows rows={[['Receipts', 'Rs ' + fmt(receipts)], ['Rate used', fmt(rate) + '%'], ['Take-home', 'Rs ' + fmt(receipts - tax)]]} /></>)}
+    <CommaInput label={cur === 'usd' ? 'Annual freelance export receipts (USD)' : 'Annual freelance export receipts (Rs)'} value={rec} onChange={setRec} />
+    {receipts > 0 && (<><Hero value={'Rs ' + fmt(tax)} unit="Tax (final, estimate)" /><Rows rows={[['Receipts', 'Rs ' + fmt(receipts)], ...(cur === 'usd' ? [['Receipts in USD', '$' + fmt(parseFloat(rec) || 0) + ' × Rs ' + fmt(parseFloat(fx) || 0)]] : []), ['Rate used', fmt(rate) + '%'], ['Take-home', 'Rs ' + fmt(receipts - tax)]]} /></>)}
     <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>Rates: Filer+PSEB 0.25% · Filer, no PSEB 1% · Non-filer+PSEB 0.50% · Non-filer, no PSEB 2%.</Typography>
   </Wrap>);
 }
