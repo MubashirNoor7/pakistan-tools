@@ -329,7 +329,7 @@ export default function App() {
         <Typography variant="body2"><Link href="mailto:sammykhanmalng@gmail.com" underline="hover" color="text.secondary">sammykhanmalng@gmail.com</Link></Typography>
       </Box>
     </Box>
-    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3, pt: 2, borderTop: '1px solid #E7E5E4' }}>© 2026 Kalkio · Last updated 6 Nov 2026. · Tax, bill and fuel results are estimates.</Typography>
+    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3, pt: 2, borderTop: '1px solid #E7E5E4' }}>© 2026 Kalkio · Last updated 10 Nov 2026. · Tax, bill and fuel results are estimates.</Typography>
   </Box>);
 
   const notFound = (<Box sx={{ maxWidth: 720, mx: 'auto', py: 6 }}>

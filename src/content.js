@@ -114,7 +114,7 @@ export const CONTENT_BY_ID = {
       'A phone with a customs value of $500 at Rs 280 per USD has a customs value of Rs 140,000. Regulatory Duty is Rs 12,000, sales tax is 18% of Rs 140,000 = Rs 25,200, income tax for a filer is Rs 5,000, and the handset levy is Rs 4,000. Total: Rs 46,200.',
     ] },
     { h: 'Why your final amount may differ', p: [
-      'The phone models listed in the calculator use approximate used-phone customs values. DIRBS assesses each exact model, and the amount shown on your PSID at dirbs.pta.gov.pk is the one you actually pay. Always confirm the final amount there before paying.',
+      'The calculator lists 1,149 phone models. New and used values come from FBR\u2019s published valuation rulings (VR 1999/2025 for Apple, VR 1834/2023 for other brands, VR 2070/2026 for used phones); a few newer models carry clearly-labelled projected values, and models with no published value yet can be found in search with the USD value entered manually. DIRBS assesses each exact model, and the amount shown on your PSID at dirbs.pta.gov.pk is the one you actually pay. Always confirm the final amount there before paying.',
     ] },
   ],
 
