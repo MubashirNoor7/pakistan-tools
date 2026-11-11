@@ -1,7 +1,9 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { AppBar, Toolbar, Typography, Container, Card, CardContent, Box, TextField, Button, Accordion, AccordionSummary, AccordionDetails, Table, TableBody, TableRow, TableCell, CssBaseline, Link, CircularProgress, InputAdornment, IconButton } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import CalculateIcon from '@mui/icons-material/Calculate';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import SearchIcon from '@mui/icons-material/Search';
@@ -171,9 +173,18 @@ const CATEGORIES = [
   { name: 'Fun & Entertainment', ids: ['love'] },
   { name: 'Gaming', ids: ['gta6price', 'gta6download', 'gta6countdown', 'gta6pccheck', 'gta6totalcost', 'gta6preorder', 'gta6storage', 'gta6nztick', 'gta6pcdate'] },
 ].map((c) => ({ name: c.name, tools: c.ids.map((id) => BY_ID[id]).filter(Boolean) }));
-// One emoji per category - used as a visual anchor in sidebars, lists and headings
-// so the page is easier to scan. Emojis never go in page titles or H1s.
-const CAT_EMOJI = { 'Home & Property': '🏠', 'Money & Tax': '💰', 'Prices & Fuel': '⛽', 'Files & converters': '📁', 'Everyday tools': '🧮', 'Fun & Entertainment': '🎉', 'Gaming': '🎮' };
+// One real photo per category - shown as the thumbnail on every tool card,
+// so a visitor recognises the subject at a glance. Photos live in
+// public/images/ (see CREDITS.md there); none is hotlinked or AI-made.
+const CAT_IMAGE = {
+  'Home & Property': '/images/home-property.webp',
+  'Money & Tax': '/images/money-tax.webp',
+  'Prices & Fuel': '/images/prices-fuel.webp',
+  'Files & converters': '/images/files-converters.webp',
+  'Everyday tools': '/images/everyday-tools.webp',
+  'Fun & Entertainment': '/images/fun-entertainment.webp',
+  'Gaming': '/images/gaming.webp',
+};
 const ID_TO_CAT = {};
 CATEGORIES.forEach((c) => c.tools.forEach((t) => { ID_TO_CAT[t.id] = c.name; }));
 // Per-page topical related lists - must match prerender-plugin.mjs TOPICAL_RELATED.
@@ -220,22 +231,25 @@ const showTitle = (t) => (t && t.display) || (t && t.title) || '';
 
 // A tool as a card (home grids, search results, related tools). Plain CSS grid
 // on purpose: the installed MUI Grid is legacy v1 and ignores the `size` prop.
-function ToolCard({ t, go }) {
-  const emoji = CAT_EMOJI[ID_TO_CAT[t.id]] || '🔧';
-  return (<Card elevation={0} sx={{ height: '100%', transition: 'box-shadow 0.15s ease, transform 0.15s ease', '&:hover': { boxShadow: '0 6px 24px rgba(0,0,0,0.10)', transform: 'translateY(-2px)' } }}>
+// `showImage` is false inside a collapsed category accordion, so those
+// thumbnails never download until the visitor opens the category.
+function ToolCard({ t, go, showImage = true }) {
+  const img = CAT_IMAGE[ID_TO_CAT[t.id]];
+  return (<Card elevation={0} sx={{ height: '100%', transition: 'box-shadow 0.15s ease, transform 0.15s ease', '&:hover': { boxShadow: (theme) => (theme.palette.mode === 'dark' ? '0 6px 24px rgba(0,0,0,0.55)' : '0 6px 24px rgba(0,0,0,0.10)'), transform: 'translateY(-2px)' } }}>
     <CardContent component="a" href={`/tools/${t.slug}/`} onClick={(e) => go(e, `/tools/${t.slug}/`)} onMouseEnter={() => preloadTool(t.id)} onFocus={() => preloadTool(t.id)} sx={{ display: 'block', textDecoration: 'none', color: 'inherit', height: '100%' }}>
-      <Box sx={{ width: 44, height: 44, borderRadius: 3, bgcolor: '#E6F4F2', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, mb: 1.5 }}>{emoji}</Box>
+      {showImage && img && (<Box component="img" src={img} alt="" loading="lazy" sx={{ width: 44, height: 44, borderRadius: 3, objectFit: 'cover', display: 'block', mb: 1.5 }} />)}
       <Typography fontWeight={700} sx={{ lineHeight: 1.35, minHeight: '2.7em', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{showTitle(t)}</Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>{ID_TO_CAT[t.id] || t.cat}</Typography>
     </CardContent>
   </Card>);
 }
 
-function ToolGrid({ tools, go, mdCols = 3 }) {
-  return (<Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', md: `repeat(${mdCols}, minmax(0, 1fr))` } }}>{tools.map((t) => (<ToolCard key={t.id} t={t} go={go} />))}</Box>);
+function ToolGrid({ tools, go, mdCols = 3, showImage = true }) {
+  return (<Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', md: `repeat(${mdCols}, minmax(0, 1fr))` } }}>{tools.map((t) => (<ToolCard key={t.id} t={t} go={go} showImage={showImage} />))}</Box>);
 }
 
-export default function App() {
+export default function App({ mode = 'light', onToggleMode = () => {} }) {
+  const theme = useTheme();
   const [route, setRoute] = useState(() => parseRoute(window.location.pathname));
   const [q, setQ] = useState('');
   const [openCat, setOpenCat] = useState(null);
@@ -263,6 +277,11 @@ export default function App() {
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, []);
+
+  // Keep the browser chrome (theme-color) in step with the mode.
+  useEffect(() => {
+    setMetaTag('theme-color', theme.palette.background.default);
+  }, [theme]);
 
   // Once the home page is idle, preload the Most Popular tools' chunks so
   // the first tool a visitor opens appears instantly. Only on the home page,
@@ -309,12 +328,11 @@ export default function App() {
     setTimeout(() => document.getElementById('categories')?.scrollIntoView({ behavior: 'smooth' }), 60);
   };
 
-  const footer = (<Box component="footer" sx={{ mt: 6, pt: 4, pb: 2, borderTop: '1px solid #E7E5E4' }}>
+  const footer = (<Box component="footer" sx={{ mt: 6, pt: 4, pb: 2, borderTop: '1px solid', borderColor: 'divider' }}>
     <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', md: '2fr 1fr 1fr 1.5fr' } }}>
       <Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-          <Box sx={{ bgcolor: 'primary.main', borderRadius: 2, p: 0.5, display: 'flex', color: 'white' }}><CalculateIcon /></Box>
-          <Typography variant="h6" fontWeight={800}>Kalkio</Typography>
+          <Box component="img" src={mode === 'dark' ? '/logo-dark.svg' : '/logo.svg'} alt="Kalkio" sx={{ height: 28, width: 'auto', display: 'block' }} />
         </Box>
         <Typography variant="body2" color="text.secondary">Free calculators and converters. No sign-up.</Typography>
       </Box>
@@ -327,13 +345,14 @@ export default function App() {
         <Typography variant="body2" sx={{ mb: 0.5 }}><Link href="/about/" onClick={(e) => go(e, '/about/')} underline="hover" color="text.secondary">About</Link></Typography>
         <Typography variant="body2" sx={{ mb: 0.5 }}><Link href="/contact/" onClick={(e) => go(e, '/contact/')} underline="hover" color="text.secondary">Contact</Link></Typography>
         <Typography variant="body2" sx={{ mb: 0.5 }}><Link href="/privacy/" onClick={(e) => go(e, '/privacy/')} underline="hover" color="text.secondary">Privacy Policy</Link></Typography>
+        <Typography variant="body2" sx={{ mb: 0.5 }}><Link href="/about/#photo-credits" underline="hover" color="text.secondary">Photo credits</Link></Typography>
       </Box>
       <Box>
         <Typography variant="subtitle2" fontWeight={700} gutterBottom>Contact</Typography>
         <Typography variant="body2"><Link href="mailto:sammykhanmalng@gmail.com" underline="hover" color="text.secondary">sammykhanmalng@gmail.com</Link></Typography>
       </Box>
     </Box>
-    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3, pt: 2, borderTop: '1px solid #E7E5E4' }}>© 2026 Kalkio · Last updated 10 Nov 2026. · Tax, bill and fuel results are estimates.</Typography>
+    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>© 2026 Kalkio · Last updated 12 Nov 2026. · Tax, bill and fuel results are estimates.</Typography>
   </Box>);
 
   const notFound = (<Box sx={{ maxWidth: 720, mx: 'auto', py: 6 }}>
@@ -348,13 +367,12 @@ export default function App() {
     {children}
   </Box>);
 
-  // Sticky white header: logo, search, nav. The search filters every tool;
-  // typing shows the matches as cards in the main content below.
-  const header = (<AppBar position="sticky" elevation={0} sx={{ bgcolor: '#fff', color: 'text.primary', borderBottom: '1px solid #E7E5E4' }}>
+  // Sticky header: logo, search, nav, dark-mode toggle. The search filters
+  // every tool; typing shows the matches as cards in the main content below.
+  const header = (<AppBar position="sticky" elevation={0} sx={{ bgcolor: 'background.paper', color: 'text.primary', borderBottom: '1px solid', borderColor: 'divider' }}>
     <Toolbar sx={{ gap: 2, flexWrap: 'wrap', py: 0.5, minHeight: 56 }}>
       <Box component="a" href="/" onClick={(e) => go(e, '/')} sx={{ display: 'flex', alignItems: 'center', gap: 1, textDecoration: 'none', color: 'inherit' }}>
-        <Box sx={{ bgcolor: 'primary.main', borderRadius: 2, p: 0.5, display: 'flex', color: 'white' }}><CalculateIcon /></Box>
-        <Typography variant="h6" fontWeight={800}>Kalkio</Typography>
+        <Box component="img" src={mode === 'dark' ? '/logo-dark.svg' : '/logo.svg'} alt="Kalkio" sx={{ height: 32, width: 'auto', display: 'block' }} />
       </Box>
       <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', order: { xs: 3, md: 2 }, flexBasis: { xs: '100%', md: 'auto' } }}>
         <TextField size="small" fullWidth sx={{ maxWidth: 520 }} placeholder="Search a tool... e.g. JPG to PDF" value={q} onChange={(e) => setQ(e.target.value)} InputProps={{ startAdornment: (<InputAdornment position="start"><SearchIcon color="action" /></InputAdornment>), endAdornment: q ? (<InputAdornment position="end"><IconButton size="small" onClick={() => setQ('')} aria-label="Clear search"><CloseIcon fontSize="small" /></IconButton></InputAdornment>) : null }} />
@@ -364,6 +382,9 @@ export default function App() {
         <Link href="/about/" onClick={(e) => go(e, '/about/')} underline="hover" color="text.primary" fontWeight={700}>About</Link>
         <Link href="/contact/" onClick={(e) => go(e, '/contact/')} underline="hover" color="text.primary" fontWeight={700}>Contact</Link>
       </Box>
+      <IconButton onClick={onToggleMode} aria-label={mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'} title={mode === 'dark' ? 'Light mode' : 'Dark mode'} sx={{ order: { xs: 2, md: 4 }, ml: { xs: 'auto', md: 0 } }}>
+        {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+      </IconButton>
     </Toolbar>
   </AppBar>);
 
@@ -380,21 +401,22 @@ export default function App() {
     <Box sx={{ textAlign: 'center', py: { xs: 3, md: 4 }, px: 1 }}>
       <Typography variant="h3" component="h1" fontWeight={800} gutterBottom sx={{ fontSize: { xs: '1.75rem', md: '2.25rem' } }}>52 free calculators and converters.</Typography>
       <Typography variant="h6" color="text.secondary" fontWeight={400} sx={{ maxWidth: 640, mx: 'auto' }}>From loan EMI and age to JPG to PDF and GTA 6 prices. Everything runs in your browser. No sign-up.</Typography>
+      <Box component="img" src="/images/hero.webp" alt="A desk with a calculator, notebook and laptop" sx={{ width: '100%', maxWidth: 880, height: { xs: 200, md: 300 }, objectFit: 'cover', objectPosition: 'center', borderRadius: 3, display: 'block', mx: 'auto', mt: 3 }} />
     </Box>
     <Typography variant="body2" color="text.secondary" fontWeight={700} sx={{ mb: 1, textAlign: 'center' }}>Categories</Typography>
     <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 1, mb: 1, justifyContent: { xs: 'flex-start', md: 'center' } }}>
-      {CATEGORIES.map((c) => (<Button key={c.name} variant={openCat === c.name ? 'contained' : 'outlined'} sx={{ borderRadius: 10, whiteSpace: 'nowrap', textTransform: 'none', fontWeight: 700 }} onClick={() => { setOpenCat(openCat === c.name ? null : c.name); document.getElementById('categories')?.scrollIntoView({ behavior: 'smooth' }); }}>{CAT_EMOJI[c.name]} {c.name}</Button>))}
+      {CATEGORIES.map((c) => (<Button key={c.name} variant={openCat === c.name ? 'contained' : 'outlined'} sx={{ borderRadius: 10, whiteSpace: 'nowrap', textTransform: 'none', fontWeight: 700 }} onClick={() => { setOpenCat(openCat === c.name ? null : c.name); document.getElementById('categories')?.scrollIntoView({ behavior: 'smooth' }); }}>{c.name}</Button>))}
     </Box>
-    <Typography variant="h5" component="h2" fontWeight={800} gutterBottom>⭐ Most popular</Typography>
+    <Typography variant="h5" component="h2" fontWeight={800} gutterBottom>Most popular</Typography>
     <ToolGrid tools={POPULAR} go={go} />
     <Box id="categories" sx={{ mt: 5 }}>
       <Typography variant="h5" component="h2" fontWeight={800} gutterBottom>Browse all tools</Typography>
       {CATEGORIES.map((c) => (<Accordion key={c.name} expanded={openCat === c.name} onChange={() => setOpenCat(openCat === c.name ? null : c.name)} sx={{ mb: 1 }}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>{CAT_EMOJI[c.name]} {c.name} <Typography component="span" variant="body2" color="text.secondary" fontWeight={400}>({c.tools.length} tool{c.tools.length === 1 ? '' : 's'})</Typography></Typography></AccordionSummary>
-        <AccordionDetails><ToolGrid tools={c.tools} go={go} /></AccordionDetails>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>{c.name} <Typography component="span" variant="body2" color="text.secondary" fontWeight={400}>({c.tools.length} tool{c.tools.length === 1 ? '' : 's'})</Typography></Typography></AccordionSummary>
+        <AccordionDetails><ToolGrid tools={c.tools} go={go} showImage={openCat === c.name} /></AccordionDetails>
       </Accordion>))}
     </Box>
-    <Typography variant="h5" component="h2" fontWeight={800} sx={{ mt: 5 }} gutterBottom>❓ Common questions</Typography>
+    <Typography variant="h5" component="h2" fontWeight={800} sx={{ mt: 5 }} gutterBottom>Common questions</Typography>
     {HOME_FAQS.map(([q, a]) => (<Accordion key={q} sx={{ mb: 1 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>{q}</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary">{a}</Typography></AccordionDetails></Accordion>))}
   </>);
 
@@ -403,15 +425,15 @@ export default function App() {
       <Link href="/" onClick={(e) => go(e, '/')} underline="hover" color="inherit">Home</Link>{' / '}{ID_TO_CAT[cur.id] || cur.cat}
     </Typography>
     <Typography variant="h4" component="h1" fontWeight={800} gutterBottom>{showTitle(cur)}</Typography>
-    <Typography variant="body1" color="text.secondary" gutterBottom>{CAT_EMOJI[ID_TO_CAT[cur.id]] || ''}{' '}{ID_TO_CAT[cur.id] || cur.cat}{' · No sign-up.'}</Typography>
+    <Typography variant="body1" color="text.secondary" gutterBottom>{ID_TO_CAT[cur.id] || cur.cat}{' · No sign-up.'}</Typography>
     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>Guide last updated{' '}{CONTENT_UPDATED}.</Typography>
     {cur.id === 'salarytax' && (<Typography variant="body1" sx={{ mb: 2, fontWeight: 700 }}>Quick answer: Up to Rs 600,000 a year is tax-free; Rs 100,000 a month pays Rs 500 a month in tax.</Typography>)}
     <Suspense fallback={<Card elevation={2} sx={{ borderRadius: 3 }}><CardContent sx={{ py: 5, textAlign: 'center' }}><CircularProgress /><Typography color="text.secondary" sx={{ mt: 1 }}>Loading calculator...</Typography></CardContent></Card>}><cur.Component key={cur.id} /></Suspense>
     {cur.id === 'marla' && (<>
-      <Box sx={{ bgcolor: '#fff8e1', borderRadius: 2, p: 2, mt: 2 }}><Typography variant="body2">225 sq ft is common in housing societies like DHA and Bahria Town. 250 sq ft is the CDA Islamabad standard. 272.25 sq ft is the revenue-record Marla. Confirm from your plot documents which one applies to you.</Typography></Box>
+      <Box sx={{ bgcolor: (theme) => alpha(theme.palette.secondary.main, 0.12), borderRadius: 2, p: 2, mt: 2 }}><Typography variant="body2">225 sq ft is common in housing societies like DHA and Bahria Town. 250 sq ft is the CDA Islamabad standard. 272.25 sq ft is the revenue-record Marla. Confirm from your plot documents which one applies to you.</Typography></Box>
       <Accordion sx={{ mt: 2 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>How it works</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary">Square feet = Marla × sq ft per Marla. Square yards = square feet ÷ 9. Square metres = square feet ÷ 10.7639. Kanal = Marla ÷ 20. Acre = Marla ÷ 160.</Typography></AccordionDetails></Accordion>
       <Accordion><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>225 vs 250 vs 272.25 - quick table</Typography></AccordionSummary><AccordionDetails><Box sx={{ overflowX: 'auto' }}><Table size="small" sx={{ minWidth: 480 }}><TableBody>{[[1, 225, 250, 272.25], [5, 1125, 1250, 1361.25], [10, 2250, 2500, 2722.5], [20, 4500, 5000, 5445]].map(([m, a, b, c]) => (<TableRow key={m}><TableCell>{m === 20 ? '20 = 1 Kanal' : `${m} Marla`}</TableCell><TableCell>{fmt(a)}</TableCell><TableCell>{fmt(b)}</TableCell><TableCell>{fmt(c)}</TableCell></TableRow>))}</TableBody></Table></Box></AccordionDetails></Accordion>
-      <Accordion><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>❓ Common questions</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary" paragraph><b>How many Marla in 1 Kanal?</b> 20 Marla, under both standards.</Typography><Typography variant="body2" color="text.secondary"><b>Which standard should I use?</b> The one written in your plot documents.</Typography></AccordionDetails></Accordion>
+      <Accordion><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>Common questions</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary" paragraph><b>How many Marla in 1 Kanal?</b> 20 Marla, under both standards.</Typography><Typography variant="body2" color="text.secondary"><b>Which standard should I use?</b> The one written in your plot documents.</Typography></AccordionDetails></Accordion>
     </>)}
     <Box sx={{ mt: 2 }}><Button variant="outlined" color="success" startIcon={<WhatsAppIcon />} component="a" href={`https://wa.me/?text=${encodeURIComponent(showTitle(cur) + ' - ' + toolUrl(cur.slug))}`} target="_blank" rel="noopener noreferrer">Share on WhatsApp</Button></Box>
     {guide && (<Box component="section" sx={{ mt: 4 }}>{guide.map((s) => (<Box key={s.h} sx={{ mb: 3 }}>
@@ -419,17 +441,21 @@ export default function App() {
       {s.p.map((para, i) => (<Typography key={i} variant="body1" color="text.secondary" paragraph>{renderGuideText(para)}</Typography>))}
       {s.table && (<Box sx={{ overflowX: 'auto' }}><Table size="small" sx={{ minWidth: Math.max(320, s.table.head.length * 130) }}><TableBody><TableRow>{s.table.head.map((c) => (<TableCell key={c} sx={{ fontWeight: 700 }}>{c}</TableCell>))}</TableRow>{s.table.rows.map((r, ri) => (<TableRow key={ri}>{r.map((c, ci) => (<TableCell key={ci}>{c}</TableCell>))}</TableRow>))}</TableBody></Table></Box>)}
     </Box>))}</Box>)}
-    {cur.id !== 'marla' && cur.faqs && cur.faqs.length > 0 && (<Accordion sx={{ mt: 2 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>❓ Common questions</Typography></AccordionSummary><AccordionDetails>{cur.faqs.map(([fq, fa]) => (<Typography key={fq} variant="body2" color="text.secondary" paragraph><b>{fq}</b> {fa}</Typography>))}</AccordionDetails></Accordion>)}
-    {(() => { const topical = TOPICAL_RELATED[cur.id]; const sib = topical ? topical.map((id) => BY_ID[id]).filter(Boolean) : (CATEGORIES.find((c) => c.name === ID_TO_CAT[cur.id]) || { tools: [] }).tools.filter((t) => t.id !== cur.id).slice(0, 4); return sib.length > 0 ? (<Box sx={{ mt: 5 }}><Typography variant="h6" component="h2" fontWeight={700} gutterBottom>🔗 More free tools</Typography><ToolGrid tools={sib} go={go} mdCols={2} /></Box>) : null; })()}
+    {cur.id !== 'marla' && cur.faqs && cur.faqs.length > 0 && (<Accordion sx={{ mt: 2 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>Common questions</Typography></AccordionSummary><AccordionDetails>{cur.faqs.map(([fq, fa]) => (<Typography key={fq} variant="body2" color="text.secondary" paragraph><b>{fq}</b> {fa}</Typography>))}</AccordionDetails></Accordion>)}
+    {(() => { const topical = TOPICAL_RELATED[cur.id]; const sib = topical ? topical.map((id) => BY_ID[id]).filter(Boolean) : (CATEGORIES.find((c) => c.name === ID_TO_CAT[cur.id]) || { tools: [] }).tools.filter((t) => t.id !== cur.id).slice(0, 4); return sib.length > 0 ? (<Box sx={{ mt: 5 }}><Typography variant="h6" component="h2" fontWeight={700} gutterBottom>More free tools</Typography><ToolGrid tools={sib} go={go} mdCols={2} /></Box>) : null; })()}
   </Box>);
 
   const aboutView = staticPage('About Kalkio', (<>
+    <Box component="img" src="/images/hero.webp" alt="A desk with a calculator, notebook and laptop" sx={{ width: '100%', height: { xs: 180, md: 260 }, objectFit: 'cover', objectPosition: 'center', borderRadius: 3, display: 'block', mb: 3 }} />
     <Typography variant="body1" paragraph>Kalkio is a collection of 52 free calculators and converters, covering property, tax and salary, prices, finance, files and everyday calculations.</Typography>
     <Typography variant="body1" paragraph>How to use it: search for a tool or browse a category, enter your numbers, and the result appears straight away. There is nothing to install and no account to create.</Typography>
     <Typography variant="body1" paragraph>Every tool runs in the visitor’s browser - there is no backend, no database, no login and no sign-up. File converters also run fully in the browser, so your files never leave your device.</Typography>
     <Typography variant="body1" paragraph>The tools cover everyday needs: converting Marla and Kanal, working out salary tax, Zakat and PTA tax, checking petrol and gold prices, converting files, and checking GTA 6 prices and release dates.</Typography>
     <Typography variant="body1" paragraph>Tax, bill and fuel results are estimates - confirm official rates before a financial decision.</Typography>
     <Typography variant="body1" paragraph>Questions or a tool to suggest? Email <Link href="mailto:sammykhanmalng@gmail.com">sammykhanmalng@gmail.com</Link>.</Typography>
+    <Typography id="photo-credits" variant="h5" component="h2" fontWeight={700} gutterBottom sx={{ mt: 4 }}>Photo credits</Typography>
+    <Typography variant="body2" color="text.secondary" paragraph>Photos on this site are real photographs. The hero, fun and gaming photos are public domain (CC0). The photos below are shared under Creative Commons licences, credited here as the licences require:</Typography>
+    <Typography variant="body2" color="text.secondary" paragraph>Modern house exterior — Shixart1985, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. Calculator with coins — Images of Money, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. Petrol station at night — Harrison Keely, <Link href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</Link>. Scanning documents — NAVFAC, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. Writing in a notebook — Shixart1985, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>.</Typography>
   </>));
   const contactView = staticPage('Contact Kalkio', (<>
     <Typography variant="body1" paragraph>Questions about Kalkio? Email us at <Link href="mailto:sammykhanmalng@gmail.com">sammykhanmalng@gmail.com</Link>.</Typography>
