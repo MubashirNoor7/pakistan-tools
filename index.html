@@ -14,6 +14,7 @@
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:image" content="https://kalkio.vercel.app/og.png" />
 <meta name="google-site-verification" content="nCHUWal9io-NP2kVtOQ2iGv_i6iePANPn9qOADOHrgE" />
+<meta name="theme-color" content="#FAFAF9" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <!-- Google Analytics 4: Kalkio property, Measurement ID G-3EPG6P6KC5 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-3EPG6P6KC5"></script>
@@ -27,6 +28,11 @@
 </head>
 <body style="margin:0">
 <div id="root"></div>
+<script>
+// Set the page background before React loads, so dark-mode visitors never
+// see a white flash. Reads the stored choice, else the system preference.
+(function(){try{var m=localStorage.getItem('kalkio-theme');var d=m?m==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;var c=d?'#121212':'#FAFAF9';document.documentElement.style.background=c;document.documentElement.style.colorScheme=d?'dark':'light';var t=document.querySelector('meta[name="theme-color"]');if(t)t.setAttribute('content',c);}catch(e){}})();
+</script>
 <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>
