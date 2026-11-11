@@ -45,7 +45,7 @@ function AmortTable({ principal, rate, months }) {
   const label = view === 'yearly' ? 'Year' : 'Month';
   return (<Box sx={{ mt: 2 }}>
     <ToggleButtonGroup value={view} exclusive size="small" onChange={(_, nv) => nv && setView(nv)} sx={{ mb: 1 }}><ToggleButton value="monthly">Monthly</ToggleButton><ToggleButton value="yearly">Yearly</ToggleButton></ToggleButtonGroup>
-    <TableContainer sx={{ maxHeight: 320, border: '1px solid #e0e0e0', borderRadius: 2 }}>
+    <TableContainer sx={{ maxHeight: 320, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
       <Table size="small" stickyHeader>
         <TableHead><TableRow><TableCell>{label}</TableCell><TableCell align="right">Payment</TableCell><TableCell align="right">Interest</TableCell><TableCell align="right">Principal</TableCell><TableCell align="right">Balance</TableCell></TableRow></TableHead>
         <TableBody>{rows.map((r) => (<TableRow key={r.n}><TableCell>{r.n}</TableCell><TableCell align="right">{fmt(r.pay)}</TableCell><TableCell align="right">{fmt(r.interest)}</TableCell><TableCell align="right">{fmt(r.princ)}</TableCell><TableCell align="right">{fmt(r.bal)}</TableCell></TableRow>))}</TableBody>
@@ -65,7 +65,7 @@ export function LoanEmiTool() {
     <TextField fullWidth label="Loan duration (years)" type="number" value={years} onChange={(e) => setYears(e.target.value)} />
     {p > 0 && n > 0 && (<><Hero value={fmt(m) + ' / month'} unit="Monthly EMI" /><Rows rows={[['Total paid', fmt(total)], ['Total interest', fmt(total - p)], ['Principal', fmt(p)]]} />
       <Typography variant="subtitle1" fontWeight={700} sx={{ mt: 3, mb: 1 }}>EMI ready reckoner — same rate and duration</Typography>
-      <TableContainer sx={{ border: '1px solid #e0e0e0', borderRadius: 2, mb: 2 }}><Table size="small"><TableHead><TableRow><TableCell>Loan amount</TableCell><TableCell align="right">EMI / month</TableCell></TableRow></TableHead>
+      <TableContainer sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, mb: 2 }}><Table size="small"><TableHead><TableRow><TableCell>Loan amount</TableCell><TableCell align="right">EMI / month</TableCell></TableRow></TableHead>
         <TableBody>{reckoner.map((a) => (<TableRow key={a}><TableCell>{fmt(a)}</TableCell><TableCell align="right">{fmt(emi(a, r, n))}</TableCell></TableRow>))}</TableBody></Table></TableContainer>
       <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1 }}>Amortisation schedule</Typography>
       <AmortTable principal={p} rate={r} months={n} /></>)}
@@ -359,7 +359,7 @@ export function PngToJpgTool() {
   const convertOne = (f, q) => new Promise((resolve, reject) => {
     const img = new Image(); const src = URL.createObjectURL(f);
     img.onload = () => {
-      const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(img, 0, 0);
+      const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; const ctx = c.getContext('2d'); ctx.fillStyle = 'white'; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(img, 0, 0);
       c.toBlob((b) => { URL.revokeObjectURL(src); if (b) resolve({ name: f.name.replace(/\.[^.]+$/, '') + '.jpg', url: URL.createObjectURL(b), size: b.size }); else reject(new Error('convert failed')); }, 'image/jpeg', q / 100);
     };
     img.onerror = () => { URL.revokeObjectURL(src); reject(new Error('decode failed')); };

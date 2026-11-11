@@ -95,7 +95,7 @@ function FileTool({ from, to, mime, ext, quality = 0.92, batch = false, controls
     return new Promise((resolve) => {
       const img = new Image(); const src = URL.createObjectURL(f); img.onload = () => {
         const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; const ctx = c.getContext('2d');
-        if (mime === 'image/jpeg') { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height); }
+        if (mime === 'image/jpeg') { ctx.fillStyle = 'white'; ctx.fillRect(0, 0, c.width, c.height); }
         ctx.drawImage(img, 0, 0); c.toBlob((b) => { if (b) resolve({ url: URL.createObjectURL(b) }); else resolve({ error: 'Conversion failed in this browser.' }); }, mime, quality);
       }; img.onerror = () => resolve({ error: from === 'HEIC' ? 'This HEIC file could not be decoded in this browser. Try exporting it as JPG from Photos, or try again in Chrome / Safari.' : 'This file could not be decoded in this browser.' }); img.src = src;
     });

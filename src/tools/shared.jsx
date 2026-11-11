@@ -2,6 +2,7 @@
 // is the only tool code the home page loads up front).
 import React, { useState, useRef } from 'react';
 import { Box, Typography, List, ListItem, ListItemText, Button, TextField } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 export const fmt = (n) => n.toLocaleString('en-US', { maximumFractionDigits: 2 });
 // Thousand separators for a digits-only string: '1000000' -> '1,000,000'.
 export const formatCommas = (digits) => String(digits || '').replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -36,7 +37,7 @@ export function CopyResultButton({ text }) {
 
 export function Hero({ value, unit, eq }) {
   const text = value + (unit ? ' ' + unit : '') + (eq ? ' (' + eq + ')' : '');
-  return (<Box textAlign="center" sx={{ py: 3, px: 2, mb: 2, borderRadius: 3, bgcolor: '#E6F4F2' }}><Typography variant="h3" fontWeight={800} color="primary.main">{value}</Typography><Typography color="text.secondary">{unit}</Typography>{eq && <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>{eq}</Typography>}<CopyResultButton text={text} /></Box>);
+  return (<Box textAlign="center" sx={{ py: 3, px: 2, mb: 2, borderRadius: 3, bgcolor: (theme) => alpha(theme.palette.primary.main, 0.10) }}><Typography variant="h3" fontWeight={800} color="primary.main">{value}</Typography><Typography color="text.secondary">{unit}</Typography>{eq && <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>{eq}</Typography>}<CopyResultButton text={text} /></Box>);
 }
 export function Rows({ rows }) {
   return (<List disablePadding>{rows.map(([k, v], i) => (<ListItem key={k} disableGutters divider={i < rows.length - 1}><ListItemText primary={k} primaryTypographyProps={{ color: 'text.secondary' }} /><Typography fontWeight={700}>{v}</Typography></ListItem>))}</List>);

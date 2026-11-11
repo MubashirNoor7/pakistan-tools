@@ -56,8 +56,8 @@ function Wrap({ children, note }) {
 const SAMPLE = `<!DOCTYPE html>
 <html>
 <head><style>
-body { margin: 0; font-family: sans-serif; background: #1565c0; color: #fff; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
-.box { width: 80px; height: 80px; background: #ffca28; border-radius: 12px; animation: slide 2s ease-in-out infinite alternate; }
+body { margin: 0; font-family: sans-serif; background: dodgerblue; color: white; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
+.box { width: 80px; height: 80px; background: gold; border-radius: 12px; animation: slide 2s ease-in-out infinite alternate; }
 @keyframes slide { from { transform: translateX(-120px); } to { transform: translateX(120px); } }
 h1 { font-size: 28px; margin: 20px 0 0; }
 p { font-size: 16px; opacity: 0.9; }
@@ -329,7 +329,7 @@ export function HtmlToVideoTool() {
     // live). 1080p snapshots at 3x, so a 640x360 preview becomes 1920x1080
     // and a 360x640 vertical preview becomes 1080x1920. The long side is
     // still capped at 1920 below, and the 1800-frame cap still applies.
-    const shotOpts = { backgroundColor: '#ffffff', logging: false, useCORS: true, scale: resolution === '1080' ? 3 : (live ? 1.5 : 2) };
+    const shotOpts = { backgroundColor: 'white', logging: false, useCORS: true, scale: resolution === '1080' ? 3 : (live ? 1.5 : 2) };
     if (!fullBody) { shotOpts.width = w; shotOpts.height = h; }
     let first;
     try {
@@ -347,7 +347,7 @@ export function HtmlToVideoTool() {
     if (longest > 1920) { const k = 1920 / longest; cw = Math.round(cw * k); ch = Math.round(ch * k); }
     canvas.width = cw; canvas.height = ch;
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, cw, ch);
+    ctx.fillStyle = 'white'; ctx.fillRect(0, 0, cw, ch);
     ctx.drawImage(first, 0, 0, cw, ch);
     return { canvas, ctx, cw, ch, shotOpts };
   };
@@ -630,8 +630,8 @@ export function HtmlToVideoTool() {
   return (<Wrap>
     <TextField fullWidth multiline rows={10} label="Your HTML code (inline CSS allowed)" value={code} onChange={(e) => setCode(e.target.value)} sx={{ mb: 2, '& textarea': { fontFamily: 'monospace', fontSize: 13 } }} />
     <Typography variant="subtitle1" fontWeight={700} gutterBottom>Live preview</Typography>
-    <Box sx={{ mb: 1, border: '1px solid #e0e0e0', borderRadius: 2, overflow: 'hidden' }}>
-      <iframe ref={iframeRef} title="HTML preview" sandbox="allow-scripts allow-same-origin" srcDoc={previewCode} onLoad={onPreviewLoad} style={{ width: previewSize ? previewSize.w : '100%', height: previewSize ? previewSize.h : 360, border: 0, display: 'block', background: '#fff', margin: previewSize ? '0 auto' : undefined }} />
+    <Box sx={{ mb: 1, border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}>
+      <iframe ref={iframeRef} title="HTML preview" sandbox="allow-scripts allow-same-origin" srcDoc={previewCode} onLoad={onPreviewLoad} style={{ width: previewSize ? previewSize.w : '100%', height: previewSize ? previewSize.h : 360, border: 0, display: 'block', background: 'white', margin: previewSize ? '0 auto' : undefined }} />
     </Box>
     <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
       {paused
@@ -678,8 +678,8 @@ export function HtmlToVideoTool() {
     <canvas ref={canvasRef} style={{ display: 'none' }} />
     {videoUrl && (<>
       <Typography variant="subtitle1" fontWeight={700} gutterBottom>Your video</Typography>
-      <Box sx={{ mb: 2, border: '1px solid #e0e0e0', borderRadius: 2, overflow: 'hidden' }}>
-        <video src={videoUrl} controls style={{ width: '100%', display: 'block', background: '#000' }} />
+      <Box sx={{ mb: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}>
+        <video src={videoUrl} controls style={{ width: '100%', display: 'block', background: 'black' }} />
       </Box>
       {resultInfo && <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Your video: {resultInfo}</Typography>}
       <Button fullWidth variant="outlined" component="a" href={videoUrl} download={format === 'mp4' ? 'kalkio-html-video.mp4' : 'kalkio-html-video.webm'}>Download video ({format === 'mp4' ? '.MP4' : '.WEBM'})</Button>
