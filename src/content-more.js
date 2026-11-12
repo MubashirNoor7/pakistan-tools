@@ -21,6 +21,17 @@ const mort = (() => { const budget = 100000 * 0.30; const r = 0.12 / 12; const n
 const sip = (P, rate, years, step) => { const r = rate / 100 / 12; let inv = 0, val = 0, cur = P; for (let y = 0; y < years; y++) { for (let m = 0; m < 12; m++) { inv += cur; val = (val + cur) * (1 + r); } cur *= 1 + step / 100; } return { inv, val }; };
 const sipA = sip(5000, 12, 10, 0), sipB = sip(5000, 12, 10, 10);
 const loan1 = emi(1000000, 12, 60), home1 = emi(4000000, 9, 240), car1 = emi(2000000, 10, 60);
+// Electricity worked checks (NEPRA SRO 279(I)/2026)
+const elecProt150 = 100 * 10.54 + 50 * 13.01; // 1,704.50
+const elecUnprot150 = 150 * 28.91; // 4,336.50
+// Sui gas worked check: non-protected 1.0 hm3 at 3.5 MMBTU per hm3
+const gasExEnergy = 0.6 * 3.5 * 850 + 0.4 * 3.5 * 1250; // 3,535
+const gasExSub = gasExEnergy + 1500 + 40; // 5,075
+const gasExGst = gasExSub * 0.18; // 913.50
+const gasExTotal = gasExSub + gasExGst; // 5,988.50
+// Token tax worked check: 1300cc Punjab filer, Rs 4,000,000 invoice
+const tokToken = 4000000 * 0.003; // 12,000
+const tokTotal = tokToken + 2500 + 200; // 14,700
 // Age example 1 Jan 2000 to 4 Nov 2026
 const ageDays = Math.floor((new Date('2026-11-04') - new Date('2000-01-01')) / 86400000);
 const dateDays = Math.abs(Math.round((new Date('2026-11-04') - new Date('2000-01-01')) / 86400000));
@@ -464,5 +475,74 @@ export const CONTENT_MORE = {
       'Pick the Marla standard from your documents: 272.25 sq ft (revenue record), 225 sq ft (housing societies) or 250 sq ft (CDA Islamabad), or enter your own size.',
     ] },
     { h: 'Example', p: ['A plot of 5 Marla at the 272.25 standard is 1,361.25 sq ft. If it costs Rs 10,000,000, that is Rs 2,000,000 per Marla and about Rs 7,346 per sq ft.'] },
+  ],
+  electricity: [
+    { h: 'How the electricity bill is worked out', p: [
+      'The base tariff is NEPRA SRO 279(I)/2026, effective 12 Feb 2026, and it is the same for every DISCO, including K-Electric. There are three kinds of domestic consumer. Lifeline covers up to 100 units with no fixed charge. Protected covers up to 200 units a month, for homes that stayed at or below 200 units a month for the previous six months, and is charged slab by slab. Unprotected charges every unit at the rate of the slab the use lands in. GST of 18% is added on the subtotal, and the fixed charge is per kW of sanctioned load.',
+      'Above 200 units you lose protected status, and the whole bill is worked out at unprotected rates. Above 100 units the lifeline rates no longer apply either.',
+    ] },
+    { h: 'Unprotected rates (rate applies to every unit)', p: ['Fixed charge is per kW of sanctioned load:'], table: {
+      head: ['Units used', 'Rate per unit', 'Fixed charge per kW'],
+      rows: [[100, 22.44, 275], [200, 28.91, 300], [300, 33.10, 350], [400, 36.46, 400], [500, 38.95, 500], [600, 40.22, 675], [700, 41.85, 675]].map(([u, r, f]) => ['Up to ' + n0(u) + ' units', 'Rs ' + n2(r), 'Rs ' + n0(f)]).concat([['Above 700 units', 'Rs 47.20', 'Rs 675']]) } },
+    { h: 'Protected and lifeline rates', p: ['Protected is charged slab by slab: 1 to 100 units at Rs 10.54 per unit with a fixed charge of Rs 200 per kW, and 101 to 200 units at Rs 13.01 per unit with a fixed charge of Rs 300 per kW. Lifeline is 1 to 50 units at Rs 3.95 per unit and 51 to 100 units at Rs 7.74 per unit, with no fixed charge.'] },
+    { h: 'Worked examples: 150 units', p: ['The same 150 units cost very different amounts by category (energy only, before fixed charge and GST):'], table: {
+      head: ['Category', 'Working', 'Energy charge'],
+      rows: [['Protected', '100 x Rs 10.54 + 50 x Rs 13.01', 'Rs ' + n2(elecProt150)], ['Unprotected', '150 x Rs 28.91', 'Rs ' + n2(elecUnprot150)]] } },
+    { h: 'What the estimate leaves out', p: [
+      'This estimate is before the FC surcharge (about Rs 3.23 per unit), electricity duty (about 1.5%) and the Rs 35 TV fee, so a real bill is higher. FCA (fuel charge adjustment) and QTA (quarterly adjustment) also change monthly - use the Fuel Price Adjustment box in the tool for the value on your bill. The tool does not cover time-of-use billing for sanctioned loads of 5 kW and above.',
+    ] },
+  ],
+  gasbill: [
+    { h: 'How the sui gas bill is worked out', p: [
+      'The rates are the OGRA Gas Sale Price Notification of 29 Jun 2025, effective 1 Jul 2025, unchanged for FY 2026-27, and they are the same for SNGPL and SSGC. Gas is priced per MMBTU, but your meter reads in hm3 (100 cubic metres = 1 hm3). The tool converts hm3 to MMBTU with the GCV factor from your bill, 3.5 MMBTU per hm3 by default, and you can edit it.',
+      'Domestic consumers get the benefit of one preceding slab: use up to the previous slab boundary is charged at the previous slab rate, and only the excess is charged at the rate of the slab you landed in. Above 4 hm3 (non-protected) that benefit ends and the whole month is charged at Rs 4,200 per MMBTU. GST of 18% is added on the subtotal, which includes the energy charge, the fixed charge and the Rs 40 meter rent.',
+    ] },
+    { h: 'Protected slabs (Nov-Feb average up to 0.9 hm3)', p: ['Fixed charge Rs 600 a month, meter rent Rs 40 a month:'], table: {
+      head: ['Monthly use', 'Rs per MMBTU'],
+      rows: [['Up to 0.25 hm3', 'Rs 200'], ['Up to 0.5 hm3', 'Rs 250'], ['Up to 0.6 hm3', 'Rs 300'], ['Up to 0.9 hm3', 'Rs 350']] } },
+    { h: 'Non-protected slabs', p: ['Fixed charge Rs 1,500 a month up to 1.5 hm3 and Rs 3,000 a month above 1.5 hm3, meter rent Rs 40 a month:'], table: {
+      head: ['Monthly use', 'Rs per MMBTU'],
+      rows: [['Up to 0.25 hm3', 'Rs 500'], ['Up to 0.6 hm3', 'Rs 850'], ['Up to 1 hm3', 'Rs 1,250'], ['Up to 1.5 hm3', 'Rs 1,450'], ['Up to 2 hm3', 'Rs 1,900'], ['Up to 3 hm3', 'Rs 3,300'], ['Up to 4 hm3', 'Rs 3,800'], ['Above 4 hm3', 'Rs 4,200 on everything']] } },
+    { h: 'Worked example: non-protected, 1.0 hm3', p: ['At 3.5 MMBTU per hm3, 1.0 hm3 is 3.5 MMBTU. The first 0.6 hm3 (2.1 MMBTU) is charged at Rs 850 and the remaining 0.4 hm3 (1.4 MMBTU) at Rs 1,250:'], table: {
+      head: ['Item', 'Amount'],
+      rows: [['Energy charge', 'Rs ' + n2(gasExEnergy)], ['Fixed charge', 'Rs 1,500'], ['Meter rent', 'Rs 40'], ['Subtotal', 'Rs ' + n2(gasExSub)], ['GST (18%)', 'Rs ' + n2(gasExGst)], ['Total bill', 'Rs ' + n2(gasExTotal)]] } },
+    { h: 'Protected status and new connections', p: [
+      'Protected status is set by your average use over the four winter months, November to February, not by one month. If that average is above 0.9 hm3 a month you are non-protected.',
+      'New domestic connections are given only on the RLNG tariff, not on these slabs, so this tool covers existing system-gas connections only.',
+    ] },
+  ],
+  tokentax: [
+    { h: 'How car token tax works in 2026-27', p: [
+      'What you pay at the counter is two charges together: the provincial token tax, set by your province, and the federal advance income tax under Section 234 of the Income Tax Ordinance, which the Excise office collects with it. Section 234 is adjustable against your income tax return. The tool shows both lines and the total.',
+      'In Punjab and Islamabad, cars up to 1000cc pay Rs 20,000 once for life. Above 1000cc the token is a share of the invoice price every year: Punjab 0.3% for 1001 to 2000cc and 0.4% above 2000cc, Islamabad 0.25% and 0.35%. Sindh and KPK charge a fixed yearly amount by engine size instead.',
+    ] },
+    { h: 'Punjab and Islamabad token tax', p: ['The rebate is 10% if the full year is paid by 31 August (next window: 31 August 2027). It applies to annual tax only, not to the lifetime token:'], table: {
+      head: ['Engine size', 'Punjab (per year)', 'Islamabad (per year)'],
+      rows: [['Up to 1000cc', 'Rs 20,000 once', 'Rs 20,000 once'], ['1001 to 2000cc', '0.3% of invoice price', '0.25% of invoice price'], ['Above 2000cc', '0.4% of invoice price', '0.35% of invoice price']] } },
+    { h: 'Sindh and KPK token tax (fixed, per year)', p: ['No invoice price is needed in these provinces - the amount depends only on engine size:'], table: {
+      head: ['Engine size', 'Sindh', 'KPK'],
+      rows: [['Up to 1000cc', 'Rs 1,500', 'Rs 2,000'], ['1001 to 1300cc', 'Rs 2,000', 'Rs 3,000'], ['1301 to 1500cc', 'Rs 4,000', 'Rs 4,000'], ['1501 to 1600cc', 'Rs 4,000', 'Rs 5,000'], ['1601 to 2000cc', 'Rs 4,500', 'Rs 5,000'], ['2001 to 2500cc', 'Rs 5,000', 'Rs 5,000'], ['Above 2500cc', 'Rs 7,000', 'Rs 8,000']] } },
+    { h: 'Section 234 advance income tax (filer)', p: ['The same table applies in every province. Non-filers pay double under the FBR rate card. Where the token is paid once for life, the lump-sum amount is collected instead of the yearly amount. No Section 234 is collected on a car used in Pakistan for more than 10 years:'], table: {
+      head: ['Engine size', 'Filer, per year', 'Filer, lump sum'],
+      rows: [[1000, 800, 10000], [1199, 1500, 18000], [1299, 1750, 20000], [1499, 2500, 30000], [1599, 3750, 45000], [1999, 4500, 60000]].map(([c, a, l]) => ['Up to ' + n0(c) + 'cc', 'Rs ' + n0(a), 'Rs ' + n0(l)]).concat([['2000cc and above', 'Rs 10,000', 'Rs 120,000']]) } },
+    { h: 'Worked example: 1300cc Punjab filer', p: ['On an invoice price of Rs 4,000,000:'], table: {
+      head: ['Item', 'Amount'],
+      rows: [['Token tax (0.3% of Rs 4,000,000)', 'Rs ' + n0(tokToken)], ['Section 234 (1300 to 1499cc, filer)', 'Rs 2,500'], ['Punjab professional tax', 'Rs 200'], ['Total due for the year', 'Rs ' + n0(tokTotal)], ['Token tax with 10% early rebate', 'Rs ' + n0(tokToken * 0.9)]] } },
+    { h: 'Motorcycles and Balochistan', p: [
+      'A motorcycle pays Rs 1,500 once for life in Punjab. Section 234 is not charged on motorcycles.',
+      'Balochistan uses its own schedule, which could not be confirmed against a second source, so it is not in this tool - check your Balochistan excise office. One more caution: some Excise offices collect three times the filer Section 234 amount from non-filers in practice, although the FBR rate card says double, so check the amount on your payment slip.',
+    ] },
+  ],
+  dailywage: [
+    { h: 'How daily wage is worked out', p: [
+      'Daily wage is the monthly wage divided by 26 working days, the standard 6-day-week convention, and hourly wage is daily wage divided by 8 hours. Pick your province and the tool pre-fills the notified minimum wage for 2026-27, which you can edit to your actual wage. Enter the days worked in the month and the tool shows the daily wage, the hourly wage and the pay for the days worked.',
+    ] },
+    { h: 'Notified minimum wages 2026-27', p: ['Monthly minimum wage, with the daily and hourly wage it gives (monthly divided by 26, then by 8):'], table: {
+      head: ['Province', 'Monthly minimum', 'Daily wage', 'Hourly wage'],
+      rows: [['Punjab', 40000], ['Sindh', 43000], ['KP', 40000], ['ICT', 40700]].map(([p, m]) => [p, 'Rs ' + n0(m), 'Rs ' + n2(m / 26), 'Rs ' + n2(m / 26 / 8)]) } },
+    { h: 'Worked examples', p: ['Punjab at Rs 40,000 a month: Rs 40,000 divided by 26 = Rs ' + n2(40000 / 26) + ' a day, and divided by 8 again = Rs ' + n2(40000 / 26 / 8) + ' an hour. Worked 20 days, the pay is 20 x Rs ' + n2(40000 / 26) + ' = Rs ' + n2(40000 / 26 * 20) + '. Sindh at Rs 43,000 a month: Rs 43,000 divided by 26 = Rs ' + n2(43000 / 26) + ' a day.'] },
+    { h: 'Rates change every July', p: [
+      'Minimum wages are re-notified, usually every July, so these figures go out of date. Re-check the current notification before relying on the result. Balochistan is not shown here because no verified notification for 2026-27 was found.',
+    ] },
   ],
 };

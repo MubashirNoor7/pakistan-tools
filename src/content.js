@@ -4,7 +4,7 @@
 // from the same slabs/bands the tool uses (checked 5 Nov 2026).
 // Shape: { h: heading, p: [paragraphs], table?: { head: [...], rows: [[...]] } }
 // Date the guide content was last updated (shown under each tool title).
-export const CONTENT_UPDATED = '10 Nov 2026';
+export const CONTENT_UPDATED = '13 Nov 2026';
 export const CONTENT_BY_ID = {
   salarytax: [
     { h: 'Quick answer', p: [
