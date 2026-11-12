@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { AppBar, Toolbar, Typography, Container, Card, CardContent, Box, TextField, Button, Accordion, AccordionSummary, AccordionDetails, Table, TableBody, TableRow, TableCell, CssBaseline, Link, CircularProgress, InputAdornment, IconButton } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -217,6 +217,8 @@ const POPULAR_IMAGE = {
   marla: { src: '/images/pop-marla.webp', alt: 'An empty plot of land in a neighbourhood' },
   pta: { src: '/images/pop-pta.webp', alt: 'A hand holding a smartphone' },
   currency: { src: '/images/pop-currency.webp', alt: 'Banknotes and coins from different countries' },
+  gta6price: { src: '/images/pop-gta6.webp', alt: 'A man holding two game controllers in front of a TV' },
+  htmltovideo: { src: '/images/pop-htmltovideo.webp', alt: 'Students editing video at a desk with monitors showing a timeline' },
 };
 // In dark mode the bright photos glare against the near-black page, so dim
 // them slightly (hero, popular cards, banners, About photo).
@@ -227,7 +229,7 @@ CATEGORIES.forEach((c) => c.tools.forEach((t) => { ID_TO_CAT[t.id] = c.name; }))
 // A page with a list here shows exactly those links; every other page shows
 // the first 4 tools from its own category.
 const TOPICAL_RELATED = { salarytax: ['bps', 'freelancer', 'taxslab', 'salarycalc', 'zakat', 'pta'] };
-const POPULAR = ['jpgtopdf', 'loanemi', 'age', 'bmi', 'mortgage', 'marla', 'pta', 'currency'].map((id) => BY_ID[id]).filter(Boolean);
+const POPULAR = ['gta6price', 'jpgtopdf', 'loanemi', 'age', 'bmi', 'mortgage', 'marla', 'pta', 'currency', 'htmltovideo'].map((id) => BY_ID[id]).filter(Boolean);
 // Tiny pathname router - no new dependency. Trailing slashes are ignored.
 function parseRoute(pathname) {
   const p = (pathname.replace(/\/+$/, '') || '/');
@@ -269,17 +271,17 @@ const showTitle = (t) => (t && t.display) || (t && t.title) || '';
 // on purpose: the installed MUI Grid is legacy v1 and ignores the `size` prop.
 // Cards are text-only - the photo lives on the Most Popular cards, the
 // category banner and the tool-page banner instead.
-function ToolCard({ t, go }) {
+function ToolCard({ t, go, hideCat }) {
   return (<Card elevation={0} sx={{ height: '100%', transition: 'box-shadow 0.15s ease, transform 0.15s ease', '&:hover': { boxShadow: (theme) => (theme.palette.mode === 'dark' ? '0 6px 24px rgba(0,0,0,0.55)' : '0 6px 24px rgba(0,0,0,0.10)'), transform: 'translateY(-2px)' } }}>
     <CardContent component="a" href={`/tools/${t.slug}/`} onClick={(e) => go(e, `/tools/${t.slug}/`)} onMouseEnter={() => preloadTool(t.id)} onFocus={() => preloadTool(t.id)} sx={{ display: 'block', textDecoration: 'none', color: 'inherit', height: '100%' }}>
       <Typography fontWeight={700} sx={{ lineHeight: 1.35, minHeight: '2.7em', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{showTitle(t)}</Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>{ID_TO_CAT[t.id] || t.cat}</Typography>
+      {!hideCat && (<Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>{ID_TO_CAT[t.id] || t.cat}</Typography>)}
     </CardContent>
   </Card>);
 }
 
-function ToolGrid({ tools, go, mdCols = 3 }) {
-  return (<Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', md: `repeat(${mdCols}, minmax(0, 1fr))` } }}>{tools.map((t) => (<ToolCard key={t.id} t={t} go={go} />))}</Box>);
+function ToolGrid({ tools, go, mdCols = 3, hideCat }) {
+  return (<Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', md: `repeat(${mdCols}, minmax(0, 1fr))` } }}>{tools.map((t) => (<ToolCard key={t.id} t={t} go={go} hideCat={hideCat} />))}</Box>);
 }
 
 // Most Popular card: wide 3:2 photo on top, title below, never overlaid
@@ -306,7 +308,15 @@ export default function App({ mode = 'light', onToggleMode = () => {} }) {
   const [route, setRoute] = useState(() => parseRoute(window.location.pathname));
   const [q, setQ] = useState('');
   const [openCat, setOpenCat] = useState(null);
-  const navigate = (path) => { if (window.location.pathname !== path) { window.history.pushState(null, '', path); setRoute(parseRoute(path)); } window.scrollTo(0, 0); };
+  // Refs so scroll fixes can find the open category accordion even from
+  // handlers registered once (popstate): the header a click just opened,
+  // and the category to return to on Back.
+  const accordionRefs = useRef({});
+  const openCatRef = useRef(null);
+  useEffect(() => { openCatRef.current = openCat; }, [openCat]);
+  // Navigating clears the search text, so a tool clicked from the search
+  // results renders the tool at once instead of the results view.
+  const navigate = (path) => { setQ(''); if (window.location.pathname !== path) { window.history.pushState(null, '', path); setRoute(parseRoute(path)); } window.scrollTo(0, 0); };
   const go = (e, path) => { e.preventDefault(); navigate(path); };
   // Guide paragraphs can link to other tools with [[id|label]] tokens
   // (used by the salary-tax guide). Unknown ids render as plain text.
@@ -326,7 +336,7 @@ export default function App({ mode = 'light', onToggleMode = () => {} }) {
   const searchResults = query ? TOOLS.filter((t) => norm(t.title + ' ' + t.cat).includes(norm(query))) : [];
 
   useEffect(() => {
-    const onPop = () => setRoute(parseRoute(window.location.pathname));
+    const onPop = () => { const p = parseRoute(window.location.pathname); setRoute(p); if (p.kind === 'home' && openCatRef.current) setTimeout(() => accordionRefs.current[openCatRef.current]?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60); };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, []);
@@ -469,16 +479,16 @@ export default function App({ mode = 'light', onToggleMode = () => {} }) {
     </Box>
     <Typography variant="h5" component="h2" fontWeight={800} gutterBottom>Most popular</Typography>
     <PopularGrid tools={POPULAR} go={go} />
-    <Box id="categories" sx={{ mt: 5 }}>
+    <Box id="categories" sx={{ mt: 5, scrollMarginTop: '80px' }}>
       <Typography variant="h5" component="h2" fontWeight={800} gutterBottom>Browse all tools</Typography>
-      {CATEGORIES.map((c) => (<Accordion key={c.name} expanded={openCat === c.name} onChange={() => setOpenCat(openCat === c.name ? null : c.name)} sx={{ mb: 1 }}>
+      {CATEGORIES.map((c) => (<Accordion key={c.name} ref={(el) => { if (el) { accordionRefs.current[c.name] = el; } }} expanded={openCat === c.name} onChange={() => { const next = openCat === c.name ? null : c.name; setOpenCat(next); if (next) setTimeout(() => accordionRefs.current[next]?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 350); }} sx={{ mb: 1, scrollMarginTop: '80px' }}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>{c.name} <Typography component="span" variant="body2" color="text.secondary" fontWeight={400}>({c.tools.length} tool{c.tools.length === 1 ? '' : 's'})</Typography></Typography></AccordionSummary>
         <AccordionDetails>
           {openCat === c.name && (<>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{CAT_DESC[c.name]}</Typography>
-            <Box component="img" src={CAT_IMAGE[c.name]} alt={CAT_ALT[c.name]} loading="lazy" sx={{ width: '100%', aspectRatio: '16 / 9', maxHeight: { xs: 220, md: 360 }, objectFit: 'cover', borderRadius: 2, display: 'block', mb: 2, filter: dimDark }} />
+            <Box component="img" src={CAT_IMAGE[c.name]} alt={CAT_ALT[c.name]} loading="lazy" sx={{ width: '100%', aspectRatio: '16 / 9', maxHeight: { xs: 180, md: 320 }, objectFit: 'cover', borderRadius: 2, display: 'block', mb: 2, filter: dimDark }} />
           </>)}
-          <ToolGrid tools={c.tools} go={go} />
+          <ToolGrid tools={c.tools} go={go} hideCat />
         </AccordionDetails>
       </Accordion>))}
     </Box>
@@ -521,8 +531,8 @@ export default function App({ mode = 'light', onToggleMode = () => {} }) {
     <Typography variant="body1" paragraph>Tax, bill and fuel results are estimates - confirm official rates before a financial decision.</Typography>
     <Typography variant="body1" paragraph>Questions or a tool to suggest? Email <Link href="mailto:sammykhanmalng@gmail.com">sammykhanmalng@gmail.com</Link>.</Typography>
     <Typography id="photo-credits" variant="h5" component="h2" fontWeight={700} gutterBottom sx={{ mt: 4 }}>Photo credits</Typography>
-    <Typography variant="body2" color="text.secondary" paragraph>Photos on this site are real photographs. The fun and gaming photos and the calculator-and-receipts photo are public domain. The photos below are shared under Creative Commons licences, credited here as the licences require:</Typography>
-    <Typography variant="body2" color="text.secondary" paragraph>Calculator (home page) — Hayden Schiff, <Link href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</Link>. Contract and pen — Blogtrepreneur, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. First-birthday cake — JIP, <Link href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 3.0</Link>. Bathroom scale — Frank C. Müller, <Link href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</Link>. House keys — Shixart1985, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. Empty plot of land — Kambai Akau, <Link href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</Link>. Hand holding a phone — Santeri Viinamäki, <Link href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</Link>. Banknotes and coins — Santeri Viinamäki, <Link href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</Link>. Home office (this page) — Shixart1985, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. Modern house exterior — Shixart1985, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. Calculator with coins — Images of Money, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. Petrol station at night — Harrison Keely, <Link href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</Link>. Scanning documents — NAVFAC, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. Writing in a notebook — Shixart1985, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>.</Typography>
+    <Typography variant="body2" color="text.secondary" paragraph>Photos on this site are real photographs. The fun and gaming photos, the gaming-controllers photo and the calculator-and-receipts photo are public domain. The photos below are shared under Creative Commons licences, credited here as the licences require:</Typography>
+    <Typography variant="body2" color="text.secondary" paragraph>Calculator (home page) — Hayden Schiff, <Link href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</Link>. Contract and pen — Blogtrepreneur, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. First-birthday cake — JIP, <Link href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 3.0</Link>. Bathroom scale — Frank C. Müller, <Link href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</Link>. House keys — Shixart1985, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. Empty plot of land — Kambai Akau, <Link href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</Link>. Hand holding a phone — Santeri Viinamäki, <Link href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</Link>. Banknotes and coins — Santeri Viinamäki, <Link href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</Link>. Video editing — Faculty of Dramatic Arts in Belgrade, <Link href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</Link>. Home office (this page) — Shixart1985, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. Modern house exterior — Shixart1985, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. Calculator with coins — Images of Money, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. Petrol station at night — Harrison Keely, <Link href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</Link>. Scanning documents — NAVFAC, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. Writing in a notebook — Shixart1985, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>.</Typography>
   </>));
   const contactView = staticPage('Contact Kalkio', (<>
     <Typography variant="body1" paragraph>Questions about Kalkio? Email us at <Link href="mailto:sammykhanmalng@gmail.com">sammykhanmalng@gmail.com</Link>.</Typography>
