@@ -173,9 +173,10 @@ const CATEGORIES = [
   { name: 'Fun & Entertainment', ids: ['love'] },
   { name: 'Gaming', ids: ['gta6price', 'gta6download', 'gta6countdown', 'gta6pccheck', 'gta6totalcost', 'gta6preorder', 'gta6storage', 'gta6nztick', 'gta6pcdate'] },
 ].map((c) => ({ name: c.name, tools: c.ids.map((id) => BY_ID[id]).filter(Boolean) }));
-// One real photo per category - shown as the thumbnail on every tool card,
-// so a visitor recognises the subject at a glance. Photos live in
-// public/images/ (see CREDITS.md there); none is hotlinked or AI-made.
+// One real photo per category - shown as a wide banner at the top of the
+// category when it is opened, and as a slim banner on tool pages (see
+// CAT_ALT below). Photos live in public/images/ (see CREDITS.md there);
+// none is hotlinked or AI-made. Tool cards themselves are text-only.
 const CAT_IMAGE = {
   'Home & Property': '/images/home-property.webp',
   'Money & Tax': '/images/money-tax.webp',
@@ -185,6 +186,41 @@ const CAT_IMAGE = {
   'Fun & Entertainment': '/images/fun-entertainment.webp',
   'Gaming': '/images/gaming.webp',
 };
+const CAT_ALT = {
+  'Home & Property': 'A modern house exterior',
+  'Money & Tax': 'A calculator with coins on a desk',
+  'Prices & Fuel': 'Fuel pumps at a petrol station at night',
+  'Files & converters': 'Paperwork being scanned at a desk',
+  'Everyday tools': 'A person writing in a notebook at a desk',
+  'Fun & Entertainment': 'Three friends laughing together outdoors',
+  'Gaming': 'A person playing a video game with a controller',
+};
+// One short human line per category, shown under the heading when the
+// category is opened (TheCalculatorSite pattern).
+const CAT_DESC = {
+  'Home & Property': 'Marla, Kanal and plot sizes — work out your land and home numbers.',
+  'Money & Tax': 'Tax, salary, loans and everyday money, worked out in seconds.',
+  'Prices & Fuel': 'Gold, fuel and currency prices — and what a trip will cost.',
+  'Files & converters': 'Convert files and images in your browser. Nothing is uploaded.',
+  'Everyday tools': 'Age, BMI, words, dates and passwords — the small tools you use most.',
+  'Fun & Entertainment': 'Just for fun — try it, then share it.',
+  'Gaming': 'GTA 6 prices, downloads and release dates, all in one place.',
+};
+// One real photo per Most Popular tool, keyed by tool id (not category),
+// so no photo repeats across cards. Wide 3:2 photo on top, title below.
+const POPULAR_IMAGE = {
+  jpgtopdf: { src: '/images/pop-jpgtopdf.webp', alt: 'A contract document with a fountain pen' },
+  loanemi: { src: '/images/pop-loanemi.webp', alt: 'A calculator next to receipts and papers on a desk' },
+  age: { src: '/images/pop-age.webp', alt: 'A first-birthday cake with a number 1 candle' },
+  bmi: { src: '/images/pop-bmi.webp', alt: 'Feet on a bathroom weighing scale' },
+  mortgage: { src: '/images/pop-mortgage.webp', alt: 'A hand holding house keys with a house-shaped keyring' },
+  marla: { src: '/images/pop-marla.webp', alt: 'An empty plot of land in a neighbourhood' },
+  pta: { src: '/images/pop-pta.webp', alt: 'A hand holding a smartphone' },
+  currency: { src: '/images/pop-currency.webp', alt: 'Banknotes and coins from different countries' },
+};
+// In dark mode the bright photos glare against the near-black page, so dim
+// them slightly (hero, popular cards, banners, About photo).
+const dimDark = (theme) => (theme.palette.mode === 'dark' ? 'brightness(0.88)' : 'none');
 const ID_TO_CAT = {};
 CATEGORIES.forEach((c) => c.tools.forEach((t) => { ID_TO_CAT[t.id] = c.name; }));
 // Per-page topical related lists - must match prerender-plugin.mjs TOPICAL_RELATED.
@@ -231,21 +267,38 @@ const showTitle = (t) => (t && t.display) || (t && t.title) || '';
 
 // A tool as a card (home grids, search results, related tools). Plain CSS grid
 // on purpose: the installed MUI Grid is legacy v1 and ignores the `size` prop.
-// `showImage` is false inside a collapsed category accordion, so those
-// thumbnails never download until the visitor opens the category.
-function ToolCard({ t, go, showImage = true }) {
-  const img = CAT_IMAGE[ID_TO_CAT[t.id]];
+// Cards are text-only - the photo lives on the Most Popular cards, the
+// category banner and the tool-page banner instead.
+function ToolCard({ t, go }) {
   return (<Card elevation={0} sx={{ height: '100%', transition: 'box-shadow 0.15s ease, transform 0.15s ease', '&:hover': { boxShadow: (theme) => (theme.palette.mode === 'dark' ? '0 6px 24px rgba(0,0,0,0.55)' : '0 6px 24px rgba(0,0,0,0.10)'), transform: 'translateY(-2px)' } }}>
     <CardContent component="a" href={`/tools/${t.slug}/`} onClick={(e) => go(e, `/tools/${t.slug}/`)} onMouseEnter={() => preloadTool(t.id)} onFocus={() => preloadTool(t.id)} sx={{ display: 'block', textDecoration: 'none', color: 'inherit', height: '100%' }}>
-      {showImage && img && (<Box component="img" src={img} alt="" loading="lazy" sx={{ width: 44, height: 44, borderRadius: 3, objectFit: 'cover', display: 'block', mb: 1.5 }} />)}
       <Typography fontWeight={700} sx={{ lineHeight: 1.35, minHeight: '2.7em', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{showTitle(t)}</Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>{ID_TO_CAT[t.id] || t.cat}</Typography>
     </CardContent>
   </Card>);
 }
 
-function ToolGrid({ tools, go, mdCols = 3, showImage = true }) {
-  return (<Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', md: `repeat(${mdCols}, minmax(0, 1fr))` } }}>{tools.map((t) => (<ToolCard key={t.id} t={t} go={go} showImage={showImage} />))}</Box>);
+function ToolGrid({ tools, go, mdCols = 3 }) {
+  return (<Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', md: `repeat(${mdCols}, minmax(0, 1fr))` } }}>{tools.map((t) => (<ToolCard key={t.id} t={t} go={go} />))}</Box>);
+}
+
+// Most Popular card: wide 3:2 photo on top, title below, never overlaid
+// (Omni / Investopedia editorial-card pattern).
+function PopularCard({ t, go }) {
+  const img = POPULAR_IMAGE[t.id];
+  return (<Card elevation={0} sx={{ height: '100%', overflow: 'hidden', transition: 'box-shadow 0.15s ease, transform 0.15s ease', '&:hover': { boxShadow: (theme) => (theme.palette.mode === 'dark' ? '0 6px 24px rgba(0,0,0,0.55)' : '0 6px 24px rgba(0,0,0,0.10)'), transform: 'translateY(-2px)' } }}>
+    <CardContent component="a" href={`/tools/${t.slug}/`} onClick={(e) => go(e, `/tools/${t.slug}/`)} onMouseEnter={() => preloadTool(t.id)} onFocus={() => preloadTool(t.id)} sx={{ display: 'block', textDecoration: 'none', color: 'inherit', height: '100%', p: 0, '&:last-child': { pb: 0 } }}>
+      {img && (<Box component="img" src={img.src} alt={img.alt} loading="lazy" sx={{ width: '100%', aspectRatio: '3 / 2', objectFit: 'cover', display: 'block', filter: dimDark }} />)}
+      <Box sx={{ p: 2 }}>
+        <Typography fontWeight={700} sx={{ lineHeight: 1.35, minHeight: '2.7em', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{showTitle(t)}</Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>{ID_TO_CAT[t.id] || t.cat}</Typography>
+      </Box>
+    </CardContent>
+  </Card>);
+}
+
+function PopularGrid({ tools, go }) {
+  return (<Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', md: 'repeat(3, minmax(0, 1fr))' } }}>{tools.map((t) => (<PopularCard key={t.id} t={t} go={go} />))}</Box>);
 }
 
 export default function App({ mode = 'light', onToggleMode = () => {} }) {
@@ -393,27 +446,40 @@ export default function App({ mode = 'light', onToggleMode = () => {} }) {
     {searchResults.length === 0 ? (<>
       <Typography variant="body1" color="text.secondary" gutterBottom>No tool found - try another word, e.g. PDF, loan or Marla.</Typography>
       <Typography variant="h6" component="h2" fontWeight={700} sx={{ mt: 3, mb: 2 }}>Try these popular tools</Typography>
-      <ToolGrid tools={POPULAR} go={go} />
+      <PopularGrid tools={POPULAR} go={go} />
     </>) : (<ToolGrid tools={searchResults} go={go} />)}
   </Box>);
 
   const homeView = (<>
-    <Box sx={{ textAlign: 'center', py: { xs: 3, md: 4 }, px: 1 }}>
-      <Typography variant="h3" component="h1" fontWeight={800} gutterBottom sx={{ fontSize: { xs: '1.75rem', md: '2.25rem' } }}>52 free calculators and converters.</Typography>
-      <Typography variant="h6" color="text.secondary" fontWeight={400} sx={{ maxWidth: 640, mx: 'auto' }}>From loan EMI and age to JPG to PDF and GTA 6 prices. Everything runs in your browser. No sign-up.</Typography>
-      <Box component="img" src="/images/hero.webp" alt="A desk with a calculator, notebook and laptop" sx={{ width: '100%', maxWidth: 880, height: { xs: 200, md: 300 }, objectFit: 'cover', objectPosition: 'center', borderRadius: 3, display: 'block', mx: 'auto', mt: 3 }} />
+    {/* Bankrate-style hero: one bright real photo, full width, dark gradient
+        with the headline overlaid in white. The H1 text is unchanged (SEO). */}
+    <Box sx={{ position: 'relative', width: '100vw', ml: 'calc(50% - 50vw)', mt: { xs: 2, md: 3 }, mb: 3 }}>
+      <Box component="img" src="/images/hero.webp" alt="A large calculator on a bright desk" fetchPriority="high" sx={{ width: '100%', height: { xs: 300, md: 380 }, objectFit: 'cover', objectPosition: 'center', display: 'block', filter: (theme) => (theme.palette.mode === 'dark' ? 'brightness(0.82)' : 'none') }} />
+      <Box sx={{ position: 'absolute', inset: 0, background: { xs: 'linear-gradient(180deg, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.42) 50%, rgba(0,0,0,0.72) 100%)', md: 'linear-gradient(90deg, rgba(0,0,0,0.68) 0%, rgba(0,0,0,0.38) 55%, rgba(0,0,0,0.08) 100%), linear-gradient(0deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0) 50%)' } }} />
+      <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ width: '100%', maxWidth: 1200, mx: 'auto', px: 3 }}>
+          <Typography variant="h3" component="h1" fontWeight={800} sx={{ color: '#fff', fontSize: { xs: '1.75rem', md: '2.25rem' }, lineHeight: 1.2, maxWidth: 640 }}>52 free calculators and converters.</Typography>
+          <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.93)', fontWeight: 400, mt: 1, maxWidth: 640 }}>From loan EMI and age to JPG to PDF and GTA 6 prices. Everything runs in your browser. No sign-up.</Typography>
+        </Box>
+      </Box>
     </Box>
     <Typography variant="body2" color="text.secondary" fontWeight={700} sx={{ mb: 1, textAlign: 'center' }}>Categories</Typography>
-    <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 1, mb: 1, justifyContent: { xs: 'flex-start', md: 'center' } }}>
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, pb: 1, mb: 1, justifyContent: 'center' }}>
       {CATEGORIES.map((c) => (<Button key={c.name} variant={openCat === c.name ? 'contained' : 'outlined'} sx={{ borderRadius: 10, whiteSpace: 'nowrap', textTransform: 'none', fontWeight: 700 }} onClick={() => { setOpenCat(openCat === c.name ? null : c.name); document.getElementById('categories')?.scrollIntoView({ behavior: 'smooth' }); }}>{c.name}</Button>))}
     </Box>
     <Typography variant="h5" component="h2" fontWeight={800} gutterBottom>Most popular</Typography>
-    <ToolGrid tools={POPULAR} go={go} />
+    <PopularGrid tools={POPULAR} go={go} />
     <Box id="categories" sx={{ mt: 5 }}>
       <Typography variant="h5" component="h2" fontWeight={800} gutterBottom>Browse all tools</Typography>
       {CATEGORIES.map((c) => (<Accordion key={c.name} expanded={openCat === c.name} onChange={() => setOpenCat(openCat === c.name ? null : c.name)} sx={{ mb: 1 }}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>{c.name} <Typography component="span" variant="body2" color="text.secondary" fontWeight={400}>({c.tools.length} tool{c.tools.length === 1 ? '' : 's'})</Typography></Typography></AccordionSummary>
-        <AccordionDetails><ToolGrid tools={c.tools} go={go} showImage={openCat === c.name} /></AccordionDetails>
+        <AccordionDetails>
+          {openCat === c.name && (<>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{CAT_DESC[c.name]}</Typography>
+            <Box component="img" src={CAT_IMAGE[c.name]} alt={CAT_ALT[c.name]} loading="lazy" sx={{ width: '100%', aspectRatio: '16 / 9', maxHeight: { xs: 220, md: 360 }, objectFit: 'cover', borderRadius: 2, display: 'block', mb: 2, filter: dimDark }} />
+          </>)}
+          <ToolGrid tools={c.tools} go={go} />
+        </AccordionDetails>
       </Accordion>))}
     </Box>
     <Typography variant="h5" component="h2" fontWeight={800} sx={{ mt: 5 }} gutterBottom>Common questions</Typography>
@@ -424,6 +490,7 @@ export default function App({ mode = 'light', onToggleMode = () => {} }) {
     <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
       <Link href="/" onClick={(e) => go(e, '/')} underline="hover" color="inherit">Home</Link>{' / '}{ID_TO_CAT[cur.id] || cur.cat}
     </Typography>
+    {CAT_IMAGE[ID_TO_CAT[cur.id]] && (<Box component="img" src={CAT_IMAGE[ID_TO_CAT[cur.id]]} alt={CAT_ALT[ID_TO_CAT[cur.id]]} loading="lazy" sx={{ width: '100%', height: { xs: 110, md: 140 }, objectFit: 'cover', borderRadius: 2, display: 'block', mb: 2, filter: dimDark }} />)}
     <Typography variant="h4" component="h1" fontWeight={800} gutterBottom>{showTitle(cur)}</Typography>
     <Typography variant="body1" color="text.secondary" gutterBottom>{ID_TO_CAT[cur.id] || cur.cat}{' · No sign-up.'}</Typography>
     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>Guide last updated{' '}{CONTENT_UPDATED}.</Typography>
@@ -446,7 +513,7 @@ export default function App({ mode = 'light', onToggleMode = () => {} }) {
   </Box>);
 
   const aboutView = staticPage('About Kalkio', (<>
-    <Box component="img" src="/images/hero.webp" alt="A desk with a calculator, notebook and laptop" sx={{ width: '100%', height: { xs: 180, md: 260 }, objectFit: 'cover', objectPosition: 'center', borderRadius: 3, display: 'block', mb: 3 }} />
+    <Box component="img" src="/images/about.webp" alt="A bright home office desk with a laptop" sx={{ width: '100%', height: { xs: 180, md: 260 }, objectFit: 'cover', objectPosition: 'center', borderRadius: 3, display: 'block', mb: 3, filter: dimDark }} />
     <Typography variant="body1" paragraph>Kalkio is a collection of 52 free calculators and converters, covering property, tax and salary, prices, finance, files and everyday calculations.</Typography>
     <Typography variant="body1" paragraph>How to use it: search for a tool or browse a category, enter your numbers, and the result appears straight away. There is nothing to install and no account to create.</Typography>
     <Typography variant="body1" paragraph>Every tool runs in the visitor’s browser - there is no backend, no database, no login and no sign-up. File converters also run fully in the browser, so your files never leave your device.</Typography>
@@ -454,8 +521,8 @@ export default function App({ mode = 'light', onToggleMode = () => {} }) {
     <Typography variant="body1" paragraph>Tax, bill and fuel results are estimates - confirm official rates before a financial decision.</Typography>
     <Typography variant="body1" paragraph>Questions or a tool to suggest? Email <Link href="mailto:sammykhanmalng@gmail.com">sammykhanmalng@gmail.com</Link>.</Typography>
     <Typography id="photo-credits" variant="h5" component="h2" fontWeight={700} gutterBottom sx={{ mt: 4 }}>Photo credits</Typography>
-    <Typography variant="body2" color="text.secondary" paragraph>Photos on this site are real photographs. The hero, fun and gaming photos are public domain (CC0). The photos below are shared under Creative Commons licences, credited here as the licences require:</Typography>
-    <Typography variant="body2" color="text.secondary" paragraph>Modern house exterior — Shixart1985, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. Calculator with coins — Images of Money, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. Petrol station at night — Harrison Keely, <Link href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</Link>. Scanning documents — NAVFAC, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. Writing in a notebook — Shixart1985, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>.</Typography>
+    <Typography variant="body2" color="text.secondary" paragraph>Photos on this site are real photographs. The fun and gaming photos and the calculator-and-receipts photo are public domain. The photos below are shared under Creative Commons licences, credited here as the licences require:</Typography>
+    <Typography variant="body2" color="text.secondary" paragraph>Calculator (home page) — Hayden Schiff, <Link href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</Link>. Contract and pen — Blogtrepreneur, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. First-birthday cake — JIP, <Link href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 3.0</Link>. Bathroom scale — Frank C. Müller, <Link href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</Link>. House keys — Shixart1985, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. Empty plot of land — Kambai Akau, <Link href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</Link>. Hand holding a phone — Santeri Viinamäki, <Link href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</Link>. Banknotes and coins — Santeri Viinamäki, <Link href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</Link>. Home office (this page) — Shixart1985, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. Modern house exterior — Shixart1985, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. Calculator with coins — Images of Money, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. Petrol station at night — Harrison Keely, <Link href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</Link>. Scanning documents — NAVFAC, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. Writing in a notebook — Shixart1985, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>.</Typography>
   </>));
   const contactView = staticPage('Contact Kalkio', (<>
     <Typography variant="body1" paragraph>Questions about Kalkio? Email us at <Link href="mailto:sammykhanmalng@gmail.com">sammykhanmalng@gmail.com</Link>.</Typography>
@@ -473,7 +540,7 @@ export default function App({ mode = 'light', onToggleMode = () => {} }) {
     <CssBaseline />
     <a href="#main-content" className="skip-link">Skip to main content</a>
     {header}
-    <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', pb: 4 }}>
+    <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', pb: 4, overflowX: 'clip' }}>
       <Container maxWidth="lg">
         <Box component="main" id="main-content">
           {query ? searchView
