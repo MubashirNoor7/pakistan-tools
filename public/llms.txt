@@ -1,6 +1,6 @@
 # Kalkio
 
-Kalkio is a free website with 52 calculators and converters. Every tool runs in the visitor's browser - no sign-up, no account, no backend. File converters run fully in the browser and files are never uploaded to a server. Tax, bill and fuel results are estimates; official rates are final.
+Kalkio is a free website with 56 calculators and converters. Every tool runs in the visitor's browser - no sign-up, no account, no backend. File converters run fully in the browser and files are never uploaded to a server. Tax, bill and fuel results are estimates; official rates are final.
 
 Contact: sammykhanmalng@gmail.com
 
@@ -15,7 +15,11 @@ Contact: sammykhanmalng@gmail.com
 - PTA Tax Calculator Pakistan by Phone Model: https://kalkio.vercel.app/tools/pta-tax-calculator-pakistan-by-phone-model/
 - Freelancer Tax Calculator Pakistan (154A, PSEB 0.25%): https://kalkio.vercel.app/tools/freelancer-tax-calculator-pakistan-154a/
 - Zakat Calculator Pakistan 2026: Cash, Gold: https://kalkio.vercel.app/tools/zakat-calculator-pakistan-cash-gold/
+- Car Token Tax Calculator Pakistan 2026-27: https://kalkio.vercel.app/tools/car-token-tax-calculator-pakistan/
+- Daily Wage Calculator Pakistan (2026): https://kalkio.vercel.app/tools/daily-wage-calculator-pakistan/
 - Fuel Trip Cost Calculator Pakistan (OGRA): https://kalkio.vercel.app/tools/fuel-trip-cost-calculator-pakistan-ogra/
+- Electricity Bill Calculator Pakistan (2026): https://kalkio.vercel.app/tools/electricity-bill-calculator-pakistan/
+- Sui Gas Bill Calculator Pakistan (2026): https://kalkio.vercel.app/tools/sui-gas-bill-calculator-pakistan/
 - Petrol Price Pakistan Today: Petrol & Diesel Rates: https://kalkio.vercel.app/tools/petrol-price-pakistan-today/
 - How Much Is GTA 6? Price in USA & Canada: https://kalkio.vercel.app/tools/gta-6-price/
 - GTA 6 Download Time Calculator (212 GB): https://kalkio.vercel.app/tools/gta-6-download-time-calculator/
