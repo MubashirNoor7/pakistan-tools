@@ -25,7 +25,7 @@ export function ElectricityTool() {
     const b = UNPROT.find(([max]) => u <= max); energy = u * b[1]; fixed = kw * b[2]; parts = [['Rate for your slab, on all units', `Rs ${fmt(b[1])} × ${fmt(u)}`]];
   }
   const fpaAmt = u * fpaR; const sub = energy + fixed + fpaAmt; const gst = sub * 0.18; const total = sub + gst;
-  return (<Wrap note="Estimate only - base tariff SRO 279(I)/2026. Fixed charge is per kW of sanctioned load. GST 18% included below; FPA changes monthly and is editable. Your actual bill also depends on arrears, meter rent and other adjustments.">
+  return (<Wrap note="Estimate only - base tariff SRO 279(I)/2026. Fixed charge is per kW of sanctioned load. GST 18% included below; FPA changes monthly and is editable. This estimate is before the FC surcharge (about Rs 3.23 per unit), electricity duty (about 1.5%) and the Rs 35 TV fee, and FCA/QTA change monthly. Your actual bill also depends on arrears, meter rent and other adjustments.">
     <TextField select fullWidth label="DISCO" value={disco} onChange={(e) => setDisco(e.target.value)} sx={{ mb: 2 }}>{['LESCO', 'K-Electric', 'IESCO', 'GEPCO', 'FESCO', 'MEPCO', 'PESCO', 'HESCO', 'SEPCO', 'QESCO'].map((d) => (<MenuItem key={d} value={d}>{d}</MenuItem>))}</TextField>
     <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>NEPRA's base tariff is uniform across DISCOs - changing DISCO does NOT change the rate, it only labels your bill. That is why the calculation stays the same.</Typography>
     <ToggleButtonGroup value={cat} exclusive fullWidth onChange={(_, nv) => nv && setCat(nv)} sx={{ mb: 2 }}><ToggleButton value="lifeline">Lifeline</ToggleButton><ToggleButton value="protected">Protected</ToggleButton><ToggleButton value="unprotected">Unprotected</ToggleButton></ToggleButtonGroup>
@@ -35,6 +35,43 @@ export function ElectricityTool() {
     {u > 0 && (<><Hero value={'Rs ' + fmt(total)} unit="Estimated total bill (incl. 18% GST)" eq={`${fmt(u)} units · ${disco} · ${cat}`} /><Rows rows={[...parts, ['Fixed charge', 'Rs ' + fmt(fixed)], ['FPA', 'Rs ' + fmt(fpaAmt)], ['GST (18%)', 'Rs ' + fmt(gst)]]} /></>)}
     {note && <Typography variant="body2" color="warning.main" sx={{ mt: 2 }}>{note}</Typography>}
     <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>Checks: Protected 150 units = 100×10.54 + 50×13.01 = Rs 1,704.50 energy. Unprotected 150 units = 150×28.91 = Rs 4,336.50 energy.</Typography>
+  </Wrap>);
+}
+// Sui Gas 2026-27 - OGRA Gas Sale Price Notification 29 Jun 2025, effective 1 Jul 2025,
+// unchanged for FY 2026-27. Same slabs for SNGPL and SSGC. Price is per MMBTU;
+// the meter reads hm3, so hm3 x GCV factor (default 3.5 MMBTU per hm3) gives MMBTU.
+// One-preceding-slab benefit: use up to the previous slab boundary bills at the
+// previous rate, only the excess at the landed rate. Above 4 hm3 (non-protected)
+// the whole month bills at Rs 4,200 per MMBTU. GST 18% on the subtotal.
+const GAS_PROT = [[0.25, 200], [0.5, 250], [0.6, 300], [0.9, 350]];
+const GAS_NONPROT = [[0.25, 500], [0.6, 850], [1, 1250], [1.5, 1450], [2, 1900], [3, 3300], [4, 3800]];
+export function GasTool() {
+  const [utility, setUtility] = useState('SNGPL'); const [cat, setCat] = useState('nonprotected'); const [hm3, setHm3] = useState('1'); const [gcv, setGcv] = useState('3.5');
+  const use = parseFloat(hm3) || 0; const factor = parseFloat(gcv) || 0; const mmbtu = use * factor;
+  let energy = 0; let fixed = 0; let parts = []; let note = '';
+  const slabEnergy = (slabs, landed) => {
+    if (landed === 0) return { e: mmbtu * slabs[0][1], rows: [[`All ${fmt(mmbtu)} MMBTU at Rs ${fmt(slabs[0][1])}`, 'Rs ' + fmt(mmbtu * slabs[0][1])]] };
+    const prevB = slabs[landed - 1][0]; const prevR = slabs[landed - 1][1]; const first = prevB * factor * prevR; const rest = (use - prevB) * factor * slabs[landed][1];
+    return { e: first + rest, rows: [[`First ${fmt(prevB)} hm3 (${fmt(prevB * factor)} MMBTU) at Rs ${fmt(prevR)}`, 'Rs ' + fmt(first)], [`Remaining ${fmt(use - prevB)} hm3 (${fmt((use - prevB) * factor)} MMBTU) at Rs ${fmt(slabs[landed][1])}`, 'Rs ' + fmt(rest)]] };
+  };
+  if (cat === 'protected') {
+    if (use > 0.9) { note = 'Above 0.9 hm3 a month you are non-protected - calculated here at non-protected rates.'; const landed = GAS_NONPROT.findIndex(([max]) => use <= max); if (landed === -1) { energy = mmbtu * 4200; parts = [[`All ${fmt(mmbtu)} MMBTU at Rs 4,200 (flat above 4 hm3)`, 'Rs ' + fmt(energy)]]; } else { const r = slabEnergy(GAS_NONPROT, landed); energy = r.e; parts = r.rows; } fixed = use <= 1.5 ? 1500 : 3000; }
+    else { const landed = GAS_PROT.findIndex(([max]) => use <= max); const r = slabEnergy(GAS_PROT, landed); energy = r.e; parts = r.rows; fixed = 600; }
+  } else {
+    if (use > 4) { energy = mmbtu * 4200; parts = [[`All ${fmt(mmbtu)} MMBTU at Rs 4,200 (flat above 4 hm3)`, 'Rs ' + fmt(energy)]]; }
+    else { const landed = GAS_NONPROT.findIndex(([max]) => use <= max); const r = slabEnergy(GAS_NONPROT, landed); energy = r.e; parts = r.rows; }
+    fixed = use <= 1.5 ? 1500 : 3000;
+  }
+  const meter = 40; const sub = energy + fixed + meter; const gst = sub * 0.18; const total = sub + gst;
+  return (<Wrap note="Estimate only - OGRA Gas Sale Price Notification 29 Jun 2025, effective 1 Jul 2025, unchanged for FY 2026-27; SSGC Domestic Rates page. Same slabs for SNGPL and SSGC. New connections are on the RLNG tariff, not these slabs. Protected status is set by your Nov-Feb average use, not by one month.">
+    <TextField select fullWidth label="Gas utility" value={utility} onChange={(e) => setUtility(e.target.value)} sx={{ mb: 2 }}>{['SNGPL', 'SSGC'].map((u) => (<MenuItem key={u} value={u}>{u}</MenuItem>))}</TextField>
+    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>SNGPL and SSGC charge the same domestic slabs - changing the utility does not change the rate, it only labels your bill.</Typography>
+    <ToggleButtonGroup value={cat} exclusive fullWidth onChange={(_, nv) => nv && setCat(nv)} sx={{ mb: 2 }}><ToggleButton value="protected">Protected</ToggleButton><ToggleButton value="nonprotected">Non-protected</ToggleButton></ToggleButtonGroup>
+    <TextField fullWidth label="Gas used this month (hm3)" type="number" value={hm3} onChange={(e) => setHm3(e.target.value)} sx={{ mb: 2 }} />
+    <TextField fullWidth label="GCV factor (MMBTU per hm3, from your bill)" type="number" value={gcv} onChange={(e) => setGcv(e.target.value)} />
+    {use > 0 && factor > 0 && (<><Hero value={'Rs ' + fmt(total)} unit="Estimated monthly gas bill (incl. 18% GST)" eq={`${fmt(use)} hm3 = ${fmt(mmbtu)} MMBTU · ${utility} · ${cat === 'protected' ? 'Protected' : 'Non-protected'}`} /><Rows rows={[...parts, ['Energy charge', 'Rs ' + fmt(energy)], ['Fixed charge', 'Rs ' + fmt(fixed)], ['Meter rent', 'Rs ' + fmt(meter)], ['GST (18%)', 'Rs ' + fmt(gst)]]} /></>)}
+    {note && <Typography variant="body2" color="warning.main" sx={{ mt: 2 }}>{note}</Typography>}
+    <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>Check: non-protected 1.0 hm3 at 3.5 MMBTU per hm3 = energy Rs 3,535 + fixed Rs 1,500 + meter Rs 40 = Rs 5,075 + 18% GST Rs 913.50 = Rs 5,988.50.</Typography>
   </Wrap>);
 }
 export function FuelTool() {

@@ -137,22 +137,45 @@ export function FreelancerTool() {
     <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>Rates: Filer+PSEB 0.25% · Filer, no PSEB 1% · Non-filer+PSEB 0.50% · Non-filer, no PSEB 2%.</Typography>
   </Wrap>);
 }
-// Token tax 2026-27 - Punjab & Islamabad (Finance Act 2026). Sindh and others use fixed schedules: check excise.
+// Token tax 2026-27 - Punjab & Islamabad (Finance Act 2026), Sindh & KPK fixed
+// yearly schedules. Section 234 advance income tax (FBR Withholding Tax Rate
+// Card, Tax Year 2027): filer annual amounts by engine size, doubled for
+// non-filers (statutory rate; some Excise offices collect 3x in practice, see
+// note). Lump-sum Sec-234 applies where the token is paid once for life.
+// No Sec-234 on cars used in Pakistan for more than 10 years.
+const SINDH_TOKEN = [[1000, 1500], [1300, 2000], [1600, 4000], [2000, 4500], [2500, 5000], [Infinity, 7000]];
+const KPK_TOKEN = [[1000, 2000], [1300, 3000], [1500, 4000], [2500, 5000], [Infinity, 8000]];
+// [max cc, filer annual, filer lump sum]
+const SEC234 = [[1000, 800, 10000], [1199, 1500, 18000], [1299, 1750, 20000], [1499, 2500, 30000], [1599, 3750, 45000], [1999, 4500, 60000], [Infinity, 10000, 120000]];
 export function TokenTool() {
-  const [prov, setProv] = useState('Punjab'); const [cc, setCc] = useState('1300'); const [invoice, setInvoice] = useState('4000000'); const [early, setEarly] = useState(false);
+  const [prov, setProv] = useState('Punjab'); const [vehicle, setVehicle] = useState('car'); const [cc, setCc] = useState('1300'); const [invoice, setInvoice] = useState('4000000'); const [filer, setFiler] = useState('filer'); const [early, setEarly] = useState(false); const [oldCar, setOldCar] = useState(false);
   const engine = parseFloat(cc) || 0; const inv = parseFloat(invoice) || 0;
-  let tax = 0; let kind = '';
-  if (prov === 'Punjab' || prov === 'Islamabad') {
+  const s234 = SEC234.find(([max]) => engine <= max) || SEC234[SEC234.length - 1];
+  let token = 0; let kind = ''; let sec234 = 0; let secKind = ''; let prof = 0;
+  if (vehicle === 'motorcycle') { token = 1500; kind = 'Lifetime (one-time)'; sec234 = 0; secKind = 'Not charged on motorcycles'; }
+  else if (prov === 'Punjab' || prov === 'Islamabad') {
     const pct = prov === 'Punjab' ? (engine > 2000 ? 0.004 : 0.003) : (engine > 2000 ? 0.0035 : 0.0025);
-    if (engine <= 1000) { tax = 20000; kind = 'Lifetime (one-time)'; } else { tax = inv * pct; kind = 'Annual'; if (early) tax *= 0.9; }
-  }
-  return (<Wrap note="Punjab & Islamabad 2026-27 only in this version. Up to 1000cc: Rs 20,000 lifetime once. Punjab above 1000cc: 0.3% (1001-2000cc) / 0.4% (above 2000cc) of invoice price per year; Islamabad: 0.25% / 0.35%. 10% rebate if the full year is paid by 31 August. Sindh / KPK / Balochistan use fixed engine schedules - check your provincial excise schedule. Motorcycles: Rs 1,500 lifetime in Punjab.">
-    <TextField select fullWidth label="Province" value={prov} onChange={(e) => setProv(e.target.value)} sx={{ mb: 2 }}>{['Punjab', 'Islamabad'].map((p) => (<MenuItem key={p} value={p}>{p}</MenuItem>))}</TextField>
-    <TextField fullWidth label="Engine size (cc)" type="number" value={cc} onChange={(e) => setCc(e.target.value)} sx={{ mb: 2 }} />
-    <TextField fullWidth label="Invoice price (Rs) - needed above 1000cc" type="number" value={invoice} onChange={(e) => setInvoice(e.target.value)} sx={{ mb: 2 }} />
-    <FormControlLabel control={<Checkbox checked={early} onChange={(e) => setEarly(e.target.checked)} />} label="Paid in full by 31 August (10% rebate, annual tax only)" />
-    {engine > 0 && (<><Hero value={'Rs ' + fmt(tax)} unit={kind + ' token tax'} /><Rows rows={[['Province', prov], ['Engine', fmt(engine) + ' cc'], ['Invoice price', 'Rs ' + fmt(inv)]]} /></>)}
-    <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>Check: 1300cc Punjab, Rs 4,000,000 invoice = 0.3% = Rs 12,000 per year; with early rebate Rs 10,800.</Typography>
+    if (engine <= 1000) { token = 20000; kind = 'Lifetime (one-time)'; sec234 = oldCar ? 0 : s234[2] * (filer === 'filer' ? 1 : 2); secKind = 'Section 234 lump sum'; }
+    else { token = inv * pct; kind = 'Annual'; if (early) token *= 0.9; sec234 = oldCar ? 0 : s234[1] * (filer === 'filer' ? 1 : 2); secKind = 'Section 234 annual'; if (prov === 'Punjab') prof = 200; }
+  } else if (prov === 'Sindh') { token = (SINDH_TOKEN.find(([max]) => engine <= max) || SINDH_TOKEN[SINDH_TOKEN.length - 1])[1]; kind = 'Annual'; sec234 = oldCar ? 0 : s234[1] * (filer === 'filer' ? 1 : 2); secKind = 'Section 234 annual'; }
+  else { token = (KPK_TOKEN.find(([max]) => engine <= max) || KPK_TOKEN[KPK_TOKEN.length - 1])[1]; kind = 'Annual'; sec234 = oldCar ? 0 : s234[1] * (filer === 'filer' ? 1 : 2); secKind = 'Section 234 annual'; }
+  if (oldCar && vehicle === 'car') secKind = 'Not charged - car used in Pakistan over 10 years';
+  const total = token + sec234 + prof;
+  const showInvoice = vehicle === 'car' && (prov === 'Punjab' || prov === 'Islamabad') && engine > 1000;
+  const showEarly = vehicle === 'car' && (prov === 'Punjab' || prov === 'Islamabad') && engine > 1000;
+  return (<Wrap note="Token tax 2026-27. Punjab above 1000cc: 0.3% (1001-2000cc) / 0.4% (above 2000cc) of invoice price per year; Islamabad: 0.25% / 0.35%. Up to 1000cc: Rs 20,000 lifetime once. Sindh and KPK use fixed yearly amounts by engine size. Section 234 advance income tax is added by engine size (filer amounts shown in the guide; non-filers pay double under the FBR rate card, though some Excise offices collect three times in practice, so check your payment slip). 10% rebate if the full year is paid by 31 August. Balochistan uses its own schedule - check your provincial excise office. Motorcycles: Rs 1,500 lifetime in Punjab.">
+    <ToggleButtonGroup value={vehicle} exclusive fullWidth onChange={(_, nv) => nv && setVehicle(nv)} sx={{ mb: 2 }}><ToggleButton value="car">Car</ToggleButton><ToggleButton value="motorcycle">Motorcycle</ToggleButton></ToggleButtonGroup>
+    <TextField select fullWidth label="Province" value={prov} onChange={(e) => setProv(e.target.value)} sx={{ mb: 2 }}>{['Punjab', 'Islamabad', 'Sindh', 'KPK'].map((p) => (<MenuItem key={p} value={p}>{p}</MenuItem>))}</TextField>
+    {vehicle === 'car' && (<>
+      <TextField fullWidth label="Engine size (cc)" type="number" value={cc} onChange={(e) => setCc(e.target.value)} sx={{ mb: 2 }} />
+      {showInvoice && (<TextField fullWidth label="Invoice price (Rs)" type="number" value={invoice} onChange={(e) => setInvoice(e.target.value)} sx={{ mb: 2 }} />)}
+      <ToggleButtonGroup value={filer} exclusive fullWidth onChange={(_, nv) => nv && setFiler(nv)} sx={{ mb: 2 }}><ToggleButton value="filer">Filer (ATL)</ToggleButton><ToggleButton value="nonfiler">Non-filer (Sec-234 double)</ToggleButton></ToggleButtonGroup>
+      <FormControlLabel control={<Checkbox checked={oldCar} onChange={(e) => setOldCar(e.target.checked)} />} label="Car used in Pakistan for more than 10 years (no Section 234)" />
+      {showEarly && (<FormControlLabel control={<Checkbox checked={early} onChange={(e) => setEarly(e.target.checked)} />} label="Paid in full by 31 August 2027 (10% rebate, annual tax only)" />)}
+    </>)}
+    {vehicle === 'motorcycle' && (<Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Motorcycle token is Rs 1,500 once for life in Punjab. Other provinces charge their own motorcycle rates - check your excise office.</Typography>)}
+    {engine > 0 && (<><Hero value={'Rs ' + fmt(total)} unit={kind + ' token tax + Section 234'} /><Rows rows={[['Province', prov], ['Vehicle', vehicle === 'car' ? 'Car, ' + fmt(engine) + ' cc' : 'Motorcycle'], ['Token tax (' + kind.toLowerCase() + ')', 'Rs ' + fmt(token)], [secKind, 'Rs ' + fmt(sec234)], ...(prof ? [['Punjab professional tax', 'Rs ' + fmt(prof)]] : []), ['Total due', 'Rs ' + fmt(total)]]} /></>)}
+    <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>Check: 1300cc Punjab filer, Rs 4,000,000 invoice = token 0.3% = Rs 12,000 + Section 234 Rs 2,500 + professional tax Rs 200 = Rs 14,700 a year; with early rebate the token is Rs 10,800.</Typography>
   </Wrap>);
 }
 export function ZakatTool() {
