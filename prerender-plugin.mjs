@@ -81,17 +81,17 @@ export async function prerender(root, dist) {
     n++;
   }
   const statics = [
-    ['about', 'About | Kalkio', 'About Kalkio', 'About Kalkio: 52 free calculators and converters that run in your browser. No sign-up, no accounts.'],
+    ['about', 'About | Kalkio', 'About Kalkio', 'About Kalkio: 56 free calculators and converters that run in your browser. No sign-up, no accounts.'],
     ['contact', 'Contact | Kalkio', 'Contact Kalkio', 'Contact Kalkio by email. Tools run in your browser and no sign-up is needed.'],
     ['privacy', 'Privacy Policy | Kalkio', 'Privacy Policy', 'Kalkio privacy: tools run in your browser, file converters do not upload your files to a server, and no account is needed.'],
   ];
   for (const [p, title, h1, desc] of statics) { write(p, page(tpl, { title, desc, url: pageUrl(`/${p}/`), h1, body: `<p>${esc(desc)}</p><p><a href="/">All Kalkio tools</a></p>` })); n++; }
-  // Home page: intro + FAQ + all 52 tool links in the raw HTML, so crawlers see it
+  // Home page: intro + FAQ + all 56 tool links in the raw HTML, so crawlers see it
   // without JavaScript (same words as the live home page in src/App.jsx).
-  const homeFaqs = [['Are the tools free?', 'Yes. All 52 tools are free and no sign-up is needed.'], ['Does my data leave my device?', 'No. Every tool runs in your browser and does not ask you to create an account.'], ['Are tax results official?', 'No. Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.']];
-  const homeBody = `<p><img src="/images/hero.webp" alt="A large calculator on a bright desk" width="1440" height="960" loading="eager"></p><p>${esc(HOME_DESC)}</p><p>Free calculators and converters, including loan EMI, QR codes, BMI, GTA 6 price and file converters, plus Marla, salary tax, PTA tax, BPS, Zakat, gold and fuel tools. Everything runs in your browser.</p><p>Last updated 12 Nov 2026.</p><h2>Common questions</h2>` + homeFaqs.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('') + allLinks + `<p><a href="/about/">About</a> · <a href="/contact/">Contact</a> · <a href="/privacy/">Privacy Policy</a> · <a href="mailto:sammykhanmalng@gmail.com">sammykhanmalng@gmail.com</a></p>`;
+  const homeFaqs = [['Are the tools free?', 'Yes. All 56 tools are free and no sign-up is needed.'], ['Does my data leave my device?', 'No. Every tool runs in your browser and does not ask you to create an account.'], ['Are tax results official?', 'No. Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.']];
+  const homeBody = `<p><img src="/images/hero.webp" alt="A large calculator on a bright desk" width="1440" height="960" loading="eager"></p><p>${esc(HOME_DESC)}</p><p>Free calculators and converters, including loan EMI, QR codes, BMI, GTA 6 price and file converters, plus Marla, salary tax, PTA tax, BPS, Zakat, gold and fuel tools. Everything runs in your browser.</p><p>Last updated 13 Nov 2026.</p><h2>Common questions</h2>` + homeFaqs.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('') + allLinks + `<p><a href="/about/">About</a> · <a href="/contact/">Contact</a> · <a href="/privacy/">Privacy Policy</a> · <a href="mailto:sammykhanmalng@gmail.com">sammykhanmalng@gmail.com</a></p>`;
   const homeJsonld = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: homeFaqs.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) };
-  write('', page(tpl, { title: HOME_TITLE, desc: HOME_DESC, url: pageUrl('/'), h1: '52 free calculators and converters.', body: homeBody, jsonld: homeJsonld }));
+  write('', page(tpl, { title: HOME_TITLE, desc: HOME_DESC, url: pageUrl('/'), h1: '56 free calculators and converters.', body: homeBody, jsonld: homeJsonld }));
   n++;
   return n;
 }
