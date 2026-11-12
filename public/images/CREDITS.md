@@ -57,6 +57,18 @@ folder. None is AI-generated, illustrated, or hotlinked.
 - Licence: CC BY-SA 4.0 (attribution required)
 - Author: Santeri Viinamäki
 
+## pop-gta6.webp — Most Popular (GTA 6): man holding two game controllers in front of a wall-mounted TV
+- Source page: https://commons.wikimedia.org/wiki/File:A_man_posing_with_two_game_controllers%2C_while_playing_on_his_Xbox_One.jpg
+- Direct image URL: https://upload.wikimedia.org/wikipedia/commons/1/12/A_man_posing_with_two_game_controllers%2C_while_playing_on_his_Xbox_One.jpg
+- Licence: CC0 (public domain, no attribution required)
+- Author: Humphrey Muleba
+
+## pop-htmltovideo.webp — Most Popular (HTML to Video): students at a video editing desk with timeline and playback monitors
+- Source page: https://commons.wikimedia.org/wiki/File:Editing_Department_of_Faculty_of_Dramatic_Arts_in_Belgrade%2C_students_work_%281%29.jpg
+- Direct image URL: https://upload.wikimedia.org/wikipedia/commons/d/d1/Editing_Department_of_Faculty_of_Dramatic_Arts_in_Belgrade%2C_students_work_%281%29.jpg
+- Licence: CC BY-SA 4.0 (attribution required)
+- Author: Faculty of Dramatic Arts in Belgrade
+
 ## about.webp — About page: bright home office, woman working at a laptop
 - Source page: https://commons.wikimedia.org/wiki/File:Woman_stretches_at_home_office_desk_while_working_on_laptop.jpg
 - Direct image URL: https://upload.wikimedia.org/wikipedia/commons/3/3a/Woman_stretches_at_home_office_desk_while_working_on_laptop.jpg
