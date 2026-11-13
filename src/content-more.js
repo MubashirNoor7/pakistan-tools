@@ -32,6 +32,18 @@ const gasExTotal = gasExSub + gasExGst; // 5,988.50
 // Token tax worked check: 1300cc Punjab filer, Rs 4,000,000 invoice
 const tokToken = 4000000 * 0.003; // 12,000
 const tokTotal = tokToken + 2500 + 200; // 14,700
+// EOBI worked checks: wage x years / 50, minimum Rs 11,500
+const eobiEx1 = 40700 * 25 / 50; // 20,350
+const eobiEx2 = 37000 * 20 / 50; // 14,800
+const eobiEx40 = 40700 * 40 / 50; // 32,560
+// Gratuity worked checks: last wage x qualifying years (Balochistan x 2)
+const gratEx1 = 100000 * 9; // 900,000
+const gratExB = 100000 * 9 * 2; // 1,800,000
+const gratEx2 = 60000 * 9; // 540,000
+// Provident fund projection: monthly contribution grown at monthly return
+const pfFv = (c, pct, months) => { const r = pct / 100 / 12; return r === 0 ? c * months : c * ((Math.pow(1 + r, months) - 1) / r); };
+const pfEx = pfFv(20000, 10, 120); // 4,096,899.58
+const pfEx20 = pfFv(10000, 10, 240); // 20 years at Rs 10,000 a month
 // Age example 1 Jan 2000 to 4 Nov 2026
 const ageDays = Math.floor((new Date('2026-11-04') - new Date('2000-01-01')) / 86400000);
 const dateDays = Math.abs(Math.round((new Date('2026-11-04') - new Date('2000-01-01')) / 86400000));
@@ -535,14 +547,75 @@ export const CONTENT_MORE = {
   ],
   dailywage: [
     { h: 'How daily wage is worked out', p: [
-      'Daily wage is the monthly wage divided by 26 working days, the standard 6-day-week convention, and hourly wage is daily wage divided by 8 hours. Pick your province and the tool pre-fills the notified minimum wage for 2026-27, which you can edit to your actual wage. Enter the days worked in the month and the tool shows the daily wage, the hourly wage and the pay for the days worked.',
+      'Daily wage is the monthly wage divided by 26 working days, the standard 6-day-week convention, and hourly wage is daily wage divided by 8 hours. Pick your province and the tool pre-fills the notified minimum wage for your province, which you can edit to your actual wage. Enter the days worked in the month and the tool shows the daily wage, the hourly wage and the pay for the days worked.',
     ] },
-    { h: 'Notified minimum wages 2026-27', p: ['Monthly minimum wage, with the daily and hourly wage it gives (monthly divided by 26, then by 8):'], table: {
+    { h: 'Notified minimum wages', p: ['Monthly minimum wage, with the daily and hourly wage it gives (monthly divided by 26, then by 8). Sindh and ICT are from 1 Jul 2026; Punjab and KP are the last notified figures (2025-26, no 2026-27 notification yet):'], table: {
       head: ['Province', 'Monthly minimum', 'Daily wage', 'Hourly wage'],
       rows: [['Punjab', 40000], ['Sindh', 43000], ['KP', 40000], ['ICT', 40700]].map(([p, m]) => [p, 'Rs ' + n0(m), 'Rs ' + n2(m / 26), 'Rs ' + n2(m / 26 / 8)]) } },
     { h: 'Worked examples', p: ['Punjab at Rs 40,000 a month: Rs 40,000 divided by 26 = Rs ' + n2(40000 / 26) + ' a day, and divided by 8 again = Rs ' + n2(40000 / 26 / 8) + ' an hour. Worked 20 days, the pay is 20 x Rs ' + n2(40000 / 26) + ' = Rs ' + n2(40000 / 26 * 20) + '. Sindh at Rs 43,000 a month: Rs 43,000 divided by 26 = Rs ' + n2(43000 / 26) + ' a day.'] },
     { h: 'Rates change every July', p: [
       'Minimum wages are re-notified, usually every July, so these figures go out of date. Re-check the current notification before relying on the result. Balochistan is not shown here because no verified notification for 2026-27 was found.',
     ] },
+  ],
+  eobi: [
+    { h: 'How EOBI pension is worked out', p: [
+      'Monthly old-age pension = average monthly wage x years of insurable employment / 50. That is 2% of the average wage for each year. The average wage is the wage on which contributions were paid in the last 12 months before you qualify. A part-year of 6 months or more counts as a full year.',
+      'If the formula result is below the minimum pension, the minimum is paid instead. The minimum pension is Rs 11,500 a month from 1 Jan 2025 (up from Rs 10,000).',
+    ] },
+    { h: 'Who qualifies', p: [
+      'Age 60 for men or 55 for women, with 15 years of contributions. 14 years 6 months counts as 15 years: the Federal Constitutional Court decided in Jan 2026 (upholding Lahore High Court orders of 2024/2025 and dismissing EOBI\'s appeals) that the Schedule\'s 6-month rounding applies to eligibility, and EOBI\'s 2022 circular excluding it is invalid. So 14.5 years of contributions is enough for a monthly pension.',
+      'With 2 to under 14.5 years of contributions there is no monthly pension - you get a lump-sum old-age grant instead. Miners can qualify 5 years earlier after 10 years in mines.',
+    ] },
+    { h: 'Minimum and reported maximum', p: [
+      'The minimum is Rs 11,500 a month from 1 Jan 2025. EOBI told a Senate committee in Feb 2026 its current maximum is ~Rs 32,000 - a reported current maximum, not a legal ceiling. The formula is not capped in this tool: at 40 years on Rs 40,700 it gives Rs ' + n0(eobiEx40) + ' a month, which is above that reported figure.',
+    ] },
+    { h: 'Contributions', p: [
+      'Employer 5% plus employee 1% of the notified minimum wage each month, not of your actual salary. At the federal wage of Rs 40,700 that is Rs ' + n0(40700 * 0.05) + ' from the employer and Rs ' + n0(40700 * 0.01) + ' from the employee each month. Because contributions are paid on the minimum wage, most workers\' formula results land near the Rs 11,500 minimum - the tool says so honestly rather than promising a high pension.',
+      'The default wage of Rs 40,700 is the federal minimum wage from 1 Jul 2026. Provincial rates differ: Sindh Rs 43,000, Punjab Rs 40,000 and KP Rs 40,000 (last notified 2025-26, no 2026-27 notification yet). EOBI bills nationally on the federal Rs 40,700 base.',
+    ] },
+    { h: 'Worked examples', p: ['Monthly pension from the same formula as the calculator:'], table: {
+      head: ['Average wage', 'Years', 'Monthly pension'],
+      rows: [['Rs 40,700', '25', rs(eobiEx1)], ['Rs 37,000', '20', rs(eobiEx2)], ['Rs 40,700', '40', rs(eobiEx40)], ['Rs 40,700', '15', rs(Math.max(40700 * 15 / 50, 11500))]] } },
+    { h: 'See also', p: ['For your end-of-service lump sum, use the [[gratuity|Gratuity Calculator]] on this site, and to project a workplace fund, use the [[providentfund|Provident Fund Calculator]]. Results are estimates; confirm with EOBI before a financial decision.'] },
+  ],
+  gratuity: [
+    { h: 'How gratuity is worked out', p: [
+      'Gratuity = last month\'s wages x qualifying years. That is 30 days\' wages for every completed year of service, and a remaining part-year of more than 6 months counts as a full year. In plain terms it is one month\'s salary per year: (salary / 30) x 30. Wages are your last month\'s wages, or your highest monthly pay in the last 12 months if you are a piece-rate worker.',
+      'Do not use (salary / 26) x 30. That pays about 15% more and comes from India\'s 26-working-day rule, not Pakistan\'s law.',
+    ] },
+    { h: 'Minimum service depends on the province', p: [
+      'Punjab: gratuity starts only after 12 months of service. Islamabad, Sindh, KP and Balochistan: the Standing Orders text states no separate one-year minimum, so a part-year over 6 months counts as a year and 7 to 11 months counts as a year there. Employers and courts may read this differently, so confirm with your employer or a labour lawyer if your service is under a year.',
+      'There is no 5-year minimum in Pakistan. That rule belongs to India\'s Payment of Gratuity Act and is sometimes copied into Pakistani calculators by mistake.',
+    ] },
+    { h: 'Balochistan pays double', p: [
+      'Balochistan pays 2 months\' wages per year of service under its 2021 Act, while Islamabad, Punjab, Sindh and KP pay 30 days\' wages (one month) per year. Pick your province in the tool above and the rate is applied for you.',
+    ] },
+    { h: 'When no gratuity is paid', p: [
+      'No gratuity if you were dismissed for misconduct. No gratuity for a period covered by a recognised provident fund where the employer contributed at least as much as you - except in Balochistan, where the provident fund is paid in addition to gratuity. Government departments under their own service rules are excluded, and a company scheme more generous than the statutory minimum applies instead.',
+      'Gratuity applies to industrial and commercial establishments with 20 or more workers in Punjab and Islamabad, and 10 or more elsewhere.',
+    ] },
+    { h: 'The Punjab Labour Code 2026', p: [
+      'The Punjab Labour Code 2026 was passed in Feb 2026, but it is confirmed not in force as of 13 Nov 2026 - no Gazette commencement notification has been issued. Until it commences, the 1968 Ordinance still governs Punjab. The Code can cap gratuity for higher earners, but only on redundancy or retrenchment, so no cap is hard-coded here.',
+    ] },
+    { h: 'Worked examples', p: ['Gratuity from the same formula as the calculator:'], table: {
+      head: ['Last wage', 'Service', 'Gratuity'],
+      rows: [['Rs 100,000', '8 years 7 months (9 years)', rs(gratEx1)], ['Rs 100,000, Balochistan', '8 years 7 months (9 years)', rs(gratExB)], ['Rs 60,000', '7 years 8 months (9 years)', rs(gratEx2)]] } },
+    { h: 'See also', p: ['For your monthly EOBI pension, use the [[eobi|EOBI Pension Calculator]] on this site, and to project a workplace fund, use the [[providentfund|Provident Fund Calculator]]. Results are estimates; confirm with your employer before a financial decision.'] },
+  ],
+  providentfund: [
+    { h: 'How the projection works', p: [
+      'There is no single statutory rate for provident fund in Pakistan. It is employer-specific, typically 8.33% to 10% of basic salary from each side, set by your employer\'s own fund rules. Enter your basic salary, the employee and employer rates, the expected annual return and the years in the fund.',
+      'Each month\'s contribution (employee plus employer) grows at the monthly return, which is the annual return divided by 12, for the months left. Money paid in early grows the most. The formula is: monthly contribution x ((1 + monthly rate)^months - 1) / monthly rate. The tool shows the total paid in and the growth separately, so you can see how much is your money and how much is return.',
+    ] },
+    { h: 'Provident fund is not EOBI', p: [
+      'Do not confuse the two. Provident fund is a percentage of your basic salary, paid by you and your employer into your employer\'s fund. EOBI is separate: employer 5% plus employee 1% of the notified minimum wage, not of your salary, and it pays a monthly pension after retirement. The two run side by side.',
+    ] },
+    { h: 'Worked examples', p: ['Projected fund value from the same formula as the calculator, at a 10% annual return:'], table: {
+      head: ['Basic salary', 'Each side', 'Years', 'Total paid in', 'Projected value'],
+      rows: [['Rs 100,000', '10%', '10', rs(20000 * 120), rs(pfEx)], ['Rs 50,000', '10%', '20', rs(10000 * 240), rs(pfEx20)]] } },
+    { h: 'What the result is not', p: [
+      'The projected value is an estimate, not a promise. The actual return depends on where your fund invests, and the rate you enter is only an expectation. If your employer\'s fund also pays gratuity rules or a final settlement, check the fund\'s own statement for the exact figure.',
+    ] },
+    { h: 'See also', p: ['For your monthly EOBI pension, use the [[eobi|EOBI Pension Calculator]] on this site, and for your end-of-service lump sum, use the [[gratuity|Gratuity Calculator]]. Results are estimates; confirm with your employer before a financial decision.'] },
   ],
 };
