@@ -409,7 +409,7 @@ export default function App({ mode = 'light', onToggleMode = () => {} }) {
   };
 
   const footer = (<Box component="footer" sx={{ mt: 6, pt: 4, pb: 2, borderTop: '1px solid', borderColor: 'divider' }}>
-    <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', md: '2fr 1fr 1fr 1.5fr' } }}>
+    <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', md: '2fr 1fr 1fr 1fr 1.5fr' } }}>
       <Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
           <Box component="img" src={mode === 'dark' ? '/logo-dark.svg' : '/logo.svg'} alt="Kalkio" sx={{ height: 28, width: 'auto', display: 'block' }} />
@@ -426,6 +426,11 @@ export default function App({ mode = 'light', onToggleMode = () => {} }) {
         <Typography variant="body2" sx={{ mb: 0.5 }}><Link href="/contact/" onClick={(e) => go(e, '/contact/')} underline="hover" color="text.secondary">Contact</Link></Typography>
         <Typography variant="body2" sx={{ mb: 0.5 }}><Link href="/privacy/" onClick={(e) => go(e, '/privacy/')} underline="hover" color="text.secondary">Privacy Policy</Link></Typography>
         <Typography variant="body2" sx={{ mb: 0.5 }}><Link href="/about/#photo-credits" underline="hover" color="text.secondary">Photo credits</Link></Typography>
+      </Box>
+      <Box>
+        <Typography variant="subtitle2" fontWeight={700} gutterBottom>Our other sites</Typography>
+        <Typography variant="body2" sx={{ mb: 0.5 }}><Link href="https://techdealsgo.com/" target="_blank" rel="noopener noreferrer" underline="hover" color="text.secondary">TechDealsGo</Link> - Amazon deals and discounts</Typography>
+        <Typography variant="body2" sx={{ mb: 0.5 }}><Link href="https://freeforall-offers.vercel.app/" target="_blank" rel="noopener noreferrer" underline="hover" color="text.secondary">FreeForAll</Link> - Free trials and offers</Typography>
       </Box>
       <Box>
         <Typography variant="subtitle2" fontWeight={700} gutterBottom>Contact</Typography>
@@ -546,6 +551,7 @@ export default function App({ mode = 'light', onToggleMode = () => {} }) {
     <Typography variant="body1" paragraph>Every tool runs in the visitor’s browser - there is no backend, no database, no login and no sign-up. File converters also run fully in the browser, so your files never leave your device.</Typography>
     <Typography variant="body1" paragraph>The tools cover everyday needs: converting Marla and Kanal, working out salary tax, Zakat and PTA tax, checking petrol and gold prices, converting files, and checking GTA 6 prices and release dates.</Typography>
     <Typography variant="body1" paragraph>Tax, bill and fuel results are estimates - confirm official rates before a financial decision.</Typography>
+    <Typography variant="body1" paragraph>Kalkio is made by the same team behind <Link href="https://techdealsgo.com/" target="_blank" rel="noopener noreferrer">TechDealsGo</Link>, a site for Amazon deals and discounts, and <Link href="https://freeforall-offers.vercel.app/" target="_blank" rel="noopener noreferrer">FreeForAll</Link>, a site for free trials and offers.</Typography>
     <Typography variant="body1" paragraph>Questions or a tool to suggest? Email <Link href="mailto:sammykhanmalng@gmail.com">sammykhanmalng@gmail.com</Link>.</Typography>
     <Typography id="photo-credits" variant="h5" component="h2" fontWeight={700} gutterBottom sx={{ mt: 4 }}>Photo credits</Typography>
     <Typography variant="body2" color="text.secondary" paragraph>Photos on this site are real photographs. The fun and gaming photos, the gaming-controllers photo and the calculator-and-receipts photo are public domain. The photos below are shared under Creative Commons licences, credited here as the licences require:</Typography>
