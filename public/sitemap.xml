@@ -296,6 +296,21 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://kalkio.vercel.app/tools/eobi-pension-calculator-pakistan/</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://kalkio.vercel.app/tools/gratuity-calculator-pakistan/</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://kalkio.vercel.app/tools/provident-fund-calculator-pakistan/</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://kalkio.vercel.app/privacy/</loc>
     <lastmod>2026-11-05</lastmod>
     <changefreq>monthly</changefreq>

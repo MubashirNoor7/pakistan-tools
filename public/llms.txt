@@ -1,6 +1,6 @@
 # Kalkio
 
-Kalkio is a free website with 56 calculators and converters. Every tool runs in the visitor's browser - no sign-up, no account, no backend. File converters run fully in the browser and files are never uploaded to a server. Tax, bill and fuel results are estimates; official rates are final.
+Kalkio is a free website with 59 calculators and converters. Every tool runs in the visitor's browser - no sign-up, no account, no backend. File converters run fully in the browser and files are never uploaded to a server. Tax, bill and fuel results are estimates; official rates are final.
 
 Contact: sammykhanmalng@gmail.com
 
@@ -17,6 +17,9 @@ Contact: sammykhanmalng@gmail.com
 - Zakat Calculator Pakistan 2026: Cash, Gold: https://kalkio.vercel.app/tools/zakat-calculator-pakistan-cash-gold/
 - Car Token Tax Calculator Pakistan 2026-27: https://kalkio.vercel.app/tools/car-token-tax-calculator-pakistan/
 - Daily Wage Calculator Pakistan (2026): https://kalkio.vercel.app/tools/daily-wage-calculator-pakistan/
+- EOBI Pension Calculator Pakistan: https://kalkio.vercel.app/tools/eobi-pension-calculator-pakistan/
+- Gratuity Calculator Pakistan: https://kalkio.vercel.app/tools/gratuity-calculator-pakistan/
+- Provident Fund Calculator Pakistan: https://kalkio.vercel.app/tools/provident-fund-calculator-pakistan/
 - Fuel Trip Cost Calculator Pakistan (OGRA): https://kalkio.vercel.app/tools/fuel-trip-cost-calculator-pakistan-ogra/
 - Electricity Bill Calculator Pakistan (2026): https://kalkio.vercel.app/tools/electricity-bill-calculator-pakistan/
 - Sui Gas Bill Calculator Pakistan (2026): https://kalkio.vercel.app/tools/sui-gas-bill-calculator-pakistan/
