@@ -5,7 +5,7 @@
 export const BASE_URL = 'https://kalkio.vercel.app';
 export const BRAND = 'Kalkio';
 export const HOME_TITLE = 'Kalkio - Free Calculators & Converters';
-export const HOME_DESC = 'Kalkio: 59 free calculators and converters - loan EMI, QR codes, BMI, GTA 6 price, file converters and more, plus Marla, salary tax and PTA tax for Pakistan. No sign-up, everything runs in your browser.';
+export const HOME_DESC = 'Kalkio: 60 free calculators and converters - loan EMI, QR codes, BMI, GTA 6 price, file converters and more, plus Marla, salary tax and PTA tax for Pakistan. No sign-up, everything runs in your browser.';
 
 // Universal FAQ answers (true for every tool on this site).
 const FREE = ['Is this tool free?', 'Yes. It is free and no sign-up is needed.'];
@@ -50,6 +50,7 @@ export const SEO_BY_ID = {
   age: { slug: 'age-calculator-date-of-birth', desc: 'Work out age from a date of birth. Free, no sign-up, and it runs in your browser.', faqs: [FREE, BROWSER] },
   percentage: { slug: 'percentage-calculator', desc: 'Work out common percentage calculations quickly. Free, no sign-up, and it runs in your browser.', faqs: [FREE, BROWSER, ['What is % difference?', 'The difference between two numbers as a percentage of their average: |X − Y| ÷ ((X + Y) ÷ 2) × 100. For 50 and 60 it is 18.18%.'], ['What is reverse percentage?', 'The price before a discount: price after ÷ (1 − % ÷ 100). Rs 80 after 20% off was Rs 100.']] },
   wordcounter: { slug: 'word-counter-character-counter', desc: 'Count words and characters in pasted text, in your browser. Nothing is uploaded. Free, no sign-up.', faqs: [FREE, ['Is my text uploaded?', 'No. Counting happens in your browser and nothing is uploaded to a server.']] },
+  typingtest: { slug: 'typing-test', desc: 'Test your typing speed in 30 or 60 seconds - type the sample text and see your words per minute (WPM) and accuracy. Free, no sign-up, and it runs in your browser.', faqs: [FREE, BROWSER, ['How is typing speed (WPM) worked out?', 'One word counts as 5 characters. WPM is your correct characters divided by 5, divided by the minutes you typed.'], ['What is a good typing speed?', 'About 40 words a minute is average for most people. Above 60 is fast, and above 80 is very fast.']] },
   password: { slug: 'password-generator-secure-private', desc: 'Generate a secure password in your browser. Passwords are generated locally and never sent anywhere. Free, no sign-up.', faqs: [FREE, ['Is the password sent anywhere?', 'No. Passwords are generated locally and never sent anywhere.'], ['How strong is my password?', 'The tool shows entropy bits and a crack-time estimate at 10 billion guesses per second.']] },
   cgpa: { slug: 'cgpa-calculator-4-0-scale', desc: 'Work out CGPA on a 4.0, 10-point or 5.0 scale, with a Pakistan HEC option, from your grades. Free, no sign-up, and it runs in your browser.', faqs: [FREE, BROWSER, ['Which scales does it support?', '4.0, 10-point and 5.0 scales, plus a Pakistan HEC option (A− = 3.67, B+ = 3.33).']] },
   pngtojpg: { slug: 'png-to-jpg-converter-online', desc: 'Convert PNG images to JPG in your browser. Your file is never uploaded to a server. Free, no sign-up.', faqs: [FREE, FILE_PRIVATE, ['Can I choose the JPG quality?', 'Yes - use the slider from 0 to 100 (default 92), and convert several PNGs at once.']] },

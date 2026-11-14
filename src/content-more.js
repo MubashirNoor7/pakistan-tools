@@ -430,6 +430,13 @@ export const CONTENT_MORE = {
     ] },
     { h: 'Privacy', p: ['Your text is counted in your browser. It is not uploaded or stored.'] },
   ],
+  typingtest: [
+    { h: 'How the typing test works', p: [
+      'Pick 30 or 60 seconds, then type the text shown. The timer starts with your first keystroke. When the time ends, or when you finish the whole text, you see your speed in words per minute (WPM) and your accuracy. Press Restart to try the same text again, or New text for a different one.',
+    ] },
+    { h: 'How WPM and accuracy are worked out', p: ['One word counts as 5 characters. WPM is your correct characters divided by 5, divided by the minutes you typed. Accuracy is your correct characters divided by all the characters you typed. A wrong character counts against accuracy but not against speed.'] },
+    { h: 'What is a good speed?', p: ['About 40 words a minute is average for most people. Above 60 is fast, and above 80 is very fast. Short daily practice - a few minutes a day - is what raises speed over time.'] },
+  ],
   datecalc: [
     { h: 'Days between two dates', p: [
       'Pick two dates to see the number of calendar days between them, the same period in weeks and in approximate months (days ÷ 30.44), the weekday of the first date, and how many of the days are weekdays and how many are weekends. Turn on "Include end date" to count both the first and the last day. You can also add or subtract days from a date - for example, 90 days after today.',

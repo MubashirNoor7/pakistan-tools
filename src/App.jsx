@@ -55,6 +55,7 @@ const BmiTool = lazy(() => import('./tools/globaltools.jsx').then((m) => ({ defa
 const AgeTool = lazy(() => import('./tools/globaltools.jsx').then((m) => ({ default: m.AgeTool })));
 const PercentageTool = lazy(() => import('./tools/globaltools.jsx').then((m) => ({ default: m.PercentageTool })));
 const WordCounterTool = lazy(() => import('./tools/globaltools.jsx').then((m) => ({ default: m.WordCounterTool })));
+const TypingTestTool = lazy(() => import('./tools/globaltools.jsx').then((m) => ({ default: m.TypingTestTool })));
 const PasswordTool = lazy(() => import('./tools/globaltools.jsx').then((m) => ({ default: m.PasswordTool })));
 const CgpaTool = lazy(() => import('./tools/globaltools.jsx').then((m) => ({ default: m.CgpaTool })));
 const PngToJpgTool = lazy(() => import('./tools/globaltools.jsx').then((m) => ({ default: m.PngToJpgTool })));
@@ -92,7 +93,7 @@ const TOOL_MODULE = {
   fuel: 'utility', petrolprice: 'utility', heic: 'utility', webp: 'utility', jpgtowebp: 'utility', electricity: 'utility', gasbill: 'utility',
   gta6price: 'gta', gta6download: 'gta', gta6countdown: 'gta', gta6pccheck: 'gta', gta6totalcost: 'gta', gta6preorder: 'gta', gta6storage: 'gta', gta6nztick: 'gta', gta6pcdate: 'gta',
   rentvsbuy: 'newtools', taxslab: 'newtools', gold: 'newtools', prizebond: 'newtools', jpgtopdf: 'newtools', fuelavg: 'newtools', currency: 'newtools',
-  loanemi: 'globaltools', mortgage: 'globaltools', qr: 'globaltools', bmi: 'globaltools', age: 'globaltools', percentage: 'globaltools', wordcounter: 'globaltools', password: 'globaltools', cgpa: 'globaltools', pngtojpg: 'globaltools', pdftojpg: 'globaltools',
+  loanemi: 'globaltools', mortgage: 'globaltools', qr: 'globaltools', bmi: 'globaltools', age: 'globaltools', percentage: 'globaltools', wordcounter: 'globaltools', typingtest: 'globaltools', password: 'globaltools', cgpa: 'globaltools', pngtojpg: 'globaltools', pdftojpg: 'globaltools',
   salarycalc: 'countrytools', sip: 'countrytools', datecalc: 'countrytools', areacalc: 'countrytools', homeloan: 'countrytools', unitconv: 'countrytools', love: 'countrytools', attendance: 'countrytools', carloan: 'countrytools',
   htmltovideo: 'htmltovideo', whatsmyip: 'iptool', dailywage: 'wage',
   eobi: 'benefits', gratuity: 'benefits', providentfund: 'benefits',
@@ -152,6 +153,7 @@ const TOOLS = [
   { id: 'age', title: 'Age Calculator (Date of Birth)', cat: 'Tools - global', Component: AgeTool },
   { id: 'percentage', title: 'Percentage Calculator', cat: 'Tools - global', Component: PercentageTool },
   { id: 'wordcounter', title: 'Word Counter & Character Counter', cat: 'Tools - global', Component: WordCounterTool },
+  { id: 'typingtest', title: 'Typing Test: Check Your Typing Speed (WPM)', cat: 'Tools - global', Component: TypingTestTool },
   { id: 'password', title: 'Password Generator (Secure, Private)', cat: 'Tools - global', Component: PasswordTool },
   { id: 'cgpa', title: 'CGPA Calculator (4.0 Scale)', cat: 'Study - global', Component: CgpaTool },
   { id: 'pngtojpg', title: 'PNG to JPG Converter Online (Free, Private)', cat: 'Files - global', Component: PngToJpgTool },
@@ -174,7 +176,7 @@ TOOLS.forEach((t) => { const s = SEO_BY_ID[t.id]; if (s) { t.slug = s.slug; t.de
 
 // Home-page grouping: every tool sits in exactly one category; Most Popular is a
 // Home page FAQs, shown in the accordion and as FAQ schema (same three answers).
-const HOME_FAQS = [['Are the tools free?', 'Yes. All 59 tools are free and no sign-up is needed.'], ['Does my data leave my device?', 'No. Every tool runs in your browser and does not ask you to create an account.'], ['Are tax results official?', 'No. Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.']];
+const HOME_FAQS = [['Are the tools free?', 'Yes. All 60 tools are free and no sign-up is needed.'], ['Does my data leave my device?', 'No. Every tool runs in your browser and does not ask you to create an account.'], ['Are tax results official?', 'No. Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.']];
 
 // shortcut list (Trends evidence: JPG to PDF, loan, age, BMI, mortgage strongest
 // worldwide; Marla/PTA/currency strongest in Pakistan). Category names are generic
@@ -186,7 +188,7 @@ const CATEGORIES = [
   { name: 'Money & Tax', ids: ['salarytax', 'bps', 'pta', 'freelancer', 'taxslab', 'zakat', 'tokentax', 'dailywage', 'eobi', 'gratuity', 'providentfund', 'loanemi', 'mortgage', 'homeloan', 'carloan', 'sip', 'salarycalc'] },
   { name: 'Prices & Fuel', ids: ['gold', 'prizebond', 'currency', 'fuel', 'petrolprice', 'fuelavg', 'electricity', 'gasbill'] },
   { name: 'Files & converters', ids: ['jpgtopdf', 'pdftojpg', 'pngtojpg', 'heic', 'webp', 'jpgtowebp', 'qr', 'unitconv', 'htmltovideo'] },
-  { name: 'Everyday tools', ids: ['age', 'bmi', 'percentage', 'wordcounter', 'datecalc', 'password', 'cgpa', 'attendance', 'whatsmyip'] },
+  { name: 'Everyday tools', ids: ['age', 'bmi', 'percentage', 'wordcounter', 'datecalc', 'password', 'cgpa', 'attendance', 'whatsmyip', 'typingtest'] },
   { name: 'Fun & Entertainment', ids: ['love'] },
   { name: 'Gaming', ids: ['gta6price', 'gta6download', 'gta6countdown', 'gta6pccheck', 'gta6totalcost', 'gta6preorder', 'gta6storage', 'gta6nztick', 'gta6pcdate'] },
 ].map((c) => ({ name: c.name, tools: c.ids.map((id) => BY_ID[id]).filter(Boolean) }));
@@ -394,10 +396,10 @@ export default function App({ mode = 'light', onToggleMode = () => {} }) {
     setMetaTag('robots', (route.kind === 'notfound' || (route.kind === 'tool' && !cur)) ? 'noindex' : 'index, follow');
     if (route.kind === 'home') { document.title = HOME_TITLE; setMetaTag('description', HOME_DESC); setCanonical(BASE_URL + '/'); setFaqJsonLd(HOME_FAQS); }
     else if (route.kind === 'tool' && cur) { document.title = seoTitle(cur.title); setMetaTag('description', cur.desc); setCanonical(toolUrl(cur.slug)); setFaqJsonLd(cur.faqs); }
-    else if (route.kind === 'about') { document.title = 'About | Kalkio'; setMetaTag('description', 'About Kalkio: 59 free calculators and converters that run in your browser. No sign-up, no accounts.'); setCanonical(pageUrl('/about/')); setFaqJsonLd(null); }
+    else if (route.kind === 'about') { document.title = 'About | Kalkio'; setMetaTag('description', 'About Kalkio: 60 free calculators and converters that run in your browser. No sign-up, no accounts.'); setCanonical(pageUrl('/about/')); setFaqJsonLd(null); }
     else if (route.kind === 'contact') { document.title = 'Contact | Kalkio'; setMetaTag('description', 'Contact Kalkio by email. Tools run in your browser and no sign-up is needed.'); setCanonical(pageUrl('/contact/')); setFaqJsonLd(null); }
     else if (route.kind === 'privacy') { document.title = 'Privacy Policy | Kalkio'; setMetaTag('description', 'Kalkio privacy: tools run in your browser, file converters do not upload your files to a server, and no account is needed.'); setCanonical(pageUrl('/privacy/')); setFaqJsonLd(null); }
-    else { document.title = 'Tool not found | Kalkio'; setMetaTag('description', 'That tool does not exist on Kalkio. Browse all 59 free tools on the home page.'); setCanonical(BASE_URL + '/'); setFaqJsonLd(null); }
+    else { document.title = 'Tool not found | Kalkio'; setMetaTag('description', 'That tool does not exist on Kalkio. Browse all 60 free tools on the home page.'); setCanonical(BASE_URL + '/'); setFaqJsonLd(null); }
   }, [route, cur]);
 
   // Footer category link: go home, open that category, scroll to it.
@@ -437,7 +439,7 @@ export default function App({ mode = 'light', onToggleMode = () => {} }) {
         <Typography variant="body2"><Link href="mailto:sammykhanmalng@gmail.com" underline="hover" color="text.secondary">sammykhanmalng@gmail.com</Link></Typography>
       </Box>
     </Box>
-    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>© 2026 Kalkio · Last updated 13 Nov 2026. · Tax, bill and fuel results are estimates.</Typography>
+    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>© 2026 Kalkio · Last updated 14 Nov 2026. · Tax, bill and fuel results are estimates.</Typography>
   </Box>);
 
   const notFound = (<Box sx={{ maxWidth: 720, mx: 'auto', py: 6 }}>
@@ -490,7 +492,7 @@ export default function App({ mode = 'light', onToggleMode = () => {} }) {
       <Box sx={{ position: 'absolute', inset: 0, background: { xs: 'linear-gradient(180deg, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.42) 50%, rgba(0,0,0,0.72) 100%)', md: 'linear-gradient(90deg, rgba(0,0,0,0.68) 0%, rgba(0,0,0,0.38) 55%, rgba(0,0,0,0.08) 100%), linear-gradient(0deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0) 50%)' } }} />
       <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }}>
         <Box sx={{ width: '100%', maxWidth: 1200, mx: 'auto', px: 3 }}>
-          <Typography variant="h3" component="h1" fontWeight={800} sx={{ color: '#fff', fontSize: { xs: '1.75rem', md: '2.25rem' }, lineHeight: 1.2, maxWidth: 640 }}>59 free calculators and converters.</Typography>
+          <Typography variant="h3" component="h1" fontWeight={800} sx={{ color: '#fff', fontSize: { xs: '1.75rem', md: '2.25rem' }, lineHeight: 1.2, maxWidth: 640 }}>60 free calculators and converters.</Typography>
           <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.93)', fontWeight: 400, mt: 1, maxWidth: 640 }}>From loan EMI and age to JPG to PDF and GTA 6 prices. Everything runs in your browser. No sign-up.</Typography>
         </Box>
       </Box>
@@ -546,7 +548,7 @@ export default function App({ mode = 'light', onToggleMode = () => {} }) {
 
   const aboutView = staticPage('About Kalkio', (<>
     <Box component="img" src="/images/about.webp" alt="A bright home office desk with a laptop" sx={{ width: '100%', height: { xs: 180, md: 260 }, objectFit: 'cover', objectPosition: 'center', borderRadius: 3, display: 'block', mb: 3, filter: dimDark }} />
-    <Typography variant="body1" paragraph>Kalkio is a collection of 59 free calculators and converters, covering property, tax and salary, prices, finance, files and everyday calculations.</Typography>
+    <Typography variant="body1" paragraph>Kalkio is a collection of 60 free calculators and converters, covering property, tax and salary, prices, finance, files and everyday calculations.</Typography>
     <Typography variant="body1" paragraph>How to use it: search for a tool or browse a category, enter your numbers, and the result appears straight away. There is nothing to install and no account to create.</Typography>
     <Typography variant="body1" paragraph>Every tool runs in the visitor’s browser - there is no backend, no database, no login and no sign-up. File converters also run fully in the browser, so your files never leave your device.</Typography>
     <Typography variant="body1" paragraph>The tools cover everyday needs: converting Marla and Kanal, working out salary tax, Zakat and PTA tax, checking petrol and gold prices, converting files, and checking GTA 6 prices and release dates.</Typography>
