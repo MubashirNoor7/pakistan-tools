@@ -255,6 +255,50 @@ export function WordCounterTool() {
   </Wrap>);
 }
 
+// Typing Test - 30 or 60 seconds. The timer starts on the first keystroke.
+// WPM = correct characters / 5 / minutes typed. Accuracy = correct
+// characters / all characters typed. One word counts as 5 characters.
+const TYPE_TEXTS = [
+  'The morning market is full of colour and sound. Fresh bread comes out of the oven, and the smell of it fills the whole street. Farmers put out baskets of red tomatoes, green spinach and yellow lemons. Children walk to school with heavy bags, and the bus waits at the corner for them.',
+  'A river runs through the middle of the town, and a small bridge joins the two sides. On warm days, people sit on the bank and watch the boats go past. Fishermen cast their lines in the early morning and sell their catch before noon. In the evening, the lights along the water come on, and the town looks calm and quiet.',
+  'Learning to type well takes a little practice every day. Sit up straight, keep your fingers on the home keys, and look at the screen instead of your hands. Start slowly and focus on hitting the right key. Speed comes with time, so do not rush and do not worry about mistakes. A few minutes of practice each day is enough to see real progress.',
+];
+export function TypingTestTool() {
+  const [idx, setIdx] = useState(0); const [dur, setDur] = useState(60); const [typed, setTyped] = useState(''); const [startedAt, setStartedAt] = useState(null); const [now, setNow] = useState(0); const [done, setDone] = useState(false);
+  const sample = TYPE_TEXTS[idx];
+  const elapsed = startedAt ? (now - startedAt) / 1000 : 0;
+  const timeLeft = Math.max(0, dur - elapsed);
+  const correct = [...typed].filter((c, i) => c === sample[i]).length;
+  const acc = typed.length ? (correct / typed.length) * 100 : 100;
+  const mins = Math.max(elapsed, 1) / 60; const wpm = startedAt ? (correct / 5) / mins : 0;
+  const wordsTyped = typed.trim() ? typed.trim().split(/\s+/).length : 0;
+  useEffect(() => { if (!startedAt || done) return; const t = setInterval(() => setNow(Date.now()), 250); return () => clearInterval(t); }, [startedAt, done]);
+  useEffect(() => { if (startedAt && !done && elapsed >= dur) setDone(true); }, [elapsed, dur, startedAt, done]);
+  const onType = (v) => {
+    if (done) return;
+    const val = v.slice(0, sample.length);
+    if (!startedAt && val.length > 0) { setStartedAt(Date.now()); setNow(Date.now()); }
+    setTyped(val);
+    if (val.length >= sample.length) setDone(true);
+  };
+  const restart = (nextIdx) => { setIdx(nextIdx !== undefined ? nextIdx : idx); setTyped(''); setStartedAt(null); setNow(0); setDone(false); };
+  return (<Wrap note="The timer starts with your first keystroke. Type in your browser only - nothing is uploaded or stored.">
+    <ToggleButtonGroup value={dur} exclusive fullWidth onChange={(_, nv) => nv && setDur(nv)} disabled={!!startedAt} sx={{ mb: 2 }}><ToggleButton value={30}>30 seconds</ToggleButton><ToggleButton value={60}>60 seconds</ToggleButton></ToggleButtonGroup>
+    <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 2, mb: 2 }}><Typography variant="body1">{sample}</Typography></Box>
+    <TextField fullWidth multiline rows={4} label="Type the text above here" value={typed} onChange={(e) => onType(e.target.value)} disabled={done} autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false} sx={{ mb: 2 }} />
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+      <Typography variant="body2">Time left: <b>{fmt(timeLeft)}s</b></Typography>
+      <Typography variant="body2">Speed: <b>{fmt(wpm)} WPM</b></Typography>
+      <Typography variant="body2">Accuracy: <b>{fmt(acc)}%</b></Typography>
+    </Box>
+    {done && (<><Hero value={fmt(wpm) + ' WPM'} unit="Your typing speed" eq={acc >= 95 ? 'Very accurate typing' : acc >= 85 ? 'Good accuracy - slow down a little for fewer mistakes' : 'Accuracy below 85% - slow down and watch each key'} /><Rows rows={[['Accuracy', fmt(acc) + '%'], ['Correct characters', fmt(correct) + ' of ' + fmt(typed.length)], ['Words typed', fmt(wordsTyped)], ['Time used', fmt(Math.min(elapsed, dur)) + ' seconds']]} /></>)}
+    <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+      <Button variant="contained" onClick={() => restart()}>Restart</Button>
+      <Button variant="outlined" onClick={() => restart((idx + 1) % TYPE_TEXTS.length)}>New text</Button>
+    </Box>
+  </Wrap>);
+}
+
 // Password generator - generated locally, never stored or sent.
 const CRACK_RATE = 1e10; // 10 billion guesses per second (offline attack estimate)
 function crackTimeLabel(bits) {
