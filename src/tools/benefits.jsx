@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, CardContent, Typography, TextField, MenuItem, Checkbox, FormControlLabel } from '@mui/material';
+import { Card, CardContent, Typography, TextField, MenuItem, Checkbox, FormControlLabel, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import { fmt, Hero, Rows } from './shared.jsx';
 
 // EOBI pension: monthly pension = average monthly wage (last 12 months)
@@ -100,5 +100,43 @@ export function ProvidentFundTool() {
     {b > 0 && (<><Hero value={'Rs ' + fmt(fv)} unit={'Projected fund value after ' + fmt(y) + ' years'} eq={'Rs ' + fmt(totalMonthly) + ' a month, growing at ' + fmt(rt) + '% a year'} /><Rows rows={[['Employee contribution', 'Rs ' + fmt(empMonthly) + ' a month'], ['Employer contribution', 'Rs ' + fmt(erMonthly) + ' a month'], ['Total contribution', 'Rs ' + fmt(totalMonthly) + ' a month'], ['Total paid in over ' + fmt(y) + ' years', 'Rs ' + fmt(totalContrib)], ['Growth from returns', 'Rs ' + fmt(growth)], ['Projected fund value', 'Rs ' + fmt(fv)]]} /></>)}
     <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>How it grows: every month's contribution earns the monthly return (annual return / 12) for the months left, so money paid in early grows the most. The formula is monthly contribution x ((1 + monthly rate)^months - 1) / monthly rate.</Typography>
     <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>Check: Rs 100,000 basic, 10% each side, 10% return, 10 years = Rs 20,000 a month, Rs 2,400,000 paid in, projected value about Rs 4,096,900.</Typography>
+  </Wrap>);
+}
+
+// Retirement calculator: how much will your savings be worth when you retire?
+// Monthly compounding: FV = P(1+r)^n + C x ((1+r)^n - 1) / r, where r is the
+// monthly return (annual return / 12) and n is months until retirement.
+// This is a projection, not financial advice - returns are not guaranteed,
+// and inflation, tax and fees are not included.
+export function RetirementTool() {
+  const [age, setAge] = useState('30'); const [retAge, setRetAge] = useState('60');
+  const [savings, setSavings] = useState('100000'); const [monthly, setMonthly] = useState('10000'); const [ret, setRet] = useState('8');
+  const a = parseFloat(age) || 0; const ra = parseFloat(retAge) || 0; const p = parseFloat(savings) || 0;
+  const c = parseFloat(monthly) || 0; const rt = parseFloat(ret) || 0;
+  const years = ra - a; const months = years * 12; const r = rt / 100 / 12;
+  const ok = ra > a && a >= 0 && years <= 60;
+  const growthFactor = r === 0 ? 1 : Math.pow(1 + r, months);
+  const fv = ok ? p * growthFactor + (r === 0 ? c * months : c * ((growthFactor - 1) / r)) : 0;
+  const totalContrib = ok ? p + c * months : 0;
+  const growth = fv - totalContrib;
+  const yearly = [];
+  if (ok) { let bal = p; for (let y = 1; y <= years; y++) { const start = bal; for (let m = 0; m < 12; m++) bal = bal * (1 + r) + c; yearly.push({ y, contrib: c * 12, growth: bal - start - c * 12, bal }); } }
+  return (<Wrap note="A projection, not financial advice. The return you enter is only an expectation - actual returns go up and down, and inflation, tax and fees are not included, so the same money will buy less in the future than it does today.">
+    <TextField fullWidth label="Your current age" type="number" value={age} onChange={(e) => setAge(e.target.value)} sx={{ mb: 2 }} />
+    <TextField fullWidth label="Age you want to retire" type="number" value={retAge} onChange={(e) => setRetAge(e.target.value)} sx={{ mb: 2 }} />
+    <TextField fullWidth label="Savings you already have (Rs)" type="number" value={savings} onChange={(e) => setSavings(e.target.value)} sx={{ mb: 2 }} />
+    <TextField fullWidth label="Monthly contribution (Rs)" type="number" value={monthly} onChange={(e) => setMonthly(e.target.value)} sx={{ mb: 2 }} />
+    <TextField fullWidth label="Expected annual return (%)" type="number" value={ret} onChange={(e) => setRet(e.target.value)} />
+    {!ok && <Typography variant="body1" sx={{ mt: 2 }}>Retirement age must be higher than your current age, and no more than 60 years away.</Typography>}
+    {ok && (<><Hero value={'Rs ' + fmt(fv)} unit={'Projected savings at age ' + fmt(ra)} eq={'In ' + fmt(years) + ' years, at ' + fmt(rt) + '% a year'} /><Rows rows={[['Savings you already have', 'Rs ' + fmt(p)], ['Monthly contribution', 'Rs ' + fmt(c)], ['Total paid in by retirement', 'Rs ' + fmt(totalContrib)], ['Growth from returns', 'Rs ' + fmt(growth)], ['Projected savings at retirement', 'Rs ' + fmt(fv)]]} />
+      <Typography variant="subtitle1" fontWeight={700} sx={{ mt: 3, mb: 1 }}>Year by year</Typography>
+      <TableContainer sx={{ maxHeight: 320, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+        <Table size="small" stickyHeader>
+          <TableHead><TableRow><TableCell>Year</TableCell><TableCell align="right">Paid in</TableCell><TableCell align="right">Growth</TableCell><TableCell align="right">Balance</TableCell></TableRow></TableHead>
+          <TableBody>{yearly.map((row) => (<TableRow key={row.y}><TableCell>{row.y} (age {fmt(a + row.y)})</TableCell><TableCell align="right">Rs {fmt(row.contrib)}</TableCell><TableCell align="right">Rs {fmt(row.growth)}</TableCell><TableCell align="right">Rs {fmt(row.bal)}</TableCell></TableRow>))}</TableBody>
+        </Table>
+      </TableContainer></>)}
+    <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>How it grows: every month your savings and your new contribution earn the monthly return (annual return / 12), so money paid in early grows the most.</Typography>
+    <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>Check: age 30 to 60, Rs 100,000 saved, Rs 10,000 a month, 8% a year = Rs 3,700,000 paid in, projected about Rs 15,997,167 at retirement.</Typography>
   </Wrap>);
 }
