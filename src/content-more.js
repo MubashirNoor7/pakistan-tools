@@ -55,6 +55,10 @@ const bondNet = Object.entries(BONDS).map(([d, p]) => ['Rs ' + n0(+d) + ' bond, 
 const bmi1 = 70 / (1.7 * 1.7);
 // CGPA
 const cg = (4.0 + 3.7 + 3.3) * 3 / 9;
+// Retirement worked check: age 30 to 60, Rs 100,000 saved, Rs 10,000 a month, 8% a year
+const retR = 8 / 100 / 12, retN = 30 * 12;
+const retFv = 100000 * Math.pow(1 + retR, retN) + 10000 * ((Math.pow(1 + retR, retN) - 1) / retR); // 15,997,167.45
+const retPaid = 100000 + 10000 * retN; // 3,700,000
 // Password pool: 26 + 26 + 10 + 14 = 76
 const pwBits = Math.log2(76) * 16;
 
@@ -624,5 +628,54 @@ export const CONTENT_MORE = {
       'The projected value is an estimate, not a promise. The actual return depends on where your fund invests, and the rate you enter is only an expectation. If your employer\'s fund also pays gratuity rules or a final settlement, check the fund\'s own statement for the exact figure.',
     ] },
     { h: 'See also', p: ['For your monthly EOBI pension, use the [[eobi|EOBI Pension Calculator]] on this site, and for your end-of-service lump sum, use the [[gratuity|Gratuity Calculator]]. Results are estimates; confirm with your employer before a financial decision.'] },
+  ],
+  retirement: [
+    { h: 'How the retirement projection works', p: [
+      'Enter your current age, the age you want to retire, the savings you already have, how much you will put in each month, and the return you expect each year. The calculator grows your savings and every monthly contribution at the monthly return (annual return divided by 12) until retirement, and shows the result year by year.',
+      'Money paid in early grows the most, because it earns returns for the longest time. That is why starting ten years earlier matters more than putting in a little extra later.',
+    ] },
+    { h: 'A worked example', p: ['Start at age 30 with Rs 100,000 saved, put in Rs 10,000 a month, and expect 8% a year. At age 60 you have paid in Rs ' + n0(retPaid) + ' in total, and the projected savings are Rs ' + n0(retFv) + '. The difference, about Rs ' + n0(retFv - retPaid) + ', is growth from returns.'] },
+    { h: 'What this projection does not include', p: [
+      'The return you enter is only an expectation - actual returns go up and down, so the real result will differ. Inflation is not included: prices rise over time, so Rs 1,000,000 at retirement will buy less than Rs 1,000,000 today. Tax on withdrawals and any fees are also not included.',
+      'Try a lower return as well, for example 5% instead of 8%, and see how much the result changes. That range is a better plan than one single number.',
+    ] },
+    { h: 'See also', p: ['For a monthly pension from your job, use the [[eobi|EOBI Pension Calculator]] on this site, and to project a workplace fund, use the [[providentfund|Provident Fund Calculator]]. Results are estimates; confirm with a financial adviser before a money decision.'] },
+  ],
+  fraction: [
+    { h: 'How to add and subtract fractions', p: [
+      'To add or subtract, make both denominators the same first. Multiply the top and bottom of each fraction so both have the same denominator, then add or subtract the numerators. 1/2 + 1/3 = 3/6 + 2/6 = 5/6.',
+      'The tool simplifies the answer to lowest terms with the greatest common divisor (GCD), so you always get the smallest form.',
+    ] },
+    { h: 'How to multiply and divide fractions', p: [
+      'To multiply, multiply the numerators together and the denominators together: 2/3 × 3/5 = 6/15 = 2/5. To divide, flip the second fraction and multiply: 3/4 ÷ 2/5 = 3/4 × 5/2 = 15/8, which is 1 7/8 as a mixed number.',
+    ] },
+    { h: 'Examples', p: ['Worked examples from the calculator:'], table: {
+      head: ['Question', 'Answer'],
+      rows: [['1/2 + 1/3', '5/6 = 0.83'], ['3/4 − 1/8', '5/8 = 0.63'], ['2/3 × 3/5', '2/5 = 0.40'], ['3/4 ÷ 2/5', '15/8 = 1 7/8 = 1.88']] } },
+    { h: 'Mixed numbers and decimals', p: ['The answer is also shown as a mixed number (a whole number with a fraction, like 1 7/8) and as a decimal, so you can use whichever form your homework needs.'] },
+  ],
+  factor: [
+    { h: 'What is a factor?', p: [
+      'A factor is a whole number that divides your number exactly, with no remainder. The factors of 12 are 1, 2, 3, 4, 6 and 12, because each of those divides 12 with nothing left over.',
+    ] },
+    { h: 'What is prime factorization?', p: [
+      'Prime factorization breaks a number into prime numbers multiplied together. A prime number has only two factors: 1 and itself. For example, 60 = 2² × 3 × 5, and 2, 3 and 5 are all prime. The tool shows the factorization and the full list of factors.',
+    ] },
+    { h: 'Examples', p: ['Prime factorizations the tool gives:'], table: {
+      head: ['Number', 'Prime factorization', 'Number of factors'],
+      rows: [['12', '2² × 3', '6'], ['28', '2² × 7', '6'], ['60', '2² × 3 × 5', '12'], ['97', '97 (prime)', '2']] } },
+    { h: 'Limits', p: ['The tool takes whole numbers from 1 to 1,000,000,000. Decimals, 0 and negative numbers have no factor list. 1 has no prime factors: its only factor is 1.'] },
+  ],
+  lcm: [
+    { h: 'What is the LCM?', p: [
+      'The lowest common multiple (LCM) of two numbers is the smallest number that both of them divide into exactly. The LCM of 12 and 18 is 36: 12 × 3 = 36 and 18 × 2 = 36, and no smaller number works for both.',
+    ] },
+    { h: 'How the LCM is worked out', p: [
+      'With the GCD: LCM(a, b) = a × b ÷ GCD(a, b). For 12 and 18, the GCD is 6, so the LCM is 12 × 18 ÷ 6 = 36. With a third number, the tool works out the LCM of the first two, then the LCM of that answer with the third number.',
+    ] },
+    { h: 'Examples', p: ['Worked examples from the calculator:'], table: {
+      head: ['Numbers', 'LCM'],
+      rows: [['4 and 6', '12'], ['8 and 12', '24'], ['12 and 18', '36'], ['6, 8 and 12', '24']] } },
+    { h: 'Limits', p: ['The tool takes whole numbers from 1 to 1,000,000,000. Decimals, 0 and negative numbers have no LCM.'] },
   ],
 };
