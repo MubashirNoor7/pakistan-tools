@@ -5,7 +5,7 @@
 export const BASE_URL = 'https://kalkio.vercel.app';
 export const BRAND = 'Kalkio';
 export const HOME_TITLE = 'Kalkio - Free Calculators & Converters';
-export const HOME_DESC = 'Kalkio: 64 free calculators and converters - loan EMI, QR codes, BMI, GTA 6 price, file converters and more, plus Marla, salary tax and PTA tax for Pakistan. No sign-up, everything runs in your browser.';
+export const HOME_DESC = 'Kalkio: 64 free calculators and converters - loan EMI, QR codes, BMI, GTA 6 price, typing test, retirement, file converters and more, plus Marla, salary tax and PTA tax for Pakistan. No sign-up, everything runs in your browser.';
 
 // Universal FAQ answers (true for every tool on this site).
 const FREE = ['Is this tool free?', 'Yes. It is free and no sign-up is needed.'];
