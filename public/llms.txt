@@ -1,6 +1,6 @@
 # Kalkio
 
-Kalkio is a free website with 60 calculators and converters. Every tool runs in the visitor's browser - no sign-up, no account, no backend. File converters run fully in the browser and files are never uploaded to a server. Tax, bill and fuel results are estimates; official rates are final.
+Kalkio is a free website with 64 calculators and converters. Every tool runs in the visitor's browser - no sign-up, no account, no backend. File converters run fully in the browser and files are never uploaded to a server. Tax, bill and fuel results are estimates; official rates are final.
 
 Contact: sammykhanmalng@gmail.com
 
@@ -20,6 +20,7 @@ Contact: sammykhanmalng@gmail.com
 - EOBI Pension Calculator Pakistan: https://kalkio.vercel.app/tools/eobi-pension-calculator-pakistan/
 - Gratuity Calculator Pakistan: https://kalkio.vercel.app/tools/gratuity-calculator-pakistan/
 - Provident Fund Calculator Pakistan: https://kalkio.vercel.app/tools/provident-fund-calculator-pakistan/
+- Retirement Calculator: How Much Will I Have?: https://kalkio.vercel.app/tools/retirement-calculator/
 - Fuel Trip Cost Calculator Pakistan (OGRA): https://kalkio.vercel.app/tools/fuel-trip-cost-calculator-pakistan-ogra/
 - Electricity Bill Calculator Pakistan (2026): https://kalkio.vercel.app/tools/electricity-bill-calculator-pakistan/
 - Sui Gas Bill Calculator Pakistan (2026): https://kalkio.vercel.app/tools/sui-gas-bill-calculator-pakistan/
@@ -50,6 +51,10 @@ GTA 6 PC Release Date: Reported Q1 2027 Window: https://kalkio.vercel.app/tools/
 - Age Calculator (Date of Birth): https://kalkio.vercel.app/tools/age-calculator-date-of-birth/
 - Percentage Calculator: https://kalkio.vercel.app/tools/percentage-calculator/
 - Word Counter & Character Counter: https://kalkio.vercel.app/tools/word-counter-character-counter/
+- Typing Test: Check Your Typing Speed (WPM): https://kalkio.vercel.app/tools/typing-test/
+- Fraction Calculator: Add, Subtract, Multiply & Divide: https://kalkio.vercel.app/tools/fraction-calculator/
+- Factor Calculator: Find Factors & Prime Factors: https://kalkio.vercel.app/tools/factor-calculator/
+- LCM Calculator: Lowest Common Multiple: https://kalkio.vercel.app/tools/lcm-calculator/
 - Password Generator (Secure, Private): https://kalkio.vercel.app/tools/password-generator-secure-private/
 - CGPA Calculator (4.0 Scale): https://kalkio.vercel.app/tools/cgpa-calculator-4-0-scale/
 - PNG to JPG Converter Online (Free, Private): https://kalkio.vercel.app/tools/png-to-jpg-converter-online/

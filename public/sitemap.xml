@@ -311,7 +311,27 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://kalkio.vercel.app/tools/retirement-calculator/</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://kalkio.vercel.app/tools/typing-test/</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://kalkio.vercel.app/tools/fraction-calculator/</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://kalkio.vercel.app/tools/factor-calculator/</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://kalkio.vercel.app/tools/lcm-calculator/</loc>
     <lastmod>2026-11-14</lastmod>
     <changefreq>monthly</changefreq>
   </url>
