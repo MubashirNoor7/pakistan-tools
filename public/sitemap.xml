@@ -311,6 +311,11 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://kalkio.vercel.app/tools/typing-test/</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://kalkio.vercel.app/privacy/</loc>
     <lastmod>2026-11-05</lastmod>
     <changefreq>monthly</changefreq>
