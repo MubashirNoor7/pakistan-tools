@@ -1,5 +1,7 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
-import { Card, CardContent, Typography, TextField, Box, ToggleButton, ToggleButtonGroup, Alert, Button } from '@mui/material';
+import { Card, CardContent, Typography, TextField, Box, ToggleButton, ToggleButtonGroup, Alert, Button, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
+import { alpha } from '@mui/material/styles';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 function Wrap({ children, note }) {
   return (<><Card elevation={2} sx={{ borderRadius: 3 }}><CardContent sx={{ p: 3 }}>{children}</CardContent></Card>{note && <Alert severity="info" sx={{ mt: 2 }}>{note}</Alert>}</>);
@@ -292,7 +294,6 @@ export function HtmlToVideoTool() {
   const [resultInfo, setResultInfo] = useState('');
   const [error, setError] = useState('');
   const [paused, setPaused] = useState(false);
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const [previewTick, setPreviewTick] = useState(0);
   const [previewSize, setPreviewSize] = useState(null); // {w, h} when the content is vertical, null for wide
   const iframeRef = useRef(null);
@@ -694,17 +695,36 @@ export function HtmlToVideoTool() {
   })();
   const mp4Disabled = det.kind === 'css' ? !CAN_MAKE_MP4 : !MP4_SUPPORTED;
 
+  // Layout follows the professional video-maker pattern (VEED / Kapwing /
+  // Clipchamp, checked 17 Nov 2026): one big preview in the centre, a
+  // numbered 3-step strip on top, visual template cards instead of text
+  // buttons, one big Record button, and everything else behind a single
+  // Settings disclosure. The code box sits below the preview, compact.
+  const templateCards = [{ name: 'Birthday wish', code: TEMPLATES.birthday }, { name: 'Sale - 50% off', code: TEMPLATES.sale }, { name: 'Big title', code: TEMPLATES.title }];
   return (<Wrap>
-    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>No code? Try an example - press one, then press Record video.</Typography>
-    <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
-      <Button size="small" variant="outlined" onClick={() => setCode(TEMPLATES.birthday)}>Birthday wish</Button>
-      <Button size="small" variant="outlined" onClick={() => setCode(TEMPLATES.sale)}>Sale - 50% off</Button>
-      <Button size="small" variant="outlined" onClick={() => setCode(TEMPLATES.title)}>Big title</Button>
+    <Box sx={{ display: 'flex', gap: 1, mb: 1, flexWrap: 'wrap' }}>
+      {['Paste your code or pick a template', 'Preview it live', 'Record and download'].map((s, i) => (
+        <Box key={s} sx={{ flex: '1 1 140px', display: 'flex', alignItems: 'center', gap: 1, bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08), borderRadius: 2, px: 1.5, py: 1 }}>
+          <Typography fontWeight={800} color="primary.main">{i + 1}</Typography>
+          <Typography variant="body2" fontWeight={600}>{s}</Typography>
+        </Box>
+      ))}
     </Box>
-    <TextField fullWidth multiline rows={10} label="Your HTML code (inline CSS allowed)" value={code} onChange={(e) => setCode(e.target.value)} sx={{ mb: 2, '& textarea': { fontFamily: 'monospace', fontSize: 13 } }} />
+    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>Free · No sign-up · Nothing leaves your browser · MP4 video</Typography>
+    <Typography variant="body2" color="text.secondary" gutterBottom>Start from a template - tap one to load it</Typography>
+    <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, minmax(0, 1fr))' }, mb: 2 }}>
+      {templateCards.map((t) => (
+        <Card key={t.name} elevation={code === t.code ? 2 : 0} sx={{ cursor: 'pointer', border: '2px solid', borderColor: code === t.code ? 'primary.main' : 'divider', borderRadius: 2, overflow: 'hidden' }} onClick={() => setCode(t.code)}>
+          <Box sx={{ height: 120, overflow: 'hidden' }}>
+            <iframe title={t.name + ' preview'} sandbox="allow-scripts" srcDoc={t.code} style={{ width: 400, height: 240, border: 0, display: 'block', background: 'white', transform: 'scale(0.5)', transformOrigin: '0 0', pointerEvents: 'none' }} />
+          </Box>
+          <Typography variant="body2" fontWeight={700} sx={{ p: 1.5 }}>{t.name}</Typography>
+        </Card>
+      ))}
+    </Box>
     <Typography variant="subtitle1" fontWeight={700} gutterBottom>Live preview</Typography>
     <Box sx={{ mb: 1, border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}>
-      <iframe ref={iframeRef} title="HTML preview" sandbox="allow-scripts allow-same-origin" srcDoc={previewCode} onLoad={onPreviewLoad} style={{ width: previewSize ? previewSize.w : '100%', height: previewSize ? previewSize.h : 360, border: 0, display: 'block', background: 'white', margin: previewSize ? '0 auto' : undefined }} />
+      <iframe ref={iframeRef} title="HTML preview" sandbox="allow-scripts allow-same-origin" srcDoc={previewCode} onLoad={onPreviewLoad} style={{ width: previewSize ? previewSize.w : '100%', height: previewSize ? previewSize.h : 400, border: 0, display: 'block', background: 'white', margin: previewSize ? '0 auto' : undefined }} />
     </Box>
     <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
       {paused
@@ -712,42 +732,48 @@ export function HtmlToVideoTool() {
         : <Button size="small" variant="outlined" onClick={pausePreview}>Pause preview</Button>}
       <Button size="small" variant="outlined" onClick={restartPreview}>Restart from beginning</Button>
     </Box>
-    {summary && <Typography variant="body1" sx={{ mb: 2 }}>{summary}</Typography>}
-    <Typography variant="body2" color="text.secondary" gutterBottom>Video smoothness (frames per second)</Typography>
-    <ToggleButtonGroup value={fps} exclusive fullWidth onChange={(_, nv) => nv && setFps(nv)} sx={{ mb: 2 }}>
-      <ToggleButton value="10">10 fps</ToggleButton><ToggleButton value="30">30 fps - smooth</ToggleButton><ToggleButton value="60">60 fps - smoothest</ToggleButton>
-    </ToggleButtonGroup>
-    <Typography variant="body2" color="text.secondary" gutterBottom>Video quality</Typography>
-    <ToggleButtonGroup value={resolution} exclusive fullWidth onChange={(_, nv) => nv && setResolution(nv)} sx={{ mb: 2 }}>
-      <ToggleButton value="720">720p</ToggleButton><ToggleButton value="1080">1080p - sharper</ToggleButton>
-    </ToggleButtonGroup>
-    <Typography variant="body2" color="text.secondary" gutterBottom>Video length</Typography>
-    <ToggleButtonGroup value={duration} exclusive fullWidth onChange={(_, nv) => nv && setDuration(nv)} sx={{ mb: 1, flexWrap: 'wrap' }}>
-      <ToggleButton value="auto">Auto - recommended</ToggleButton><ToggleButton value="5">5 seconds</ToggleButton><ToggleButton value="10">10 seconds</ToggleButton><ToggleButton value="30">30 seconds</ToggleButton><ToggleButton value="60">60 seconds</ToggleButton>
-      {det.kind === 'css' && <ToggleButton value="full">Full animation</ToggleButton>}<ToggleButton value="custom">Custom</ToggleButton>
-    </ToggleButtonGroup>
-    {duration === 'custom' && (<TextField label="Seconds (1 to 120)" type="number" value={customSeconds} onChange={(e) => setCustomSeconds(e.target.value)} inputProps={{ min: 1, max: 120 }} size="small" sx={{ mb: 1, width: 220 }} />)}
-    {duration === 'full' && det.kind === 'css' && <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Full animation records one full run of your animation. For a looping animation, that is one loop.</Typography>}
-    {duration === 'auto' && <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Auto picks the length: full animation for CSS, 60 seconds for a JavaScript story, 5 seconds for a still page.</Typography>}
-    <Button size="small" variant="outlined" sx={{ mb: 2 }} onClick={() => setShowAdvanced((v) => !v)}>{showAdvanced ? 'Fewer options' : 'More options'}</Button>
-    {showAdvanced && (<>
-      <Typography variant="body2" color="text.secondary" gutterBottom>Start recording</Typography>
-      <ToggleButtonGroup value={startFrom} exclusive fullWidth onChange={(_, nv) => nv && setStartFrom(nv)} sx={{ mb: 1 }}>
-        <ToggleButton value="start">From the beginning</ToggleButton><ToggleButton value="current">From where it is now</ToggleButton>
-      </ToggleButtonGroup>
-      <Typography variant="body2" color="text.secondary" gutterBottom>Video format</Typography>
-      <ToggleButtonGroup value={format} exclusive fullWidth onChange={(_, nv) => nv && setFormat(nv)} sx={{ mb: 2 }}>
-        <ToggleButton value="mp4" disabled={mp4Disabled}>MP4 - plays everywhere</ToggleButton><ToggleButton value="webm">WebM</ToggleButton>
-      </ToggleButtonGroup>
-      {!CAN_MAKE_MP4 && <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Your browser cannot make MP4, so WebM is used.</Typography>}
-      {det.kind !== 'css' && !MP4_SUPPORTED && CAN_MAKE_MP4 && <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Your browser records WebM for live stories. MP4 needs Chrome, Edge or Safari.</Typography>}
-      {format === 'webm' && VIDEO_ENCODER_SUPPORTED && det.kind === 'css' && <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>WebM records live at the frame rate you pick. For smooth 30 or 60 fps recording of a CSS animation, choose MP4.</Typography>}
-    </>)}
-    {error && <Alert severity="warning" sx={{ mb: 2 }}>{error}</Alert>}
     {recording
-      ? (<><Button fullWidth variant="contained" color="error" sx={{ mb: 2 }} onClick={() => { stopRef.current = true; }}>Stop recording</Button>
+      ? (<><Button fullWidth variant="contained" color="error" size="large" sx={{ mb: 1, py: 1.5, fontSize: 17 }} onClick={() => { stopRef.current = true; }}>Stop recording</Button>
         <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 2 }}>{progress || ('Recording... ' + secondsLeft + 's left. Keep this tab open.')}</Typography></>)
-      : (<Button fullWidth variant="contained" sx={{ mb: 2 }} onClick={startRecording}>Record video</Button>)}
+      : (<Button fullWidth variant="contained" size="large" sx={{ mb: 1, py: 1.5, fontSize: 17 }} onClick={startRecording}>Record video</Button>)}
+    {summary && <Typography variant="body1" sx={{ mb: 2 }}>{summary}</Typography>}
+    {error && <Alert severity="warning" sx={{ mb: 2 }}>{error}</Alert>}
+    <Accordion defaultExpanded sx={{ mb: 2 }}>
+      <AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>Your code - paste or edit</Typography></AccordionSummary>
+      <AccordionDetails><TextField fullWidth multiline rows={6} label="Your HTML code (inline CSS allowed)" value={code} onChange={(e) => setCode(e.target.value)} sx={{ '& textarea': { fontFamily: 'monospace', fontSize: 13 } }} /></AccordionDetails>
+    </Accordion>
+    <Accordion sx={{ mb: 2 }}>
+      <AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>Settings - smoothness, length, quality</Typography></AccordionSummary>
+      <AccordionDetails>
+        <Typography variant="body2" color="text.secondary" gutterBottom>Video smoothness (frames per second)</Typography>
+        <ToggleButtonGroup value={fps} exclusive fullWidth onChange={(_, nv) => nv && setFps(nv)} sx={{ mb: 2 }}>
+          <ToggleButton value="10">10 fps</ToggleButton><ToggleButton value="30">30 fps - smooth</ToggleButton><ToggleButton value="60">60 fps - smoothest</ToggleButton>
+        </ToggleButtonGroup>
+        <Typography variant="body2" color="text.secondary" gutterBottom>Video quality</Typography>
+        <ToggleButtonGroup value={resolution} exclusive fullWidth onChange={(_, nv) => nv && setResolution(nv)} sx={{ mb: 2 }}>
+          <ToggleButton value="720">720p</ToggleButton><ToggleButton value="1080">1080p - sharper</ToggleButton>
+        </ToggleButtonGroup>
+        <Typography variant="body2" color="text.secondary" gutterBottom>Video length</Typography>
+        <ToggleButtonGroup value={duration} exclusive fullWidth onChange={(_, nv) => nv && setDuration(nv)} sx={{ mb: 1, flexWrap: 'wrap' }}>
+          <ToggleButton value="auto">Auto - recommended</ToggleButton><ToggleButton value="5">5 seconds</ToggleButton><ToggleButton value="10">10 seconds</ToggleButton><ToggleButton value="30">30 seconds</ToggleButton><ToggleButton value="60">60 seconds</ToggleButton>
+          {det.kind === 'css' && <ToggleButton value="full">Full animation</ToggleButton>}<ToggleButton value="custom">Custom</ToggleButton>
+        </ToggleButtonGroup>
+        {duration === 'custom' && (<TextField label="Seconds (1 to 120)" type="number" value={customSeconds} onChange={(e) => setCustomSeconds(e.target.value)} inputProps={{ min: 1, max: 120 }} size="small" sx={{ mb: 1, width: 220 }} />)}
+        {duration === 'full' && det.kind === 'css' && <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Full animation records one full run of your animation. For a looping animation, that is one loop.</Typography>}
+        {duration === 'auto' && <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Auto picks the length: full animation for CSS, 60 seconds for a JavaScript story, 5 seconds for a still page.</Typography>}
+        <Typography variant="body2" color="text.secondary" gutterBottom>Start recording</Typography>
+        <ToggleButtonGroup value={startFrom} exclusive fullWidth onChange={(_, nv) => nv && setStartFrom(nv)} sx={{ mb: 1 }}>
+          <ToggleButton value="start">From the beginning</ToggleButton><ToggleButton value="current">From where it is now</ToggleButton>
+        </ToggleButtonGroup>
+        <Typography variant="body2" color="text.secondary" gutterBottom>Video format</Typography>
+        <ToggleButtonGroup value={format} exclusive fullWidth onChange={(_, nv) => nv && setFormat(nv)} sx={{ mb: 2 }}>
+          <ToggleButton value="mp4" disabled={mp4Disabled}>MP4 - plays everywhere</ToggleButton><ToggleButton value="webm">WebM</ToggleButton>
+        </ToggleButtonGroup>
+        {!CAN_MAKE_MP4 && <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Your browser cannot make MP4, so WebM is used.</Typography>}
+        {det.kind !== 'css' && !MP4_SUPPORTED && CAN_MAKE_MP4 && <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Your browser records WebM for live stories. MP4 needs Chrome, Edge or Safari.</Typography>}
+        {format === 'webm' && VIDEO_ENCODER_SUPPORTED && det.kind === 'css' && <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>WebM records live at the frame rate you pick. For smooth 30 or 60 fps recording of a CSS animation, choose MP4.</Typography>}
+      </AccordionDetails>
+    </Accordion>
     <canvas ref={canvasRef} style={{ display: 'none' }} />
     {videoUrl && (<>
       <Typography variant="subtitle1" fontWeight={700} gutterBottom>Your video</Typography>
