@@ -77,3 +77,4 @@ GTA 6 PC Release Date: Reported Q1 2027 Window: https://kalkio.vercel.app/tools/
 - About: https://kalkio.vercel.app/about/
 - Contact: https://kalkio.vercel.app/contact/
 - Privacy Policy: https://kalkio.vercel.app/privacy/
+- Feedback: https://kalkio.vercel.app/feedback/
