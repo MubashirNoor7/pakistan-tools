@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { Card, CardContent, Typography, TextField, Box, ToggleButton, ToggleButtonGroup, Alert, Button } from '@mui/material';
 
 function Wrap({ children, note }) {
@@ -68,6 +68,63 @@ p { font-size: 16px; opacity: 0.9; }
 <p>Your HTML, as a video</p>
 </body>
 </html>`;
+
+// One-click examples, for people who do not know HTML. Each is a short
+// CSS animation, so the smooth engine records it. Press one, then Record.
+const TEMPLATES = {
+  birthday: `<!DOCTYPE html>
+<html>
+<head><style>
+body { margin: 0; font-family: sans-serif; background: #6d28d9; color: white; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
+h1 { font-size: 44px; margin: 0; animation: pop 1s ease-in-out infinite alternate; }
+p { font-size: 20px; margin: 16px 0 0; opacity: 0.9; }
+.dots { display: flex; gap: 14px; margin-top: 28px; }
+.dots span { width: 18px; height: 18px; border-radius: 50%; animation: bounce 1s ease-in-out infinite alternate; }
+.dots span:nth-child(1) { background: #fbbf24; }
+.dots span:nth-child(2) { background: #34d399; animation-delay: 0.2s; }
+.dots span:nth-child(3) { background: #f472b6; animation-delay: 0.4s; }
+@keyframes pop { from { transform: scale(0.92); } to { transform: scale(1.05); } }
+@keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-18px); } }
+</style></head>
+<body>
+<h1>Happy Birthday!</h1>
+<p>Have a wonderful day</p>
+<div class="dots"><span></span><span></span><span></span></div>
+</body>
+</html>`,
+  sale: `<!DOCTYPE html>
+<html>
+<head><style>
+body { margin: 0; font-family: sans-serif; background: #dc2626; color: white; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
+h1 { font-size: 64px; margin: 0; animation: pulse 1s ease-in-out infinite alternate; }
+p { font-size: 22px; margin: 14px 0 0; }
+.pill { margin-top: 26px; background: white; color: #dc2626; font-weight: bold; font-size: 18px; padding: 10px 26px; border-radius: 999px; }
+@keyframes pulse { from { transform: scale(1); } to { transform: scale(1.12); } }
+</style></head>
+<body>
+<h1>50% OFF</h1>
+<p>Today only - everything on sale</p>
+<div class="pill">Shop now</div>
+</body>
+</html>`,
+  title: `<!DOCTYPE html>
+<html>
+<head><style>
+body { margin: 0; font-family: sans-serif; background: #111827; color: white; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
+h1 { font-size: 52px; margin: 0; animation: slidein 1.2s ease-out both; }
+.bar { width: 120px; height: 6px; background: #2dd4bf; border-radius: 3px; margin-top: 20px; animation: grow 1.2s ease-out both; }
+p { font-size: 20px; margin: 18px 0 0; opacity: 0.85; animation: fadein 1.2s ease-out 0.4s both; }
+@keyframes slidein { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes grow { from { width: 0; } to { width: 120px; } }
+@keyframes fadein { from { opacity: 0; } to { opacity: 0.85; } }
+</style></head>
+<body>
+<h1>Your Title Here</h1>
+<div class="bar"></div>
+<p>Change these words to your own</p>
+</body>
+</html>`,
+};
 
 const MIME_CANDIDATES = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
 const MP4_CANDIDATES = ['video/mp4;codecs="avc1.640028"', 'video/mp4;codecs="avc1.42E01E"', 'video/mp4'];
@@ -222,7 +279,7 @@ function detectPortrait(doc, iw, ih) {
 
 export function HtmlToVideoTool() {
   const [code, setCode] = useState(SAMPLE);
-  const [duration, setDuration] = useState('5');
+  const [duration, setDuration] = useState('auto'); // 'auto', 'full', 'custom', or seconds
   const [customSeconds, setCustomSeconds] = useState('10');
   const [fps, setFps] = useState('30');
   const [resolution, setResolution] = useState('720'); // '720' or '1080'; 720p is the original behaviour
@@ -272,8 +329,7 @@ export function HtmlToVideoTool() {
   };
   // Runs when the preview loads: refresh the detection and resize the
   // preview when the content is a vertical story.
-  const onPreviewLoad = () => {
-    setPreviewTick((t) => t + 1);
+  const checkPortrait = () => {
     const iframe = iframeRef.current;
     const doc = previewDoc();
     if (!iframe || !doc) return;
@@ -288,6 +344,13 @@ export function HtmlToVideoTool() {
       }
     } catch { /* ignore */ }
   };
+  const onPreviewLoad = () => {
+    setPreviewTick((t) => t + 1);
+    checkPortrait();
+  };
+  // Changing 720p to 1080p (or back) must resize a vertical preview too,
+  // not only when the preview loads.
+  useEffect(() => { checkPortrait(); }, [resolution]);
   // Reload the preview and resolve when it has loaded (never hang).
   const reloadPreview = () => new Promise((resolve) => {
     const iframe = iframeRef.current;
@@ -300,6 +363,7 @@ export function HtmlToVideoTool() {
   });
 
   const resolveDuration = (doc) => {
+    if (duration === 'auto') return autoSeconds(det);
     if (duration === 'full') {
       const f = fullAnimSeconds(doc);
       return f > 0 ? Math.min(120, Math.max(1, Math.ceil(f))) : 5;
@@ -313,7 +377,6 @@ export function HtmlToVideoTool() {
   // Simple mode: the tool picks the length. CSS animation: its full run.
   // JavaScript story: 60 seconds. Static page: 5 seconds.
   const autoSeconds = (d) => (d.kind === 'css' ? Math.min(120, Math.max(1, Math.ceil(d.cssSeconds))) : d.kind === 'js' ? 60 : 5);
-  const effectiveDuration = (doc) => (showAdvanced ? resolveDuration(doc) : autoSeconds(det));
 
   // Shared first step for both engines: load html2canvas, take a timed first
   // snapshot, size the hidden canvas. Returns null on failure. A live
@@ -362,7 +425,6 @@ export function HtmlToVideoTool() {
     let totalFrames = Math.round(total * fpsNum);
     let capped = false;
     if (totalFrames > MAX_FRAMES) { totalFrames = MAX_FRAMES; capped = true; }
-    const actualSeconds = totalFrames / fpsNum;
     const muxer = new Muxer({
       target: new ArrayBufferTarget(),
       video: { codec: 'avc', width: cw, height: ch },
@@ -414,9 +476,12 @@ export function HtmlToVideoTool() {
     muxer.finalize();
     const { buffer } = muxer.target;
     if (!buffer || buffer.byteLength === 0) throw new Error('empty video');
+    // Seconds actually recorded, not the requested total: stopping early
+    // must not claim the full length.
+    const doneSeconds = framesDone / fpsNum;
     return {
       blob: new Blob([buffer], { type: 'video/mp4' }),
-      info: cw + ' x ' + ch + ' - ' + actualSeconds.toFixed(actualSeconds % 1 ? 1 : 0) + ' seconds - ' + fpsNum + ' fps - ' + fmtSize(buffer.byteLength) + (capped ? ' - capped at ' + MAX_FRAMES + ' frames' : ''),
+      info: cw + ' x ' + ch + ' - ' + doneSeconds.toFixed(doneSeconds % 1 ? 1 : 0) + ' seconds - ' + fpsNum + ' fps - ' + fmtSize(buffer.byteLength) + (capped ? ' - capped at ' + MAX_FRAMES + ' frames' : ''),
     };
   };
 
@@ -496,9 +561,11 @@ export function HtmlToVideoTool() {
     setRecording(false);
     const blob = new Blob(chunks, { type: format === 'mp4' ? 'video/mp4' : 'video/webm' });
     if (blob.size === 0) throw new Error('Recording failed. The preview may use something this recorder cannot capture.');
+    // Seconds actually recorded, not the requested total.
+    const elapsedSec = Math.min(total, (Date.now() - start) / 1000);
     return {
       blob,
-      info: cw + ' x ' + ch + ' - about ' + total + ' seconds - ' + fpsNum + ' fps' + (audioStream ? ' - with sound' : '') + ' - ' + fmtSize(blob.size),
+      info: cw + ' x ' + ch + ' - about ' + Math.max(1, Math.round(elapsedSec)) + ' seconds - ' + fpsNum + ' fps' + (audioStream ? ' - with sound' : '') + ' - ' + fmtSize(blob.size),
     };
   };
 
@@ -524,7 +591,7 @@ export function HtmlToVideoTool() {
     try { ({ default: html2canvas } = await import('html2canvas')); }
     catch { setError('Could not load the recorder. Check your connection and try again.'); return; }
     const d = detectContent(doc, code);
-    const total = showAdvanced ? resolveDuration(doc) : autoSeconds(d);
+    const total = resolveDuration(doc);
     const useSmooth = d.kind === 'css' && VIDEO_ENCODER_SUPPORTED && format === 'mp4';
     const fpsNum = parseInt(fps, 10) || 30;
     // Fresh start: reload the preview so everything begins at 0. For a live
@@ -609,7 +676,7 @@ export function HtmlToVideoTool() {
   const summary = (() => {
     const doc = previewDoc();
     if (!doc || !doc.body) return '';
-    const total = showAdvanced ? resolveDuration(doc) : autoSeconds(det);
+    const total = resolveDuration(doc);
     const smoothOn = det.kind === 'css' && VIDEO_ENCODER_SUPPORTED && format === 'mp4';
     if (det.kind === 'css' && smoothOn) {
       const frames = Math.round(total * (parseInt(fps, 10) || 30));
@@ -628,6 +695,12 @@ export function HtmlToVideoTool() {
   const mp4Disabled = det.kind === 'css' ? !CAN_MAKE_MP4 : !MP4_SUPPORTED;
 
   return (<Wrap>
+    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>No code? Try an example - press one, then press Record video.</Typography>
+    <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+      <Button size="small" variant="outlined" onClick={() => setCode(TEMPLATES.birthday)}>Birthday wish</Button>
+      <Button size="small" variant="outlined" onClick={() => setCode(TEMPLATES.sale)}>Sale - 50% off</Button>
+      <Button size="small" variant="outlined" onClick={() => setCode(TEMPLATES.title)}>Big title</Button>
+    </Box>
     <TextField fullWidth multiline rows={10} label="Your HTML code (inline CSS allowed)" value={code} onChange={(e) => setCode(e.target.value)} sx={{ mb: 2, '& textarea': { fontFamily: 'monospace', fontSize: 13 } }} />
     <Typography variant="subtitle1" fontWeight={700} gutterBottom>Live preview</Typography>
     <Box sx={{ mb: 1, border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}>
@@ -648,16 +721,16 @@ export function HtmlToVideoTool() {
     <ToggleButtonGroup value={resolution} exclusive fullWidth onChange={(_, nv) => nv && setResolution(nv)} sx={{ mb: 2 }}>
       <ToggleButton value="720">720p</ToggleButton><ToggleButton value="1080">1080p - sharper</ToggleButton>
     </ToggleButtonGroup>
+    <Typography variant="body2" color="text.secondary" gutterBottom>Video length</Typography>
+    <ToggleButtonGroup value={duration} exclusive fullWidth onChange={(_, nv) => nv && setDuration(nv)} sx={{ mb: 1, flexWrap: 'wrap' }}>
+      <ToggleButton value="auto">Auto - recommended</ToggleButton><ToggleButton value="5">5 seconds</ToggleButton><ToggleButton value="10">10 seconds</ToggleButton><ToggleButton value="30">30 seconds</ToggleButton><ToggleButton value="60">60 seconds</ToggleButton>
+      {det.kind === 'css' && <ToggleButton value="full">Full animation</ToggleButton>}<ToggleButton value="custom">Custom</ToggleButton>
+    </ToggleButtonGroup>
+    {duration === 'custom' && (<TextField label="Seconds (1 to 120)" type="number" value={customSeconds} onChange={(e) => setCustomSeconds(e.target.value)} inputProps={{ min: 1, max: 120 }} size="small" sx={{ mb: 1, width: 220 }} />)}
+    {duration === 'full' && det.kind === 'css' && <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Full animation records one full run of your animation. For a looping animation, that is one loop.</Typography>}
+    {duration === 'auto' && <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Auto picks the length: full animation for CSS, 60 seconds for a JavaScript story, 5 seconds for a still page.</Typography>}
     <Button size="small" variant="outlined" sx={{ mb: 2 }} onClick={() => setShowAdvanced((v) => !v)}>{showAdvanced ? 'Fewer options' : 'More options'}</Button>
     {showAdvanced && (<>
-      <Typography variant="body2" color="text.secondary" gutterBottom>Video length</Typography>
-      <ToggleButtonGroup value={duration} exclusive fullWidth onChange={(_, nv) => nv && setDuration(nv)} sx={{ mb: 1, flexWrap: 'wrap' }}>
-        <ToggleButton value="3">3 seconds</ToggleButton><ToggleButton value="5">5 seconds</ToggleButton><ToggleButton value="10">10 seconds</ToggleButton><ToggleButton value="15">15 seconds</ToggleButton><ToggleButton value="30">30 seconds</ToggleButton><ToggleButton value="60">60 seconds</ToggleButton>
-        {det.kind === 'css' && <ToggleButton value="full">Full animation</ToggleButton>}<ToggleButton value="custom">Custom</ToggleButton>
-      </ToggleButtonGroup>
-      {duration === 'custom' && (<TextField label="Seconds (1 to 120)" type="number" value={customSeconds} onChange={(e) => setCustomSeconds(e.target.value)} inputProps={{ min: 1, max: 120 }} size="small" sx={{ mb: 1, width: 220 }} />)}
-      {duration === 'full' && det.kind === 'css' && <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Full animation records one full run of your animation. For a looping animation, that is one loop.</Typography>}
-      {det.kind !== 'css' && <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Full needs a CSS animation. Your content plays with JavaScript, so pick a length above.</Typography>}
       <Typography variant="body2" color="text.secondary" gutterBottom>Start recording</Typography>
       <ToggleButtonGroup value={startFrom} exclusive fullWidth onChange={(_, nv) => nv && setStartFrom(nv)} sx={{ mb: 1 }}>
         <ToggleButton value="start">From the beginning</ToggleButton><ToggleButton value="current">From where it is now</ToggleButton>
@@ -668,7 +741,7 @@ export function HtmlToVideoTool() {
       </ToggleButtonGroup>
       {!CAN_MAKE_MP4 && <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Your browser cannot make MP4, so WebM is used.</Typography>}
       {det.kind !== 'css' && !MP4_SUPPORTED && CAN_MAKE_MP4 && <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Your browser records WebM for live stories. MP4 needs Chrome, Edge or Safari.</Typography>}
-      {format === 'webm' && VIDEO_ENCODER_SUPPORTED && det.kind === 'css' && <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>WebM records in real time at 10 frames per second. For smooth 30 or 60 fps, choose MP4.</Typography>}
+      {format === 'webm' && VIDEO_ENCODER_SUPPORTED && det.kind === 'css' && <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>WebM records live at the frame rate you pick. For smooth 30 or 60 fps recording of a CSS animation, choose MP4.</Typography>}
     </>)}
     {error && <Alert severity="warning" sx={{ mb: 2 }}>{error}</Alert>}
     {recording
