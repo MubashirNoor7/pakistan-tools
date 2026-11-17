@@ -300,6 +300,23 @@ function setFaqJsonLd(faqs) {
 // tool for that country's searches. No country name shows on the website itself.
 const showTitle = (t) => (t && t.display) || (t && t.title) || '';
 
+// "Was this tool helpful?" vote on tool pages. There is no backend, so
+// votes are kept only in the visitor's own browser (localStorage) and no
+// count is shown anywhere - showing a number would be invented. A "No"
+// points straight at the feedback form with the tool pre-filled.
+function HelpfulVote({ toolId, go }) {
+  const key = 'kalkio-helpful-' + toolId;
+  const [vote, setVote] = useState(() => { try { return localStorage.getItem(key); } catch { return null; } });
+  const pick = (v) => { try { localStorage.setItem(key, v); } catch (e) {} setVote(v); };
+  if (vote === 'yes') return (<Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>Thanks - glad this tool helped.</Typography>);
+  if (vote === 'no') return (<Typography variant="body2" sx={{ mt: 2 }}>Sorry it did not help. <Link href={`/feedback/?tool=${toolId}`} onClick={(e) => go(e, `/feedback/?tool=${toolId}`)} underline="hover">Tell us what went wrong</Link> - it goes to the Kalkio team by email.</Typography>);
+  return (<Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+    <Typography variant="body2" color="text.secondary">Was this tool helpful?</Typography>
+    <Button size="small" variant="outlined" onClick={() => pick('yes')}>Yes</Button>
+    <Button size="small" variant="outlined" onClick={() => pick('no')}>No</Button>
+  </Box>);
+}
+
 // Feedback form: no backend, no account, no cost. The visitor's own email
 // app opens with everything filled in, addressed to Sammy, and they just
 // press Send. If no email app opens, the message is shown with a Copy
@@ -622,6 +639,7 @@ export default function App({ mode = 'light', onToggleMode = () => {} }) {
     </>)}
     <Box sx={{ mt: 2 }}><Button variant="outlined" color="success" startIcon={<WhatsAppIcon />} component="a" href={`https://wa.me/?text=${encodeURIComponent(showTitle(cur) + ' - ' + toolUrl(cur.slug))}`} target="_blank" rel="noopener noreferrer">Share on WhatsApp</Button></Box>
     <Typography variant="body2" sx={{ mt: 2 }}>Something wrong, or an idea for a new tool? <Link href={`/feedback/?tool=${cur.id}`} onClick={(e) => go(e, `/feedback/?tool=${cur.id}`)} underline="hover">Tell us</Link> - every message goes to the Kalkio team by email.</Typography>
+    <HelpfulVote toolId={cur.id} go={go} />
     {guide && (<Box component="section" sx={{ mt: 4 }}>{guide.map((s) => (<Box key={s.h} sx={{ mb: 3 }}>
       <Typography variant="h5" component="h2" fontWeight={700} gutterBottom>{s.h}</Typography>
       {s.p.map((para, i) => (<Typography key={i} variant="body1" color="text.secondary" paragraph>{renderGuideText(para)}</Typography>))}
@@ -637,6 +655,12 @@ export default function App({ mode = 'light', onToggleMode = () => {} }) {
     <Typography variant="body1" paragraph>How to use it: search for a tool or browse a category, enter your numbers, and the result appears straight away. There is nothing to install and no account to create.</Typography>
     <Typography variant="body1" paragraph>Every tool runs in the visitor’s browser - there is no backend, no database, no login and no sign-up. File converters also run fully in the browser, so your files never leave your device.</Typography>
     <Typography variant="body1" paragraph>The tools cover everyday needs for anyone, anywhere: loan EMI, retirement and savings, age and BMI, typing speed, fractions and factors, file converters, QR codes, and GTA 6 prices and release dates - plus Pakistan-specific tools such as Marla and Kanal, salary tax, Zakat, PTA tax, and petrol and gold prices.</Typography>
+    <Typography variant="h5" component="h2" fontWeight={700} gutterBottom sx={{ mt: 4 }}>Why Kalkio</Typography>
+    <Typography variant="body1" paragraph><b>Free, forever.</b> All 64 tools are free - no trial, no paywall, no hidden charge.</Typography>
+    <Typography variant="body1" paragraph><b>No sign-up.</b> No account, no email, nothing to remember - open a tool and use it.</Typography>
+    <Typography variant="body1" paragraph><b>Private by design.</b> Every tool runs in your browser. Your numbers and your files never leave your device.</Typography>
+    <Typography variant="body1" paragraph><b>Fast and simple.</b> Type your numbers and the answer appears straight away - no waiting, no clutter.</Typography>
+    <Typography variant="body1" paragraph><b>For everyone, everywhere.</b> Everyday tools for anyone, plus Pakistan-specific tools like Marla, salary tax and PTA tax.</Typography>
     <Typography variant="body1" paragraph>Tax, bill and fuel results are estimates - confirm official rates before a financial decision.</Typography>
     <Typography variant="body1" paragraph>Kalkio is made by the same team behind <Link href="https://techdealsgo.com/" target="_blank" rel="noopener noreferrer">TechDealsGo</Link>, a site for Amazon deals and discounts, and <Link href="https://freeforall-offers.vercel.app/" target="_blank" rel="noopener noreferrer">FreeForAll</Link>, a site for free trials and offers.</Typography>
     <Typography variant="body1" paragraph>Questions or a tool to suggest? <Link href="/feedback/" onClick={(e) => go(e, '/feedback/')}>Tell us on the feedback page</Link> or email <Link href="mailto:sammykhanmalng@gmail.com">sammykhanmalng@gmail.com</Link>.</Typography>
