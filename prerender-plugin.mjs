@@ -81,12 +81,12 @@ export async function prerender(root, dist) {
     n++;
   }
   const statics = [
-    ['about', 'About | Kalkio', 'About Kalkio', 'About Kalkio: 64 free calculators and converters that run in your browser. No sign-up, no accounts.'],
+    ['about', 'About | Kalkio', 'About Kalkio', 'About Kalkio: 64 free calculators and converters that run in your browser. No sign-up, no accounts.', `<p>About Kalkio: 64 free calculators and converters that run in your browser. No sign-up, no accounts.</p><h2>Why Kalkio</h2><p><b>Free, forever.</b> All 64 tools are free - no trial, no paywall, no hidden charge.</p><p><b>No sign-up.</b> No account, no email, nothing to remember - open a tool and use it.</p><p><b>Private by design.</b> Every tool runs in your browser. Your numbers and your files never leave your device.</p><p><b>Fast and simple.</b> Type your numbers and the answer appears straight away - no waiting, no clutter.</p><p><b>For everyone, everywhere.</b> Everyday tools for anyone, plus Pakistan-specific tools like Marla, salary tax and PTA tax.</p><p><a href="/">All Kalkio tools</a></p>`],
     ['contact', 'Contact | Kalkio', 'Contact Kalkio', 'Contact Kalkio by email. Tools run in your browser and no sign-up is needed.'],
     ['privacy', 'Privacy Policy | Kalkio', 'Privacy Policy', 'Kalkio privacy: tools run in your browser, file converters do not upload your files to a server, and no account is needed.'],
     ['feedback', 'Feedback | Kalkio', 'Give feedback', 'Tell Kalkio your idea or report a problem with a tool. Every message goes to the Kalkio team by email.'],
   ];
-  for (const [p, title, h1, desc] of statics) { write(p, page(tpl, { title, desc, url: pageUrl(`/${p}/`), h1, body: `<p>${esc(desc)}</p><p><a href="/">All Kalkio tools</a></p>` })); n++; }
+  for (const [p, title, h1, desc, body] of statics) { write(p, page(tpl, { title, desc, url: pageUrl(`/${p}/`), h1, body: body || `<p>${esc(desc)}</p><p><a href="/">All Kalkio tools</a></p>` })); n++; }
   // Home page: intro + FAQ + all 64 tool links in the raw HTML, so crawlers see it
   // without JavaScript (same words as the live home page in src/App.jsx).
   const homeFaqs = [['Are the tools free?', 'Yes. All 64 tools are free and no sign-up is needed.'], ['Does my data leave my device?', 'No. Every tool runs in your browser and does not ask you to create an account.'], ['Are tax results official?', 'No. Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.']];
