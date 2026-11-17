@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
-import { AppBar, Toolbar, Typography, Container, Card, CardContent, Box, TextField, Button, Accordion, AccordionSummary, AccordionDetails, Table, TableBody, TableRow, TableCell, CssBaseline, Link, CircularProgress, InputAdornment, IconButton } from '@mui/material';
+import { AppBar, Toolbar, Typography, Container, Card, CardContent, Box, TextField, Button, Accordion, AccordionSummary, AccordionDetails, Table, TableBody, TableRow, TableCell, CssBaseline, Link, CircularProgress, InputAdornment, IconButton, ToggleButton, ToggleButtonGroup, Select, MenuItem, InputLabel, FormControl, Fab } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import FeedbackIcon from '@mui/icons-material/Feedback';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
-import { fmt } from './tools/shared.jsx';
+import { fmt, copyText } from './tools/shared.jsx';
 // Tool components load on demand (one small chunk per module) so the home page
 // never downloads calculator code the visitor has not opened yet.
 const MarlaTool = lazy(() => import('./tools/property.jsx').then((m) => ({ default: m.MarlaTool })));
@@ -266,6 +267,7 @@ function parseRoute(pathname) {
   if (p === '/about') return { kind: 'about' };
   if (p === '/contact') return { kind: 'contact' };
   if (p === '/privacy') return { kind: 'privacy' };
+  if (p === '/feedback') return { kind: 'feedback' };
   const m = p.match(/^\/tools\/([a-z0-9-]+)$/);
   if (m) return { kind: 'tool', slug: m[1] };
   return { kind: 'notfound' };
@@ -295,6 +297,74 @@ function setFaqJsonLd(faqs) {
 // country word) is kept only for the SEO <title> tag, so Google still finds the
 // tool for that country's searches. No country name shows on the website itself.
 const showTitle = (t) => (t && t.display) || (t && t.title) || '';
+
+// Feedback form: no backend, no account, no cost. The visitor's own email
+// app opens with everything filled in, addressed to Sammy, and they just
+// press Send. If no email app opens, the message is shown with a Copy
+// button, so nothing is lost. Competitors do the same shape (a Contact page
+// asking for the tool name and the numbers entered); Kalkio adds a floating
+// button on every page and a pre-filled tool link from each tool page.
+const FEEDBACK_EMAIL = 'sammykhanmalng@gmail.com';
+function FeedbackForm() {
+  const [kind, setKind] = useState('idea');
+  const [toolId, setToolId] = useState(() => {
+    try { const t = new URLSearchParams(window.location.search).get('tool'); return TOOLS.some((x) => x.id === t) ? t : 'site'; } catch { return 'site'; }
+  });
+  const [message, setMessage] = useState('');
+  const [numbers, setNumbers] = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+  const [sent, setSent] = useState(null); // { mailto, text }
+  const [copied, setCopied] = useState(false);
+  const tool = TOOLS.find((t) => t.id === toolId);
+  const toolName = toolId === 'site' ? 'Whole site' : (showTitle(tool) || toolId);
+  const toolUrl = tool ? 'https://kalkio.vercel.app/tools/' + tool.slug + '/' : 'https://kalkio.vercel.app/';
+  const kindLabel = kind === 'idea' ? 'New tool idea' : kind === 'problem' ? 'Problem with a tool' : 'Something else';
+  const send = () => {
+    if (!message.trim()) { setError('Please write your message first.'); return; }
+    setError('');
+    const lines = ['Kind: ' + kindLabel, 'Tool: ' + toolName + ' (' + toolUrl + ')'];
+    if (numbers.trim()) lines.push('Numbers entered: ' + numbers.trim());
+    lines.push('', message.trim());
+    if (name.trim()) lines.push('', 'Name: ' + name.trim());
+    if (email.trim()) lines.push('Email: ' + email.trim());
+    const text = lines.join('\n');
+    const mailto = 'mailto:' + FEEDBACK_EMAIL + '?subject=' + encodeURIComponent('[Kalkio feedback] ' + kindLabel + ' - ' + toolName) + '&body=' + encodeURIComponent(text);
+    setSent({ mailto, text });
+    window.location.href = mailto;
+  };
+  if (sent) return (<>
+    <Typography variant="body1" paragraph>Your email app should open with everything filled in - just press Send.</Typography>
+    <Typography variant="body2" color="text.secondary" paragraph>If it did not open, copy the message below and send it to {FEEDBACK_EMAIL} yourself.</Typography>
+    <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 2, mb: 2, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}><Typography variant="body2">{sent.text}</Typography></Box>
+    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+      <Button variant="outlined" onClick={async () => { if (await copyText(sent.text)) { setCopied(true); setTimeout(() => setCopied(false), 2000); } }}>{copied ? 'Copied ✓' : 'Copy message'}</Button>
+      <Button variant="outlined" component="a" href={sent.mailto}>Open your email app</Button>
+      <Button variant="text" onClick={() => { setSent(null); setMessage(''); setNumbers(''); }}>Send another message</Button>
+    </Box>
+  </>);
+  return (<>
+    <Typography variant="body2" color="text.secondary" gutterBottom>What is this about?</Typography>
+    <ToggleButtonGroup value={kind} exclusive fullWidth onChange={(_, nv) => nv && setKind(nv)} sx={{ mb: 2, flexWrap: 'wrap' }}>
+      <ToggleButton value="idea">New tool idea</ToggleButton><ToggleButton value="problem">Problem with a tool</ToggleButton><ToggleButton value="other">Something else</ToggleButton>
+    </ToggleButtonGroup>
+    <FormControl fullWidth sx={{ mb: 2 }}>
+      <InputLabel id="feedback-tool-label">Which tool?</InputLabel>
+      <Select labelId="feedback-tool-label" label="Which tool?" value={toolId} onChange={(e) => setToolId(e.target.value)}>
+        <MenuItem value="site">Whole site</MenuItem>
+        {TOOLS.map((t) => (<MenuItem key={t.id} value={t.id}>{showTitle(t)}</MenuItem>))}
+      </Select>
+    </FormControl>
+    <TextField fullWidth multiline rows={5} label="Your idea or the problem" value={message} onChange={(e) => setMessage(e.target.value)} sx={{ mb: 2 }} />
+    <TextField fullWidth label="The numbers you entered (optional)" value={numbers} onChange={(e) => setNumbers(e.target.value)} sx={{ mb: 2 }} helperText="If a result looks wrong, the numbers help us check it." />
+    <TextField fullWidth label="Your name (optional)" value={name} onChange={(e) => setName(e.target.value)} sx={{ mb: 2 }} />
+    <TextField fullWidth label="Your email (optional)" value={email} onChange={(e) => setEmail(e.target.value)} sx={{ mb: 2 }} helperText="Only if you want a reply." />
+    {error && <Typography variant="body2" color="error" sx={{ mb: 2 }}>{error}</Typography>}
+    <Button fullWidth variant="contained" onClick={send}>Send feedback</Button>
+    <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>No sign-up. Your message goes to the Kalkio team by email.</Typography>
+  </>);
+}
 
 // A tool as a card (home grids, search results, related tools). Plain CSS grid
 // on purpose: the installed MUI Grid is legacy v1 and ignores the `size` prop.
@@ -409,6 +479,7 @@ export default function App({ mode = 'light', onToggleMode = () => {} }) {
     else if (route.kind === 'about') { document.title = 'About | Kalkio'; setMetaTag('description', 'About Kalkio: 64 free calculators and converters that run in your browser. No sign-up, no accounts.'); setCanonical(pageUrl('/about/')); setFaqJsonLd(null); }
     else if (route.kind === 'contact') { document.title = 'Contact | Kalkio'; setMetaTag('description', 'Contact Kalkio by email. Tools run in your browser and no sign-up is needed.'); setCanonical(pageUrl('/contact/')); setFaqJsonLd(null); }
     else if (route.kind === 'privacy') { document.title = 'Privacy Policy | Kalkio'; setMetaTag('description', 'Kalkio privacy: tools run in your browser, file converters do not upload your files to a server, and no account is needed.'); setCanonical(pageUrl('/privacy/')); setFaqJsonLd(null); }
+    else if (route.kind === 'feedback') { document.title = 'Feedback | Kalkio'; setMetaTag('description', 'Tell Kalkio your idea, report a problem with a tool, or suggest a new calculator. Every message goes to the Kalkio team by email.'); setCanonical(pageUrl('/feedback/')); setFaqJsonLd(null); }
     else { document.title = 'Tool not found | Kalkio'; setMetaTag('description', 'That tool does not exist on Kalkio. Browse all 64 free tools on the home page.'); setCanonical(BASE_URL + '/'); setFaqJsonLd(null); }
   }, [route, cur]);
 
@@ -436,6 +507,7 @@ export default function App({ mode = 'light', onToggleMode = () => {} }) {
         <Typography variant="subtitle2" fontWeight={700} gutterBottom>Kalkio</Typography>
         <Typography variant="body2" sx={{ mb: 0.5 }}><Link href="/about/" onClick={(e) => go(e, '/about/')} underline="hover" color="text.secondary">About</Link></Typography>
         <Typography variant="body2" sx={{ mb: 0.5 }}><Link href="/contact/" onClick={(e) => go(e, '/contact/')} underline="hover" color="text.secondary">Contact</Link></Typography>
+        <Typography variant="body2" sx={{ mb: 0.5 }}><Link href="/feedback/" onClick={(e) => go(e, '/feedback/')} underline="hover" color="text.secondary">Give feedback</Link></Typography>
         <Typography variant="body2" sx={{ mb: 0.5 }}><Link href="/privacy/" onClick={(e) => go(e, '/privacy/')} underline="hover" color="text.secondary">Privacy Policy</Link></Typography>
         <Typography variant="body2" sx={{ mb: 0.5 }}><Link href="/about/#photo-credits" underline="hover" color="text.secondary">Photo credits</Link></Typography>
       </Box>
@@ -547,6 +619,7 @@ export default function App({ mode = 'light', onToggleMode = () => {} }) {
       <Accordion><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography fontWeight={700}>Common questions</Typography></AccordionSummary><AccordionDetails><Typography variant="body2" color="text.secondary" paragraph><b>How many Marla in 1 Kanal?</b> 20 Marla, under both standards.</Typography><Typography variant="body2" color="text.secondary"><b>Which standard should I use?</b> The one written in your plot documents.</Typography></AccordionDetails></Accordion>
     </>)}
     <Box sx={{ mt: 2 }}><Button variant="outlined" color="success" startIcon={<WhatsAppIcon />} component="a" href={`https://wa.me/?text=${encodeURIComponent(showTitle(cur) + ' - ' + toolUrl(cur.slug))}`} target="_blank" rel="noopener noreferrer">Share on WhatsApp</Button></Box>
+    <Typography variant="body2" sx={{ mt: 2 }}>Something wrong, or an idea for a new tool? <Link href={`/feedback/?tool=${cur.id}`} onClick={(e) => go(e, `/feedback/?tool=${cur.id}`)} underline="hover">Tell us</Link> - every message goes to the Kalkio team by email.</Typography>
     {guide && (<Box component="section" sx={{ mt: 4 }}>{guide.map((s) => (<Box key={s.h} sx={{ mb: 3 }}>
       <Typography variant="h5" component="h2" fontWeight={700} gutterBottom>{s.h}</Typography>
       {s.p.map((para, i) => (<Typography key={i} variant="body1" color="text.secondary" paragraph>{renderGuideText(para)}</Typography>))}
@@ -564,13 +637,14 @@ export default function App({ mode = 'light', onToggleMode = () => {} }) {
     <Typography variant="body1" paragraph>The tools cover everyday needs for anyone, anywhere: loan EMI, retirement and savings, age and BMI, typing speed, fractions and factors, file converters, QR codes, and GTA 6 prices and release dates - plus Pakistan-specific tools such as Marla and Kanal, salary tax, Zakat, PTA tax, and petrol and gold prices.</Typography>
     <Typography variant="body1" paragraph>Tax, bill and fuel results are estimates - confirm official rates before a financial decision.</Typography>
     <Typography variant="body1" paragraph>Kalkio is made by the same team behind <Link href="https://techdealsgo.com/" target="_blank" rel="noopener noreferrer">TechDealsGo</Link>, a site for Amazon deals and discounts, and <Link href="https://freeforall-offers.vercel.app/" target="_blank" rel="noopener noreferrer">FreeForAll</Link>, a site for free trials and offers.</Typography>
-    <Typography variant="body1" paragraph>Questions or a tool to suggest? Email <Link href="mailto:sammykhanmalng@gmail.com">sammykhanmalng@gmail.com</Link>.</Typography>
+    <Typography variant="body1" paragraph>Questions or a tool to suggest? <Link href="/feedback/" onClick={(e) => go(e, '/feedback/')}>Tell us on the feedback page</Link> or email <Link href="mailto:sammykhanmalng@gmail.com">sammykhanmalng@gmail.com</Link>.</Typography>
     <Typography id="photo-credits" variant="h5" component="h2" fontWeight={700} gutterBottom sx={{ mt: 4 }}>Photo credits</Typography>
     <Typography variant="body2" color="text.secondary" paragraph>Photos on this site are real photographs. The fun and gaming photos, the gaming-controllers photo and the calculator-and-receipts photo are public domain. The photos below are shared under Creative Commons licences, credited here as the licences require:</Typography>
     <Typography variant="body2" color="text.secondary" paragraph>Calculator (home page) — Hayden Schiff, <Link href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</Link>. Contract and pen — Blogtrepreneur, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. First-birthday cake — JIP, <Link href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 3.0</Link>. Bathroom scale — Frank C. Müller, <Link href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</Link>. House keys — Shixart1985, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. Empty plot of land — Kambai Akau, <Link href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</Link>. Hand holding a phone — Santeri Viinamäki, <Link href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</Link>. Banknotes and coins — Santeri Viinamäki, <Link href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</Link>. Video editing — Faculty of Dramatic Arts in Belgrade, <Link href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</Link>. Home office (this page) — Shixart1985, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. Modern house exterior — Shixart1985, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. Calculator with coins — Images of Money, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. Petrol station at night — Harrison Keely, <Link href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</Link>. Scanning documents — NAVFAC, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>. Writing in a notebook — Shixart1985, <Link href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</Link>.</Typography>
   </>));
   const contactView = staticPage('Contact Kalkio', (<>
     <Typography variant="body1" paragraph>Questions about Kalkio? Email us at <Link href="mailto:sammykhanmalng@gmail.com">sammykhanmalng@gmail.com</Link>.</Typography>
+    <Typography variant="body1" paragraph>Have an idea or found a problem? <Link href="/feedback/" onClick={(e) => go(e, '/feedback/')}>Send feedback</Link> - it goes to the same inbox by email.</Typography>
     <Typography variant="body1" paragraph>Tools run in your browser and no sign-up is needed, so there is no account to recover.</Typography>
   </>));
   const privacyView = staticPage('Privacy Policy', (<>
@@ -579,6 +653,11 @@ export default function App({ mode = 'light', onToggleMode = () => {} }) {
     <Typography variant="body1" paragraph>Passwords and QR codes are generated locally on your device and never sent anywhere.</Typography>
     <Typography variant="body1" paragraph>Tax, bill and fuel results are estimates. Confirm official rates before a financial decision.</Typography>
     <Typography variant="body1" paragraph>Questions about this policy: <Link href="mailto:sammykhanmalng@gmail.com">sammykhanmalng@gmail.com</Link>.</Typography>
+  </>));
+  const feedbackView = staticPage('Give feedback', (<>
+    <Typography variant="body1" paragraph>Found a mistake, or want a new tool? Tell us below - every message goes to the Kalkio team by email.</Typography>
+    <FeedbackForm />
+    <Typography variant="body2" color="text.secondary" sx={{ mt: 3 }}>Prefer email? Write to <Link href="mailto:sammykhanmalng@gmail.com">sammykhanmalng@gmail.com</Link> and put the tool name in the subject line.</Typography>
   </>));
 
   return (<>
@@ -596,10 +675,14 @@ export default function App({ mode = 'light', onToggleMode = () => {} }) {
             : route.kind === 'about' ? aboutView
             : route.kind === 'contact' ? contactView
             : route.kind === 'privacy' ? privacyView
+            : route.kind === 'feedback' ? feedbackView
             : notFound}
           {footer}
         </Box>
       </Container>
     </Box>
+    {route.kind !== 'feedback' && (<Fab variant="extended" color="primary" aria-label="Give feedback" onClick={() => navigate(route.kind === 'tool' && cur ? `/feedback/?tool=${cur.id}` : '/feedback/')} sx={{ position: 'fixed', bottom: 16, right: 16, zIndex: 1200 }}>
+      <FeedbackIcon sx={{ mr: 1 }} /> Feedback
+    </Fab>)}
   </>);
 }
