@@ -639,7 +639,7 @@ export default function App({ mode = 'light', onToggleMode = () => {} }) {
     </>)}
     <Box sx={{ mt: 2 }}><Button variant="outlined" color="success" startIcon={<WhatsAppIcon />} component="a" href={`https://wa.me/?text=${encodeURIComponent(showTitle(cur) + ' - ' + toolUrl(cur.slug))}`} target="_blank" rel="noopener noreferrer">Share on WhatsApp</Button></Box>
     <Typography variant="body2" sx={{ mt: 2 }}>Something wrong, or an idea for a new tool? <Link href={`/feedback/?tool=${cur.id}`} onClick={(e) => go(e, `/feedback/?tool=${cur.id}`)} underline="hover">Tell us</Link> - every message goes to the Kalkio team by email.</Typography>
-    <HelpfulVote toolId={cur.id} go={go} />
+    <HelpfulVote key={cur.id} toolId={cur.id} go={go} />
     {guide && (<Box component="section" sx={{ mt: 4 }}>{guide.map((s) => (<Box key={s.h} sx={{ mb: 3 }}>
       <Typography variant="h5" component="h2" fontWeight={700} gutterBottom>{s.h}</Typography>
       {s.p.map((para, i) => (<Typography key={i} variant="body1" color="text.secondary" paragraph>{renderGuideText(para)}</Typography>))}
