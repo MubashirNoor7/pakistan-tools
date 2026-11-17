@@ -261,8 +261,10 @@ CATEGORIES.forEach((c) => c.tools.forEach((t) => { ID_TO_CAT[t.id] = c.name; }))
 const TOPICAL_RELATED = { salarytax: ['bps', 'freelancer', 'taxslab', 'salarycalc', 'zakat', 'pta'], eobi: ['gratuity', 'providentfund', 'salarytax', 'bps', 'salarycalc'], gratuity: ['eobi', 'providentfund', 'dailywage', 'salarytax', 'bps'], providentfund: ['eobi', 'gratuity', 'salarytax', 'salarycalc', 'bps'], retirement: ['eobi', 'providentfund', 'sip', 'salarycalc', 'gratuity'] };
 const POPULAR = ['gta6price', 'jpgtopdf', 'loanemi', 'age', 'bmi', 'mortgage', 'marla', 'pta', 'currency', 'htmltovideo'].map((id) => BY_ID[id]).filter(Boolean);
 // Tiny pathname router - no new dependency. Trailing slashes are ignored.
+// The query string and hash are stripped first: a link like
+// /feedback/?tool=marla must route to the feedback page, not "not found".
 function parseRoute(pathname) {
-  const p = (pathname.replace(/\/+$/, '') || '/');
+  const p = ((pathname.split(/[?#]/)[0] || '').replace(/\/+$/, '') || '/');
   if (p === '/') return { kind: 'home' };
   if (p === '/about') return { kind: 'about' };
   if (p === '/contact') return { kind: 'contact' };
