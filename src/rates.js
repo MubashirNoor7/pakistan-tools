@@ -4,9 +4,9 @@
 // one JSON file on the server updates every visitor WITHOUT a rebuild.
 // If /rates.json cannot be fetched, these built-in values are used.
 export const RATES = {
-  fuelUpdated: '2026-11-27',
-  fuelSource: 'OGRA notified rates, 27 Nov 2026',
-  petrol: 313.0,
+  fuelUpdated: '2026-11-28',
+  fuelSource: 'OGRA notified rates, 28 Nov 2026',
+  petrol: 312.0,
   diesel: 346.0,
 };
 export function fuelAgeDays(updatedISO) {
